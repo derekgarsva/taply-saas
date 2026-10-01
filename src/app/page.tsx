@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import IPhoneMockup from '@/components/IPhoneMockup';
 import {
   Sparkles,
   ArrowRight,
@@ -92,82 +93,21 @@ export default function LandingPage() {
           ✓ Sin comisiones por venta &nbsp;•&nbsp; ✓ Sin registros para tus clientes &nbsp;•&nbsp; ✓ Listo para Venezuela y Latinoamérica
         </p>
 
-        {/* ══ INTERACTIVE PHONE MOCKUP PREVIEW ══ */}
-        <div className="mt-14 max-w-sm mx-auto relative">
-          <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/10 via-[#00594C]/20 to-teal-500/10 rounded-[50px] blur-2xl -z-10" />
+        {/* ══ AUTHENTIC 4K STUDIO IPHONE MOCKUP (AGENDOD STYLE) ══ */}
+        <div className="mt-14 max-w-sm sm:max-w-md mx-auto relative">
+          <IPhoneMockup businessName="Panadería La Estrella" slug="panaderia-la-estrella" />
 
-          {/* Smartphone Frame */}
-          <div className="rounded-[44px] p-3 bg-gray-900 shadow-2xl border-4 border-gray-800">
-            <div className="bg-white rounded-[34px] overflow-hidden border border-gray-200">
-              {/* Phone top status bar */}
-              <div className="h-6 bg-gray-900 flex items-center justify-between px-6 text-[10px] text-white/80 font-bold">
-                <span>9:41</span>
-                <div className="w-16 h-3.5 bg-black rounded-full" />
-                <span>5G 100%</span>
-              </div>
-
-              {/* Mini Interactive Preview Card */}
-              <div className="p-4 text-left font-sans bg-gray-50">
-                <div className="relative h-28 rounded-2xl overflow-hidden mb-3">
-                  <img
-                    src="https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80"
-                    alt="Banner"
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-3">
-                    <div>
-                      <span className="text-[9px] font-extrabold text-emerald-300 uppercase tracking-wider">PANADERÍA</span>
-                      <h4 className="text-white font-extrabold text-sm leading-tight">Panadería La Estrella</h4>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2 mb-4">
-                  <div className="p-2.5 bg-white rounded-xl border border-gray-200 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <img
-                        src="https://images.unsplash.com/photo-1549931319-a545dcf3bc73?auto=format&fit=crop&w=120&q=80"
-                        alt="Pan"
-                        className="w-9 h-9 rounded-lg object-cover"
-                      />
-                      <div>
-                        <div className="text-xs font-bold text-gray-900">Pan de Jamón</div>
-                        <div className="text-[11px] font-extrabold text-[#00594C]">$30.00</div>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-bold bg-[#00594C] text-white px-2.5 py-1 rounded-full">
-                      1 Añadido
-                    </span>
-                  </div>
-
-                  <div className="p-2.5 bg-white rounded-xl border border-gray-200 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <img
-                        src="https://images.unsplash.com/photo-1509722747041-616f39b57569?auto=format&fit=crop&w=120&q=80"
-                        alt="Golfeado"
-                        className="w-9 h-9 rounded-lg object-cover"
-                      />
-                      <div>
-                        <div className="text-xs font-bold text-gray-900">Golfeado Meloso</div>
-                        <div className="text-[11px] font-extrabold text-[#00594C]">$3.50</div>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-bold bg-gray-100 text-gray-800 px-2 py-1 rounded-full">
-                      + Añadir
-                    </span>
-                  </div>
-                </div>
-
-                {/* WhatsApp Slide Button Preview */}
-                <Link
-                  href="/panaderia-la-estrella"
-                  className="w-full h-11 bg-[#00594C] text-white rounded-2xl flex items-center justify-center gap-2 text-xs font-extrabold shadow-sm active:scale-95 transition-transform"
-                >
-                  <span>Pedir por WhatsApp · $33.50</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            </div>
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-2">
+            <span className="text-xs font-semibold text-gray-500">
+              💡 Prueba sumar productos y tocar pedir en el iPhone arriba, o
+            </span>
+            <Link
+              href="/panaderia-la-estrella"
+              className="text-xs font-bold text-[#00594C] hover:underline inline-flex items-center gap-1"
+            >
+              <span>ver el catálogo completo en vivo</span>
+              <ArrowRight className="w-3 h-3" />
+            </Link>
           </div>
         </div>
       </section>
