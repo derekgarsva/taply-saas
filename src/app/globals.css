@@ -1,0 +1,371 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 17, 24, 39;
+  --background-start-rgb: 248, 249, 250;
+  --background-end-rgb: 255, 255, 255;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #111827;
+  background-color: #F8F9FA;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Skeleton Shimmer Effect ── */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.skeleton-box {
+  position: relative;
+  overflow: hidden;
+  background-color: #ECEEF1;
+}
+
+.skeleton-box::after {
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmer 1.5s infinite ease-in-out;
+  content: '';
+}
+
+/* ── Seek Morphing Search ── */
+.sek {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  touch-action: pan-y;
+  z-index: 45;
+}
+
+.sek-skin {
+  position: relative;
+  height: 38px;
+  border-radius: 19px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  transition: width 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.12s ease;
+}
+
+.sek[data-press="true"] .sek-skin {
+  transform: scale(0.95);
+}
+
+.sek-lens {
+  position: absolute;
+  left: 10px;
+  width: 18px;
+  height: 18px;
+  stroke: #374151;
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  flex-shrink: 0;
+  transition: stroke 0.2s ease;
+}
+
+.sek[data-open="true"] .sek-lens {
+  stroke: #00594C;
+}
+
+.sek-field {
+  width: 100%;
+  height: 100%;
+  padding-left: 36px;
+  padding-right: 28px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #111827;
+  background: transparent;
+  outline: none;
+  border: none;
+  transition: opacity 0.2s ease;
+}
+
+.sek-hit {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.sek-clear {
+  position: absolute;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4B5563;
+  border: none;
+  cursor: pointer;
+  z-index: 15;
+}
+
+/* ── Popover Menu ── */
+.popover-card {
+  position: absolute;
+  top: 46px;
+  right: 0;
+  width: 224px;
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.14), 0 2px 10px rgba(0, 0, 0, 0.04);
+  padding: 6px;
+  z-index: 60;
+  transform-origin: top right;
+  animation: popoverScale 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.popover-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: none;
+  background: transparent;
+  color: #111827;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.14s ease, transform 0.08s ease;
+}
+
+.popover-item:active {
+  background: #F3F4F6;
+  transform: scale(0.98);
+}
+
+.popover-item:hover {
+  background: #F8F9FA;
+}
+
+/* ── Stepper Slider Micro-interaction ── */
+.step-well {
+  display: inline-flex;
+  align-items: center;
+}
+
+.step-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 38px;
+  width: 104px;
+  border-radius: 19px;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  user-select: none;
+  touch-action: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.step-pill[data-sweep="true"] {
+  border-color: #00594C;
+  box-shadow: 0 0 0 2px rgba(0, 89, 76, 0.18);
+}
+
+.step-side {
+  width: 32px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: #1F2937;
+  cursor: pointer;
+  z-index: 2;
+  transition: transform 0.1s ease, color 0.1s ease;
+}
+
+.step-side:active {
+  transform: scale(0.85);
+  color: #00594C;
+}
+
+.step-value {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #111827;
+  z-index: 2;
+  min-width: 24px;
+  text-align: center;
+}
+
+.step-fill {
+  position: absolute;
+  top: 0; bottom: 0; left: 0; right: 0;
+  background: rgba(0, 89, 76, 0.12);
+  transform-origin: left;
+  pointer-events: none;
+  transition: transform 0.06s ease-out;
+  z-index: 1;
+}
+
+/* ── Notify Sold Out (Bell Oscillation) ── */
+.bell-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 19px;
+  background: #F3F4F6;
+  border: 1px solid #E5E7EB;
+  color: #4B5563;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bell-btn[data-on="true"] {
+  background: #00594C;
+  border-color: #00594C;
+  color: #FFFFFF;
+}
+
+.bell-glyph {
+  display: inline-flex;
+  transform-origin: top center;
+}
+
+/* ── Slide to Confirm WhatsApp Button ── */
+.sld {
+  position: relative;
+  width: 100%;
+  height: 56px;
+  user-select: none;
+  touch-action: none;
+}
+
+.sld-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 28px;
+  background: #00594C;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px -4px rgba(0, 89, 76, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.sld-wash {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  background: rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+  border-radius: 24px;
+}
+
+.sld-say {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #FFFFFF;
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+.sld-grip {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  height: 48px;
+  background: #FFFFFF;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  cursor: grab;
+  border: none;
+  color: #00594C;
+  touch-action: none;
+  transform-origin: left center;
+  overflow: hidden;
+  transition: box-shadow 0.12s ease;
+}
+
+.sld-grip:active {
+  cursor: grabbing;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+}
+
+.sld-arrow {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.12s ease;
+}
+
+.sld-done {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #00594C;
+  font-weight: 800;
+  font-size: 14px;
+  white-space: nowrap;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
