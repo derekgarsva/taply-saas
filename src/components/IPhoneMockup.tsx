@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ShoppingBag, ArrowRight, Instagram, MapPin, Phone, Check, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { IPHONE_4K_FRAME } from './iphoneFrameData';
 
 interface IPhoneMockupProps {
   businessName?: string;
@@ -294,9 +295,9 @@ export default function IPhoneMockup({
           </div>
         </div>
 
-        {/* ══ 2. AUTHENTIC 4K IPHONE STUDIO FRAME (Extracted from Agendod) ══ */}
+        {/* ══ 2. AUTHENTIC 4K IPHONE STUDIO FRAME (Self-contained, identical to Agendod) ══ */}
         <img
-          src="/iphone-4k-frame.png"
+          src={IPHONE_4K_FRAME}
           alt="iPhone 18 Pro Studio Mockup"
           className="absolute inset-0 w-full h-full object-contain pointer-events-none z-20"
           style={{
