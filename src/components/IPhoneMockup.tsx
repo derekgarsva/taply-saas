@@ -295,10 +295,13 @@ export default function IPhoneMockup({
           </div>
         </div>
 
-        {/* ══ 2. AUTHENTIC 4K IPHONE STUDIO FRAME (Self-contained, identical to Agendod) ══ */}
+        {/* ══ 2. AUTHENTIC 4K IPHONE STUDIO FRAME (Extracted from 4500x3000px master) ══ */}
         <img
-          src={IPHONE_4K_FRAME}
-          alt="iPhone 18 Pro Studio Mockup"
+          src="/iphone-4k-frame.png"
+          onError={(e) => {
+            e.currentTarget.src = IPHONE_4K_FRAME;
+          }}
+          alt="iPhone 17 Pro Studio Mockup"
           className="absolute inset-0 w-full h-full object-contain pointer-events-none z-20"
           style={{
             filter: 'drop-shadow(0 25px 50px rgba(0,0,0,0.18))',
