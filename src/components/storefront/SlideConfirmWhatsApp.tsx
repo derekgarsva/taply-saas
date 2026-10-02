@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useLayoutEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Check } from 'lucide-react';
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
@@ -44,13 +45,12 @@ export default function SlideConfirmWhatsApp({
 
   const TRAVEL = Math.max(10, trackWidth - PAD * 2 - GRIP);
   const progress = clamp(posX / TRAVEL, 0, 1);
-  const mark = TRAVEL * 0.82;
+  const mark = TRAVEL * 0.8;
 
   const finish = () => {
     setDone(true);
     setPosX(TRAVEL);
 
-    // Call checkout handler
     onConfirm();
 
     beat.current = window.setTimeout(() => {
@@ -94,11 +94,11 @@ export default function SlideConfirmWhatsApp({
     if (posX >= mark) {
       finish();
     } else if (!d.moved) {
-      // Direct tap fallback
+      // Direct tap fallback with smooth slide
       setPosX(TRAVEL);
       setTimeout(() => {
         finish();
-      }, 120);
+      }, 140);
     } else {
       setPosX(0);
     }
@@ -106,8 +106,8 @@ export default function SlideConfirmWhatsApp({
 
   if (disabled) {
     return (
-      <div className="w-full h-[56px] rounded-[28px] bg-gray-300 text-gray-600 font-semibold flex items-center justify-center gap-2 text-sm shadow-sm cursor-not-allowed select-none transition-colors">
-        <WhatsAppIcon className="w-5 h-5 text-gray-500" />
+      <div className="w-full h-[56px] rounded-[28px] bg-gray-200 text-gray-400 font-semibold flex items-center justify-center gap-2 text-xs sm:text-sm shadow-2xs select-none">
+        <WhatsAppIcon className="w-4 h-4 text-gray-400" />
         <span>Agrega productos para ordenar</span>
       </div>
     );
@@ -115,69 +115,97 @@ export default function SlideConfirmWhatsApp({
 
   return (
     <div className="sld" style={{ width: '100%', height: H }}>
-      <div
+      <motion.div
         className="sld-track"
         ref={track}
         onPointerDown={down}
         onPointerMove={move}
         onPointerUp={up}
         onPointerCancel={up}
+        animate={{
+          scale: done ? 0.98 : held ? 0.99 : 1,
+        }}
+        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
         style={{
           backgroundColor: accentColor,
-          transform: done ? 'scale(0.985)' : 'scale(1)',
           boxShadow: `0 8px 24px -4px ${accentColor}55`,
         }}
       >
-        {/* Wash track */}
-        <div
+        {/* Animated Wash overlay track */}
+        <motion.div
           className="sld-wash"
-          style={{
+          animate={{
             width: done ? '100%' : `${posX + GRIP}px`,
-            transition: held ? 'none' : 'width 0.26s cubic-bezier(0.16, 1, 0.3, 1)',
+          }}
+          transition={{
+            type: held ? 'tween' : 'spring',
+            duration: held ? 0 : 0.25,
+            stiffness: 400,
+            damping: 30,
           }}
         />
 
-        {/* Label text */}
-        <span
+        {/* Text Label */}
+        <motion.span
           className="sld-say"
-          style={{
+          animate={{
             opacity: done ? 0 : clamp(1 - progress * 1.8, 0, 1),
           }}
+          transition={{ duration: 0.12 }}
         >
-          <WhatsAppIcon className="w-5 h-5" />
-          <span>Pedir por WhatsApp · {currencySymbol}{total.toFixed(2)}</span>
-        </span>
+          <WhatsAppIcon className="w-5 h-5 flex-shrink-0" />
+          <span>
+            Pedir por WhatsApp · {currencySymbol}
+            {total.toFixed(2)}
+          </span>
+        </motion.span>
 
-        {/* Sliding Grip Handle */}
-        <button
+        {/* Sliding Grip Handle with Spring Physics */}
+        <motion.button
           type="button"
           className="sld-grip"
-          style={{
-            transform: `translateX(${posX}px)`,
+          animate={{
+            x: posX,
             width: done ? 'calc(100% - 8px)' : `${GRIP}px`,
-            left: '4px',
+          }}
+          transition={{
+            type: held ? 'tween' : 'spring',
+            duration: held ? 0 : 0.25,
+            stiffness: 420,
+            damping: 32,
+          }}
+          style={{
             color: accentColor,
-            transition: held ? 'none' : 'transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), width 0.22s ease',
           }}
           aria-label={done ? '¡Abriendo WhatsApp!' : 'Desliza para pedir por WhatsApp'}
         >
-          {!done ? (
-            <span
-              className="sld-arrow"
-              style={{
-                opacity: clamp(1 - progress * 1.5, 0, 1),
-              }}
-            >
-              <ArrowRight size={20} strokeWidth={2.4} />
-            </span>
-          ) : (
-            <span className="sld-done" style={{ opacity: 1, color: accentColor }}>
-              <Check size={19} strokeWidth={2.8} />
-              <span>¡Abriendo WhatsApp!</span>
-            </span>
-          )}
-        </button>
-      </div>
+          <AnimatePresence mode="wait">
+            {!done ? (
+              <motion.span
+                key="arrow"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: clamp(1 - progress * 1.5, 0, 1) }}
+                exit={{ opacity: 0 }}
+                className="sld-arrow"
+              >
+                <ArrowRight size={20} strokeWidth={2.4} />
+              </motion.span>
+            ) : (
+              <motion.span
+                key="done"
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                className="sld-done"
+                style={{ color: accentColor }}
+              >
+                <Check size={19} strokeWidth={2.8} />
+                <span>¡Abriendo WhatsApp!</span>
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.button>
+      </motion.div>
     </div>
   );
 }

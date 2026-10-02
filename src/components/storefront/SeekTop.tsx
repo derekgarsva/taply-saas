@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X } from 'lucide-react';
 
 interface SeekTopProps {
@@ -13,7 +14,6 @@ export default function SeekTop({ value, onChange, accentColor = '#00594C' }: Se
   const frame = useRef<HTMLDivElement>(null);
   const field = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
-  const [press, setPress] = useState(false);
 
   const SHUT = 38;
   const WIDE = 210;
@@ -35,12 +35,8 @@ export default function SeekTop({ value, onChange, accentColor = '#00594C' }: Se
   const start = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (open) return;
-    setPress(true);
-    setTimeout(() => {
-      setPress(false);
-      setOpen(true);
-      setTimeout(() => field.current?.focus(), 50);
-    }, 40);
+    setOpen(true);
+    setTimeout(() => field.current?.focus(), 60);
   };
 
   const away = () => {
@@ -56,17 +52,28 @@ export default function SeekTop({ value, onChange, accentColor = '#00594C' }: Se
   };
 
   return (
-    <div className="sek" ref={frame} data-open={open} data-press={press}>
-      <div
-        className="sek-skin"
-        style={{
-          width: open ? `${WIDE}px` : `${SHUT}px`,
+    <div className="sek" ref={frame} data-open={open}>
+      <motion.div
+        animate={{
+          width: open ? WIDE : SHUT,
+          boxShadow: open
+            ? `0 4px 16px -2px rgba(0,0,0,0.12), 0 0 0 1.5px ${accentColor}40`
+            : '0 2px 10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.05)',
         }}
+        transition={{ type: 'spring', stiffness: 360, damping: 28 }}
+        className="sek-skin"
       >
-        <Search
-          className="sek-lens"
-          style={{ stroke: open ? accentColor : '#374151' }}
-        />
+        <motion.div
+          animate={{
+            scale: open ? 1.05 : 1,
+            color: open ? accentColor : '#374151',
+          }}
+          transition={{ duration: 0.2 }}
+          className="absolute left-2.5 flex items-center pointer-events-none z-10"
+        >
+          <Search className="w-[18px] h-[18px]" strokeWidth={2.4} />
+        </motion.div>
+
         <input
           ref={field}
           className="sek-field"
@@ -75,7 +82,7 @@ export default function SeekTop({ value, onChange, accentColor = '#00594C' }: Se
           placeholder="Buscar productos..."
           style={{
             opacity: open ? 1 : 0,
-            pointerEvents: open ? 'auto' : 'none'
+            pointerEvents: open ? 'auto' : 'none',
           }}
           onChange={(e) => onChange(e.target.value)}
           onBlur={away}
@@ -87,16 +94,24 @@ export default function SeekTop({ value, onChange, accentColor = '#00594C' }: Se
             }
           }}
         />
-        {open && value && (
-          <button
-            type="button"
-            className="sek-clear"
-            onPointerDown={clear}
-            aria-label="Borrar"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        )}
+
+        <AnimatePresence>
+          {open && value && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.7 }}
+              whileTap={{ scale: 0.85 }}
+              type="button"
+              className="sek-clear"
+              onPointerDown={clear}
+              aria-label="Borrar búsqueda"
+            >
+              <X className="w-3.5 h-3.5" />
+            </motion.button>
+          )}
+        </AnimatePresence>
+
         {!open && (
           <button
             type="button"
@@ -105,7 +120,7 @@ export default function SeekTop({ value, onChange, accentColor = '#00594C' }: Se
             onClick={start}
           />
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

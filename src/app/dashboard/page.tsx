@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Business, Product, Category, Order, MultiLinkItem } from '@/types';
 import QRCodeModal from '@/components/storefront/QRCodeModal';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatedGroup } from '@/components/motion';
 import {
   LayoutDashboard,
   Package,
@@ -379,7 +381,7 @@ function DashboardContent() {
           </div>
         </div>
 
-        {/* ══ NAVIGATION TABS ══ */}
+        {/* ══ NAVIGATION TABS CON SLIDING PILL ══ */}
         <div className="max-w-5xl mx-auto px-4 flex items-center gap-2 overflow-x-auto no-scrollbar border-t border-gray-100 py-1.5">
           {[
             { id: 'overview', label: 'Resumen', icon: LayoutDashboard },
@@ -395,12 +397,19 @@ function DashboardContent() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                className={`relative flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors duration-150 z-10 ${
                   isActive
-                    ? 'bg-gray-900 text-white shadow-xs'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    ? 'text-white'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/70'
                 }`}
               >
+                {isActive && (
+                  <motion.div
+                    layoutId="active-dashboard-tab-pill"
+                    className="absolute inset-0 bg-gray-900 rounded-xl shadow-xs -z-10"
+                    transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                  />
+                )}
                 <Icon className="w-3.5 h-3.5" />
                 <span>{tab.label}</span>
               </button>
@@ -448,9 +457,13 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* KPI Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-2xs">
+            {/* KPI Cards con AnimatedGroup */}
+            <AnimatedGroup
+              variant="fade-up"
+              stagger={0.06}
+              className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
+            >
+              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-2xs hover:shadow-xs transition-shadow">
                 <div className="flex items-center justify-between text-gray-500 mb-2">
                   <span className="text-xs font-semibold">Ventas Estimadas</span>
                   <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
@@ -465,7 +478,7 @@ function DashboardContent() {
                 </span>
               </div>
 
-              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-2xs">
+              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-2xs hover:shadow-xs transition-shadow">
                 <div className="flex items-center justify-between text-gray-500 mb-2">
                   <span className="text-xs font-semibold">Pedidos Recibidos</span>
                   <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
@@ -480,7 +493,7 @@ function DashboardContent() {
                 </span>
               </div>
 
-              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-2xs">
+              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-2xs hover:shadow-xs transition-shadow">
                 <div className="flex items-center justify-between text-gray-500 mb-2">
                   <span className="text-xs font-semibold">Visitas al Catálogo</span>
                   <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center">
@@ -495,7 +508,7 @@ function DashboardContent() {
                 </span>
               </div>
 
-              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-2xs">
+              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-2xs hover:shadow-xs transition-shadow">
                 <div className="flex items-center justify-between text-gray-500 mb-2">
                   <span className="text-xs font-semibold">Conversión a WhatsApp</span>
                   <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
@@ -509,7 +522,7 @@ function DashboardContent() {
                   Ratio visitas / pedidos
                 </span>
               </div>
-            </div>
+            </AnimatedGroup>
 
             {/* Recent Orders Preview */}
             <div className="bg-white p-5 rounded-3xl border border-gray-200 shadow-2xs">
@@ -958,153 +971,162 @@ function DashboardContent() {
       </main>
 
       {/* ══ MODAL: CREATE / EDIT PRODUCT ══ */}
-      {productModal.open && (
-        <div
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => setProductModal({ open: false, mode: 'create', product: {} })}
-        >
-          <div
-            className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence>
+        {productModal.open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4"
+            onClick={() => setProductModal({ open: false, mode: 'create', product: {} })}
           >
-            <div className="flex items-center justify-between pb-3.5 border-b border-gray-100">
-              <h3 className="font-extrabold text-gray-900 text-base">
-                {productModal.mode === 'create' ? 'Nuevo Producto' : 'Editar Producto'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setProductModal({ open: false, mode: 'create', product: {} })}
-                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
-              >
-                ✕
-              </button>
-            </div>
+            <motion.div
+              initial={{ scale: 0.93, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.94, opacity: 0, y: 10 }}
+              transition={{ type: 'spring', stiffness: 360, damping: 26 }}
+              className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative max-h-[90vh] overflow-y-auto no-scrollbar"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between pb-3.5 border-b border-gray-100">
+                <h3 className="font-extrabold text-gray-900 text-base">
+                  {productModal.mode === 'create' ? 'Nuevo Producto' : 'Editar Producto'}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setProductModal({ open: false, mode: 'create', product: {} })}
+                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
 
-            <form onSubmit={handleSaveProduct} className="mt-4 space-y-3.5">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Foto del Producto (URL)</label>
-                <div className="flex items-center gap-3">
-                  <img
-                    src={productModal.product.image || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=200&q=80'}
-                    alt="Previa"
-                    className="w-14 h-14 rounded-xl object-cover border border-gray-200 bg-gray-50 flex-shrink-0"
-                  />
+              <form onSubmit={handleSaveProduct} className="mt-4 space-y-3.5">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Foto del Producto (URL)</label>
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={productModal.product.image || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=200&q=80'}
+                      alt="Previa"
+                      className="w-14 h-14 rounded-xl object-cover border border-gray-200 bg-gray-50 flex-shrink-0"
+                    />
+                    <input
+                      type="text"
+                      placeholder="https://..."
+                      value={productModal.product.image || ''}
+                      onChange={(e) => setProductModal({
+                        ...productModal,
+                        product: { ...productModal.product, image: e.target.value }
+                      })}
+                      className="flex-1 h-10 px-3 text-xs border border-gray-200 rounded-xl outline-none focus:border-[#00594C]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Nombre</label>
                   <input
                     type="text"
-                    placeholder="https://..."
-                    value={productModal.product.image || ''}
+                    placeholder="Ej. Golfeado Meloso"
+                    value={productModal.product.name || ''}
                     onChange={(e) => setProductModal({
                       ...productModal,
-                      product: { ...productModal.product, image: e.target.value }
+                      product: { ...productModal.product, name: e.target.value }
                     })}
-                    className="flex-1 h-10 px-3 text-xs border border-gray-200 rounded-xl outline-none focus:border-[#00594C]"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Nombre</label>
-                <input
-                  type="text"
-                  placeholder="Ej. Golfeado Meloso"
-                  value={productModal.product.name || ''}
-                  onChange={(e) => setProductModal({
-                    ...productModal,
-                    product: { ...productModal.product, name: e.target.value }
-                  })}
-                  className="w-full h-10 px-3 text-xs border border-gray-200 rounded-xl outline-none focus:border-[#00594C]"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Categoría</label>
-                  <select
-                    value={productModal.product.category || categories[0]?.name || 'General'}
-                    onChange={(e) => setProductModal({
-                      ...productModal,
-                      product: { ...productModal.product, category: e.target.value }
-                    })}
-                    className="w-full h-10 px-2 text-xs border border-gray-200 rounded-xl bg-white outline-none focus:border-[#00594C]"
-                  >
-                    {categories.map(c => (
-                      <option key={c.id} value={c.name}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Precio (${business.currency})</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="3.50"
-                    value={productModal.product.price ?? ''}
-                    onChange={(e) => setProductModal({
-                      ...productModal,
-                      product: { ...productModal.product, price: parseFloat(e.target.value) || 0 }
-                    })}
-                    className="w-full h-10 px-3 text-xs font-bold border border-gray-200 rounded-xl outline-none focus:border-[#00594C]"
+                    className="w-full h-10 px-3 text-xs border border-gray-200 rounded-xl outline-none focus:border-[#00594C]"
                     required
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Descripción (Opcional)</label>
-                <textarea
-                  rows={2}
-                  placeholder="Ingredientes, porciones, detalles..."
-                  value={productModal.product.description || ''}
-                  onChange={(e) => setProductModal({
-                    ...productModal,
-                    product: { ...productModal.product, description: e.target.value }
-                  })}
-                  className="w-full p-2.5 text-xs border border-gray-200 rounded-xl outline-none focus:border-[#00594C]"
-                />
-              </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Categoría</label>
+                    <select
+                      value={productModal.product.category || categories[0]?.name || 'General'}
+                      onChange={(e) => setProductModal({
+                        ...productModal,
+                        product: { ...productModal.product, category: e.target.value }
+                      })}
+                      className="w-full h-10 px-2 text-xs border border-gray-200 rounded-xl bg-white outline-none focus:border-[#00594C]"
+                    >
+                      {categories.map(c => (
+                        <option key={c.id} value={c.name}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Precio (${business.currency})</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="3.50"
+                      value={productModal.product.price ?? ''}
+                      onChange={(e) => setProductModal({
+                        ...productModal,
+                        product: { ...productModal.product, price: parseFloat(e.target.value) || 0 }
+                      })}
+                      className="w-full h-10 px-3 text-xs font-bold border border-gray-200 rounded-xl outline-none focus:border-[#00594C]"
+                      required
+                    />
+                  </div>
+                </div>
 
-              <div className="space-y-2 pt-1">
-                <label className="flex items-center gap-2 text-xs text-gray-800 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={productModal.product.available !== false}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Descripción (Opcional)</label>
+                  <textarea
+                    rows={2}
+                    placeholder="Ingredientes, porciones, detalles..."
+                    value={productModal.product.description || ''}
                     onChange={(e) => setProductModal({
                       ...productModal,
-                      product: { ...productModal.product, available: e.target.checked }
+                      product: { ...productModal.product, description: e.target.value }
                     })}
-                    className="w-4 h-4 accent-[#00594C]"
+                    className="w-full p-2.5 text-xs border border-gray-200 rounded-xl outline-none focus:border-[#00594C]"
                   />
-                  <span>Producto disponible para pedidos</span>
-                </label>
+                </div>
 
-                <label className="flex items-center gap-2 text-xs text-gray-800 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={Boolean(productModal.product.featured)}
-                    onChange={(e) => setProductModal({
-                      ...productModal,
-                      product: { ...productModal.product, featured: e.target.checked }
-                    })}
-                    className="w-4 h-4 accent-[#00594C]"
-                  />
-                  <span>Marcar como Popular / Destacado</span>
-                </label>
-              </div>
+                <div className="space-y-2 pt-1">
+                  <label className="flex items-center gap-2 text-xs text-gray-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={productModal.product.available !== false}
+                      onChange={(e) => setProductModal({
+                        ...productModal,
+                        product: { ...productModal.product, available: e.target.checked }
+                      })}
+                      className="w-4 h-4 accent-[#00594C]"
+                    />
+                    <span>Producto disponible para pedidos</span>
+                  </label>
 
-              <div className="pt-3">
-                <button
-                  type="submit"
-                  className="w-full h-11 bg-[#00594C] text-white font-extrabold rounded-xl text-xs active:scale-98 transition-transform"
-                >
-                  {productModal.mode === 'create' ? 'Crear Producto' : 'Guardar Cambios'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                  <label className="flex items-center gap-2 text-xs text-gray-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(productModal.product.featured)}
+                      onChange={(e) => setProductModal({
+                        ...productModal,
+                        product: { ...productModal.product, featured: e.target.checked }
+                      })}
+                      className="w-4 h-4 accent-[#00594C]"
+                    />
+                    <span>Marcar como Popular / Destacado</span>
+                  </label>
+                </div>
+
+                <div className="pt-3">
+                  <button
+                    type="submit"
+                    className="w-full h-11 bg-[#00594C] text-white font-extrabold rounded-xl text-xs active:scale-98 transition-transform"
+                  >
+                    {productModal.mode === 'create' ? 'Crear Producto' : 'Guardar Cambios'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ══ QR CODE MODAL ══ */}
       {showQR && (
@@ -1117,12 +1139,20 @@ function DashboardContent() {
       )}
 
       {/* ══ TOAST NOTIFICATION ══ */}
-      {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#18181B] text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg flex items-center gap-2 animate-fade-in pointer-events-none">
-          <Check className="w-3.5 h-3.5 text-emerald-400" />
-          <span>{toast}</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ y: 20, opacity: 0, scale: 0.9 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 15, opacity: 0, scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#18181B] text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg flex items-center gap-2 pointer-events-none"
+          >
+            <Check className="w-3.5 h-3.5 text-emerald-400" />
+            <span>{toast}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

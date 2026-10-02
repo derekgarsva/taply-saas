@@ -11,8 +11,8 @@ import NotifySoldOut from './NotifySoldOut';
 import SlideConfirmWhatsApp from './SlideConfirmWhatsApp';
 import QRCodeModal from './QRCodeModal';
 import MultiLinkBar from './MultiLinkBar';
-import CatalogSkeleton from './CatalogSkeleton';
 import { Share2, MapPin, Plus, Check, X, Sparkles, Info, Lock } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface StorefrontViewProps {
   business: Business;
@@ -300,7 +300,7 @@ export default function StorefrontView({
           {/* Multilink Buttons Bar (Instagram, Maps, Phone, TikTok) */}
           <MultiLinkBar links={business.links || []} accentColor={business.themeColor} />
 
-          {/* Category Bar: Flujo natural sin cortes */}
+          {/* Category Bar: Flujo natural sin cortes con píldora deslizante fluida */}
           <div
             ref={categoryBarRef}
             className="relative w-full px-5 py-2.5 overflow-x-auto no-scrollbar flex items-center gap-2 border-b border-gray-100 bg-white sticky top-0 z-30"
@@ -312,32 +312,53 @@ export default function StorefrontView({
                   key={cat}
                   type="button"
                   onClick={(e) => handleCategorySelect(cat, e)}
-                  className={`relative whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 outline-none select-none ${
+                  className={`relative whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-colors duration-150 outline-none select-none z-10 ${
                     isActive
-                      ? 'text-white shadow-sm'
+                      ? 'text-white'
                       : 'border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 active:scale-95'
                   }`}
-                  style={{
-                    backgroundColor: isActive ? (business.themeColor || '#18181B') : undefined,
-                  }}
                 >
-                  {cat}
+                  {isActive && (
+                    <motion.div
+                      layoutId="active-category-pill"
+                      className="absolute inset-0 rounded-full shadow-sm -z-10"
+                      style={{ backgroundColor: business.themeColor || '#18181B' }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 420,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                  <span className="relative z-10">{cat}</span>
                 </button>
               );
             })}
           </div>
 
-          {/* Product List */}
-          <div className="px-5 divide-y divide-gray-100 min-h-[320px]">
+          {/* Product List con micro-animaciones */}
+          <motion.div
+            layout
+            className="px-5 divide-y divide-gray-100 min-h-[320px]"
+          >
             {filteredProducts.length === 0 ? (
-              <div className="py-16 text-center text-gray-400 text-sm">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="py-16 text-center text-gray-400 text-sm"
+              >
                 No encontramos productos que coincidan con tu búsqueda.
-              </div>
+              </motion.div>
             ) : (
               filteredProducts.map((prod) => {
                 const count = cart[prod.id] || 0;
                 return (
-                  <div
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
                     key={prod.id}
                     className={`py-4 flex items-start gap-4 transition-opacity duration-200 ${
                       !prod.available ? 'opacity-75' : 'opacity-100'
@@ -426,11 +447,11 @@ export default function StorefrontView({
                         )}
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })
             )}
-          </div>
+          </motion.div>
 
           {/* Discreet Footer with Admin Access */}
           <footer className="mt-12 px-5 pt-6 pb-6 border-t border-gray-100 text-center">
@@ -465,7 +486,12 @@ export default function StorefrontView({
           </footer>
 
           {/* ══ Sticky Bottom Action Bar with Slide WhatsApp ══ */}
-          <aside className="fixed bottom-0 left-0 right-0 z-30 max-w-md mx-auto p-4 bg-gradient-to-t from-white via-white/95 to-transparent">
+          <motion.aside
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+            className="fixed bottom-0 left-0 right-0 z-30 max-w-md mx-auto p-4 bg-gradient-to-t from-white via-white/95 to-transparent"
+          >
             <SlideConfirmWhatsApp
               total={totalPrice}
               currencySymbol={business.currencySymbol}
@@ -473,28 +499,36 @@ export default function StorefrontView({
               disabled={totalPrice === 0}
               accentColor={business.themeColor}
             />
-          </aside>
+          </motion.aside>
         </main>
       )}
 
       {/* ══ WhatsApp direct fallback popup prompt ══ */}
-      {directWhatsAppUrl && totalPrice > 0 && (
-        <div className="fixed bottom-20 left-4 right-4 z-40 max-w-sm mx-auto bg-gray-900/95 backdrop-blur-md text-white p-3 rounded-2xl shadow-xl flex items-center justify-between gap-3 border border-white/10 animate-fade-in font-sans">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <span className="text-emerald-400 text-lg">💬</span>
-            <span className="text-xs font-medium truncate">¿No abrió WhatsApp?</span>
-          </div>
-          <a
-            href={directWhatsAppUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => setDirectWhatsAppUrl(null)}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl whitespace-nowrap active:scale-95 transition-transform"
+      <AnimatePresence>
+        {directWhatsAppUrl && totalPrice > 0 && (
+          <motion.div
+            initial={{ y: 25, opacity: 0, scale: 0.95 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 20, opacity: 0, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 26 }}
+            className="fixed bottom-20 left-4 right-4 z-40 max-w-sm mx-auto bg-gray-900/95 backdrop-blur-md text-white p-3 rounded-2xl shadow-xl flex items-center justify-between gap-3 border border-white/10 font-sans"
           >
-            Tocar para Enviar
-          </a>
-        </div>
-      )}
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="text-emerald-400 text-lg">💬</span>
+              <span className="text-xs font-medium truncate">¿No abrió WhatsApp?</span>
+            </div>
+            <a
+              href={directWhatsAppUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setDirectWhatsAppUrl(null)}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl whitespace-nowrap active:scale-95 transition-transform"
+            >
+              Tocar para Enviar
+            </a>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ══ QR Code Modal ══ */}
       {modal === 'qr' && (
@@ -507,88 +541,143 @@ export default function StorefrontView({
       )}
 
       {/* ══ Modals: Taply & About ══ */}
-      {modal && modal !== 'qr' && (
-        <div
-          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => setModal(null)}
-        >
-          <div
-            className="bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl relative"
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence>
+        {modal && modal !== 'qr' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setModal(null)}
           >
-            <button
-              type="button"
-              onClick={() => setModal(null)}
-              className="absolute top-4 right-4 w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0, y: 14 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.94, opacity: 0, y: 10 }}
+              transition={{ type: 'spring', stiffness: 360, damping: 26 }}
+              className="bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl relative"
+              onClick={(e) => e.stopPropagation()}
             >
-              <X className="w-4 h-4" />
-            </button>
+              <button
+                type="button"
+                onClick={() => setModal(null)}
+                className="absolute top-4 right-4 w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
 
-            {modal === 'taply' ? (
-              <div>
-                <div
-                  className="w-10 h-10 rounded-2xl flex items-center justify-center mb-3 text-white"
-                  style={{ backgroundColor: business.themeColor || '#00594C' }}
-                >
-                  <Sparkles className="w-5 h-5" />
-                </div>
-                <h3 className="font-extrabold text-gray-900 text-lg">Taply SaaS</h3>
-                <p className="text-xs text-gray-600 mt-2 leading-relaxed">
-                  Catálogos interactivos multilink ultra rápidos y sin comisiones para negocios modernos.
-                </p>
-                <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
-                  <p className="text-[11px] text-gray-500 font-medium">
-                    ✓ Cero comisiones por venta.
+              {modal === 'taply' ? (
+                <div>
+                  <div
+                    className="w-10 h-10 rounded-2xl flex items-center justify-center mb-3 text-white"
+                    style={{ backgroundColor: business.themeColor || '#00594C' }}
+                  >
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-extrabold text-gray-900 text-lg">Taply SaaS</h3>
+                  <p className="text-xs text-gray-600 mt-2 leading-relaxed">
+                    Catálogos interactivos multilink ultra rápidos y sin comisiones para negocios modernos.
                   </p>
-                  <p className="text-[11px] text-gray-500 font-medium">
-                    ✓ Pedidos estructurados directos a WhatsApp.
-                  </p>
-                  <p className="text-[11px] text-gray-500 font-medium">
-                    ✓ Tu propio enlace bio y catálogo e-commerce.
-                  </p>
+                  <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+                    <p className="text-[11px] text-gray-500 font-medium">
+                      ✓ Cero comisiones por venta.
+                    </p>
+                    <p className="text-[11px] text-gray-500 font-medium">
+                      ✓ Pedidos estructurados directos a WhatsApp.
+                    </p>
+                    <p className="text-[11px] text-gray-500 font-medium">
+                      ✓ Tu propio enlace bio y catálogo e-commerce.
+                    </p>
+                  </div>
+                  <Link
+                    href="/"
+                    className="mt-4 block text-center py-2 px-3 rounded-xl bg-gray-900 text-white text-xs font-bold hover:bg-black transition-colors"
+                  >
+                    Conocer más sobre Taply
+                  </Link>
                 </div>
-                <Link
-                  href="/"
-                  className="mt-4 block text-center py-2 px-3 rounded-xl bg-gray-900 text-white text-xs font-bold hover:bg-black transition-colors"
-                >
-                  Conocer más sobre Taply
-                </Link>
-              </div>
-            ) : (
-              <div>
-                <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
-                  <Info className="w-5 h-5" />
+              ) : (
+                <div>
+                  <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
+                    <Info className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-extrabold text-gray-900 text-lg">¿Cómo pedir?</h3>
+                  <p className="text-xs text-gray-600 mt-2 leading-relaxed">
+                    Diseñado bajo la filosofía de <strong>3 toques</strong>:
+                  </p>
+                  <ol className="text-xs text-gray-600 mt-3 space-y-2 text-left list-decimal pl-4">
+                    <li>Selecciona tus productos favoritos con el botón <strong>+ Añadir</strong>.</li>
+                    <li>Desliza o toca la barra inferior de <strong>Pedir por WhatsApp</strong>.</li>
+                    <li>Se abrirá WhatsApp con el pedido listo y los datos de pago para transferir.</li>
+                  </ol>
                 </div>
-                <h3 className="font-extrabold text-gray-900 text-lg">¿Cómo pedir?</h3>
-                <p className="text-xs text-gray-600 mt-2 leading-relaxed">
-                  Diseñado bajo la filosofía de <strong>3 toques</strong>:
-                </p>
-                <ol className="text-xs text-gray-600 mt-3 space-y-2 text-left list-decimal pl-4">
-                  <li>Selecciona tus productos favoritos con el botón <strong>+ Añadir</strong>.</li>
-                  <li>Desliza o toca la barra inferior de <strong>Pedir por WhatsApp</strong>.</li>
-                  <li>Se abrirá WhatsApp con el pedido listo y los datos de pago para transferir.</li>
-                </ol>
-              </div>
-            )}
+              )}
 
-            <button
-              type="button"
-              onClick={() => setModal(null)}
-              className="w-full mt-5 py-2.5 bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-xl text-xs font-bold transition-colors"
-            >
-              Cerrar
-            </button>
-          </div>
-        </div>
-      )}
+              <button
+                type="button"
+                onClick={() => setModal(null)}
+                className="w-full mt-5 py-2.5 bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-xl text-xs font-bold transition-colors"
+              >
+                Cerrar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ══ Toast Notification ══ */}
-      {toast && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-[#18181B] text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg pointer-events-none flex items-center gap-2 animate-fade-in">
-          <Check className="w-3.5 h-3.5 text-emerald-400" />
-          <span>{toast}</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ y: 20, opacity: 0, scale: 0.9 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 15, opacity: 0, scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-[#18181B] text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg pointer-events-none flex items-center gap-2"
+          >
+            <Check className="w-3.5 h-3.5 text-emerald-400" />
+            <span>{toast}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function CatalogSkeleton() {
+  return (
+    <div className="w-full flex-1 pb-32 animate-pulse">
+      {/* Banner Skeleton */}
+      <div className="w-full h-64 bg-gray-200 skeleton-box" />
+
+      {/* Info Skeleton */}
+      <div className="px-5 pt-4 space-y-2">
+        <div className="w-20 h-3 bg-gray-200 rounded-full" />
+        <div className="w-48 h-6 bg-gray-200 rounded-lg" />
+        <div className="w-32 h-3 bg-gray-200 rounded-full" />
+      </div>
+
+      {/* Category Pills Skeleton */}
+      <div className="px-5 py-3 flex gap-2 overflow-hidden border-b border-gray-100">
+        <div className="w-16 h-8 bg-gray-200 rounded-full" />
+        <div className="w-20 h-8 bg-gray-200 rounded-full" />
+        <div className="w-24 h-8 bg-gray-200 rounded-full" />
+        <div className="w-16 h-8 bg-gray-200 rounded-full" />
+      </div>
+
+      {/* Products Skeleton */}
+      <div className="px-5 divide-y divide-gray-100">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="py-4 flex gap-4">
+            <div className="w-20 h-20 bg-gray-200 rounded-2xl flex-shrink-0 skeleton-box" />
+            <div className="flex-1 space-y-2 py-1">
+              <div className="w-3/4 h-4 bg-gray-200 rounded" />
+              <div className="w-1/4 h-3 bg-gray-200 rounded" />
+              <div className="w-16 h-7 bg-gray-200 rounded-full mt-2" />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

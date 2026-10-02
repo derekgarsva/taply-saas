@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Minus, Trash2 } from 'lucide-react';
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
@@ -35,7 +36,9 @@ export default function Stepper({ value, onChange, accentColor = '#00594C' }: St
     e.stopPropagation();
     from.current = { x: e.clientX, v: value, dir, stepped: false };
     setHeld(dir);
-    timer.current = window.setTimeout(() => { setSweeping(true); }, WAKE);
+    timer.current = window.setTimeout(() => {
+      setSweeping(true);
+    }, WAKE);
     grab(e);
   };
 
@@ -59,16 +62,23 @@ export default function Stepper({ value, onChange, accentColor = '#00594C' }: St
 
   return (
     <div className="step-well">
-      <div
+      <motion.div
+        animate={{
+          scale: sweeping ? 1.05 : 1,
+          boxShadow: sweeping
+            ? `0 0 0 2px ${accentColor}30, 0 8px 16px -4px rgba(0,0,0,0.12)`
+            : '0 1px 3px rgba(0,0,0,0.05)',
+        }}
+        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
         className="step-pill"
         data-sweep={sweeping}
-        data-press={!sweeping && held ? (held < 0 ? 'l' : 'r') : undefined}
         ref={rail}
         style={{
           borderColor: sweeping ? accentColor : undefined,
         }}
       >
-        <button
+        <motion.button
+          whileTap={{ scale: 0.82 }}
           type="button"
           className="step-side"
           onPointerDown={press(-1)}
@@ -82,11 +92,25 @@ export default function Stepper({ value, onChange, accentColor = '#00594C' }: St
           ) : (
             <Minus size={15} strokeWidth={2.4} />
           )}
-        </button>
+        </motion.button>
 
-        <span className="step-value">{value}</span>
+        <div className="relative min-w-[24px] h-[38px] flex items-center justify-center overflow-hidden z-10 select-none">
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.span
+              key={value}
+              initial={{ y: from.current.dir > 0 ? 12 : -12, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: from.current.dir > 0 ? -12 : 12, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+              className="step-value block text-center"
+            >
+              {value}
+            </motion.span>
+          </AnimatePresence>
+        </div>
 
-        <button
+        <motion.button
+          whileTap={{ scale: 0.82 }}
           type="button"
           className="step-side"
           onPointerDown={press(1)}
@@ -96,16 +120,17 @@ export default function Stepper({ value, onChange, accentColor = '#00594C' }: St
           aria-label="Sumar"
         >
           <Plus size={15} strokeWidth={2.4} />
-        </button>
+        </motion.button>
 
-        <i
+        <motion.i
           className="step-fill"
+          animate={{ scaleX: clamp(value / 15, 0, 1) }}
+          transition={{ ease: 'easeOut', duration: 0.15 }}
           style={{
-            transform: `scaleX(${clamp(value / 15, 0, 1)})`,
-            backgroundColor: `${accentColor}20`
+            backgroundColor: `${accentColor}20`,
           }}
         />
-      </div>
+      </motion.div>
     </div>
   );
 }

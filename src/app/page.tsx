@@ -1,6 +1,15 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import IPhoneMockup from '@/components/IPhoneMockup';
+import {
+  TextEffect,
+  AnimatedGroup,
+  MagneticButton,
+  TiltCard,
+} from '@/components/motion';
+import { motion } from 'framer-motion';
 import {
   Sparkles,
   ArrowRight,
@@ -58,36 +67,53 @@ export default function LandingPage() {
 
       {/* ══ HERO SECTION ══ */}
       <section className="pt-12 pb-20 px-4 max-w-6xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-[#00594C] text-xs font-bold mb-6 animate-fade-in shadow-2xs">
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-[#00594C] text-xs font-bold mb-6 shadow-2xs"
+        >
           <Sparkles className="w-3.5 h-3.5" />
           <span>La forma más rápida de vender por WhatsApp en 2026</span>
-        </div>
+        </motion.div>
 
         <h1 className="text-4xl sm:text-6xl font-extrabold text-gray-950 tracking-tight leading-tight sm:leading-none max-w-4xl mx-auto">
           Convierte tu enlace en bio en una <span className="text-[#00594C] underline decoration-[#00594C]/30">máquina de pedidos</span> por WhatsApp
         </h1>
 
-        <p className="mt-6 text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed font-normal">
+        <motion.p
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.2 }}
+          className="mt-6 text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed font-normal"
+        >
           Crea tu catálogo interactivo multilink en 60 segundos. Tus clientes eligen sus productos con un toque, deslizan para confirmar y te envían el pedido ordenado y listo con sus datos de pago.
-        </p>
+        </motion.p>
 
-        {/* Hero CTAs */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link
-            href="/onboarding"
-            className="w-full sm:w-auto h-13 px-8 rounded-full bg-[#00594C] text-white hover:bg-[#00463C] active:scale-98 text-sm font-extrabold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all"
-          >
-            <span>Crear Catálogo Gratis</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+        {/* Hero CTAs con Magnetic Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.3 }}
+          className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3"
+        >
+          <MagneticButton strength={14} className="w-full sm:w-auto">
+            <Link
+              href="/onboarding"
+              className="w-full sm:w-auto h-13 px-8 rounded-full bg-[#00594C] text-white hover:bg-[#00463C] text-sm font-extrabold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all"
+            >
+              <span>Crear Catálogo Gratis</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </MagneticButton>
 
           <Link
             href="/panaderia-la-estrella"
-            className="w-full sm:w-auto h-13 px-7 rounded-full bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 active:scale-98 text-sm font-bold flex items-center justify-center gap-2 shadow-2xs transition-all"
+            className="w-full sm:w-auto h-13 px-7 rounded-full bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 active:scale-98 text-sm font-bold flex items-center justify-center gap-2 shadow-2xs transition-all hover:border-gray-300"
           >
             <span>Ver Demo: Panadería La Estrella 🥐</span>
           </Link>
-        </div>
+        </motion.div>
 
         <p className="mt-3 text-xs text-gray-400">
           ✓ Sin comisiones por venta &nbsp;•&nbsp; ✓ Sin registros para tus clientes &nbsp;•&nbsp; ✓ Listo para Venezuela y Latinoamérica
@@ -124,8 +150,12 @@ export default function LandingPage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white p-7 rounded-3xl border border-gray-200/80 shadow-2xs">
+          <AnimatedGroup
+            variant="blur-fade"
+            stagger={0.07}
+            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+          >
+            <div className="bg-white p-7 rounded-3xl border border-gray-200/80 shadow-2xs hover:shadow-md transition-shadow">
               <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#00594C] flex items-center justify-center mb-5">
                 <Zap className="w-6 h-6" />
               </div>
@@ -135,7 +165,7 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="bg-white p-7 rounded-3xl border border-gray-200/80 shadow-2xs">
+            <div className="bg-white p-7 rounded-3xl border border-gray-200/80 shadow-2xs hover:shadow-md transition-shadow">
               <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center mb-5">
                 <Smartphone className="w-6 h-6" />
               </div>
@@ -145,7 +175,7 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="bg-white p-7 rounded-3xl border border-gray-200/80 shadow-2xs">
+            <div className="bg-white p-7 rounded-3xl border border-gray-200/80 shadow-2xs hover:shadow-md transition-shadow">
               <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-700 flex items-center justify-center mb-5">
                 <QrCode className="w-6 h-6" />
               </div>
@@ -155,7 +185,7 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="bg-white p-7 rounded-3xl border border-gray-200/80 shadow-2xs">
+            <div className="bg-white p-7 rounded-3xl border border-gray-200/80 shadow-2xs hover:shadow-md transition-shadow">
               <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center mb-5">
                 <DollarSign className="w-6 h-6" />
               </div>
@@ -165,7 +195,7 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="bg-white p-7 rounded-3xl border border-gray-200/80 shadow-2xs">
+            <div className="bg-white p-7 rounded-3xl border border-gray-200/80 shadow-2xs hover:shadow-md transition-shadow">
               <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-700 flex items-center justify-center mb-5">
                 <Sliders className="w-6 h-6" />
               </div>
@@ -175,7 +205,7 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="bg-white p-7 rounded-3xl border border-gray-200/80 shadow-2xs">
+            <div className="bg-white p-7 rounded-3xl border border-gray-200/80 shadow-2xs hover:shadow-md transition-shadow">
               <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-700 flex items-center justify-center mb-5">
                 <TrendingUp className="w-6 h-6" />
               </div>
@@ -184,7 +214,7 @@ export default function LandingPage() {
                 Conoce cuántas personas abren tu catálogo, cuántos pedidos generas por WhatsApp y qué productos son los más buscados de tu negocio.
               </p>
             </div>
-          </div>
+          </AnimatedGroup>
         </div>
       </section>
 
@@ -201,54 +231,58 @@ export default function LandingPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
           {/* Demo 1 */}
-          <Link
-            href="/panaderia-la-estrella"
-            className="group block p-5 rounded-3xl bg-white border border-gray-200 hover:border-[#00594C] transition-all shadow-2xs hover:shadow-md"
-          >
-            <div className="relative h-44 rounded-2xl overflow-hidden mb-4">
-              <img
-                src="https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80"
-                alt="Panadería La Estrella"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-extrabold text-gray-900">
-                PANADERÍA
+          <TiltCard maxTilt={5} scaleHover={1.02}>
+            <Link
+              href="/panaderia-la-estrella"
+              className="group block p-5 rounded-3xl bg-white border border-gray-200 hover:border-[#00594C] transition-all shadow-2xs hover:shadow-md h-full"
+            >
+              <div className="relative h-44 rounded-2xl overflow-hidden mb-4">
+                <img
+                  src="https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80"
+                  alt="Panadería La Estrella"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-extrabold text-gray-900">
+                  PANADERÍA
+                </div>
               </div>
-            </div>
-            <h4 className="font-extrabold text-lg text-gray-900">Panadería La Estrella</h4>
-            <p className="text-xs text-gray-500 mt-1">
-              Masa madre, panes campesinos, cachitos y golfeados con checkout a WhatsApp.
-            </p>
-            <div className="mt-4 flex items-center gap-1.5 text-xs font-bold text-[#00594C]">
-              <span>Ver Catálogo en Vivo</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </Link>
+              <h4 className="font-extrabold text-lg text-gray-900">Panadería La Estrella</h4>
+              <p className="text-xs text-gray-500 mt-1">
+                Masa madre, panes campesinos, cachitos y golfeados con checkout a WhatsApp.
+              </p>
+              <div className="mt-4 flex items-center gap-1.5 text-xs font-bold text-[#00594C]">
+                <span>Ver Catálogo en Vivo</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+          </TiltCard>
 
           {/* Demo 2 */}
-          <Link
-            href="/burger-station"
-            className="group block p-5 rounded-3xl bg-white border border-gray-200 hover:border-red-600 transition-all shadow-2xs hover:shadow-md"
-          >
-            <div className="relative h-44 rounded-2xl overflow-hidden mb-4">
-              <img
-                src="https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=800&q=80"
-                alt="Burger Station"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-extrabold text-gray-900">
-                SMASH BURGERS
+          <TiltCard maxTilt={5} scaleHover={1.02}>
+            <Link
+              href="/burger-station"
+              className="group block p-5 rounded-3xl bg-white border border-gray-200 hover:border-red-600 transition-all shadow-2xs hover:shadow-md h-full"
+            >
+              <div className="relative h-44 rounded-2xl overflow-hidden mb-4">
+                <img
+                  src="https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=800&q=80"
+                  alt="Burger Station"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-extrabold text-gray-900">
+                  SMASH BURGERS
+                </div>
               </div>
-            </div>
-            <h4 className="font-extrabold text-lg text-gray-900">Burger Station 🍔</h4>
-            <p className="text-xs text-gray-500 mt-1">
-              Hamburguesas smashed con bacon crocante, papas con cheddar y refrescos.
-            </p>
-            <div className="mt-4 flex items-center gap-1.5 text-xs font-bold text-red-600">
-              <span>Ver Catálogo en Vivo</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </Link>
+              <h4 className="font-extrabold text-lg text-gray-900">Burger Station 🍔</h4>
+              <p className="text-xs text-gray-500 mt-1">
+                Hamburguesas smashed con bacon crocante, papas con cheddar y refrescos.
+              </p>
+              <div className="mt-4 flex items-center gap-1.5 text-xs font-bold text-red-600">
+                <span>Ver Catálogo en Vivo</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+          </TiltCard>
         </div>
       </section>
 
@@ -267,7 +301,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto items-stretch">
             {/* Free Plan */}
             <div className="p-8 rounded-3xl bg-white border border-gray-200 shadow-2xs flex flex-col justify-between">
               <div>
@@ -314,55 +348,57 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Pro Plan */}
-            <div className="p-8 rounded-3xl bg-gradient-to-b from-emerald-950 to-gray-950 text-white border border-emerald-900 shadow-md flex flex-col justify-between relative overflow-hidden">
-              <div className="absolute top-4 right-4 bg-emerald-500 text-emerald-950 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                RECOMENDADO
-              </div>
-
-              <div>
-                <span className="text-xs font-bold text-emerald-400 uppercase">PLAN PRO</span>
-                <div className="mt-2 flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold text-white">$9</span>
-                  <span className="text-xs text-emerald-300">/ mes</span>
+            {/* Pro Plan con 3D Tilt */}
+            <TiltCard maxTilt={5} scaleHover={1.02} className="h-full">
+              <div className="p-8 rounded-3xl bg-gradient-to-b from-emerald-950 to-gray-950 text-white border border-emerald-900 shadow-md flex flex-col justify-between relative overflow-hidden h-full">
+                <div className="absolute top-4 right-4 bg-emerald-500 text-emerald-950 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                  RECOMENDADO
                 </div>
-                <p className="text-xs text-gray-300 mt-3">
-                  Para negocios en crecimiento que quieren análisis y máxima personalización.
-                </p>
 
-                <ul className="mt-6 space-y-2.5 text-xs text-gray-200">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    <span><strong>Productos ilimitados</strong></span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    <span>Estadísticas completas de visitas y conversión</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    <span>Personalización total de colores y marca</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    <span>Sin marca de agua de Taply</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    <span>Soporte prioritario por WhatsApp</span>
-                  </li>
-                </ul>
-              </div>
+                <div>
+                  <span className="text-xs font-bold text-emerald-400 uppercase">PLAN PRO</span>
+                  <div className="mt-2 flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold text-white">$9</span>
+                    <span className="text-xs text-emerald-300">/ mes</span>
+                  </div>
+                  <p className="text-xs text-gray-300 mt-3">
+                    Para negocios en crecimiento que quieren análisis y máxima personalización.
+                  </p>
 
-              <div className="mt-8">
-                <Link
-                  href="/onboarding"
-                  className="w-full h-11 rounded-2xl bg-white text-gray-950 font-extrabold text-xs flex items-center justify-center hover:bg-emerald-50 transition-colors shadow-sm"
-                >
-                  Probar Pro Gratis por 14 días
-                </Link>
+                  <ul className="mt-6 space-y-2.5 text-xs text-gray-200">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      <span><strong>Productos ilimitados</strong></span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      <span>Estadísticas completas de visitas y conversión</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      <span>Personalización total de colores y marca</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      <span>Sin marca de agua de Taply</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      <span>Soporte prioritario por WhatsApp</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="mt-8">
+                  <Link
+                    href="/onboarding"
+                    className="w-full h-11 rounded-2xl bg-white text-gray-950 font-extrabold text-xs flex items-center justify-center hover:bg-emerald-50 transition-colors shadow-sm"
+                  >
+                    Probar Pro Gratis por 14 días
+                  </Link>
+                </div>
               </div>
-            </div>
+            </TiltCard>
           </div>
         </div>
       </section>

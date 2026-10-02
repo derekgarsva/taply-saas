@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Bell, Check } from 'lucide-react';
 
 interface NotifySoldOutProps {
@@ -8,51 +9,42 @@ interface NotifySoldOutProps {
   productName?: string;
 }
 
-export default function NotifySoldOut({ accentColor = '#00594C', productName }: NotifySoldOutProps) {
+export default function NotifySoldOut({ accentColor = '#00594C' }: NotifySoldOutProps) {
   const [on, setOn] = useState(false);
-  const bell = useRef<HTMLSpanElement>(null);
-
-  const ring = () => {
-    const b = bell.current;
-    if (!b) return;
-    b.getAnimations().forEach((a) => a.cancel());
-    b.animate(
-      [
-        { transform: 'rotate(0deg)' },
-        { transform: 'rotate(-17deg)', offset: 0.11 },
-        { transform: 'rotate(14deg)', offset: 0.27 },
-        { transform: 'rotate(-9deg)', offset: 0.44 },
-        { transform: 'rotate(6deg)', offset: 0.61 },
-        { transform: 'rotate(-3deg)', offset: 0.78 },
-        { transform: 'rotate(0deg)' },
-      ],
-      { duration: 820, easing: 'ease-out' }
-    );
-  };
 
   const toggle = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!on) ring();
-    setOn(prev => !prev);
+    setOn((prev) => !prev);
   };
 
   return (
-    <button
+    <motion.button
       type="button"
-      className="bell-btn"
-      data-on={on}
       onClick={toggle}
-      aria-pressed={on}
+      whileTap={{ scale: 0.92 }}
+      whileHover={{ scale: 1.03 }}
+      className="inline-flex items-center gap-1.5 h-[38px] px-3.5 rounded-full text-xs font-semibold border transition-colors shadow-2xs select-none"
       style={{
-        backgroundColor: on ? accentColor : undefined,
-        borderColor: on ? accentColor : undefined,
-        color: on ? '#FFFFFF' : undefined,
+        backgroundColor: on ? accentColor : '#F3F4F6',
+        borderColor: on ? accentColor : '#E5E7EB',
+        color: on ? '#FFFFFF' : '#4B5563',
       }}
+      aria-pressed={on}
     >
-      <span ref={bell} className="bell-glyph">
+      <motion.span
+        animate={
+          on
+            ? {
+                rotate: [0, -18, 16, -10, 8, -4, 0],
+                transition: { duration: 0.65, ease: 'easeOut' },
+              }
+            : { rotate: 0 }
+        }
+        className="inline-flex origin-top"
+      >
         {on ? <Check size={14} strokeWidth={2.6} /> : <Bell size={14} strokeWidth={2} />}
-      </span>
+      </motion.span>
       <span>{on ? '¡Anotado!' : 'Avisarme al haber'}</span>
-    </button>
+    </motion.button>
   );
 }

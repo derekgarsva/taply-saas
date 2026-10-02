@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ShoppingBag, ArrowRight, Instagram, MapPin, Phone, Check, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { motion, AnimatePresence } from 'framer-motion';
 import { IPHONE_4K_FRAME } from './iphoneFrameData';
 
 interface IPhoneMockupProps {
@@ -216,32 +217,35 @@ export default function IPhoneMockup({
                       <div className="flex items-center gap-1 flex-shrink-0">
                         {qty > 0 ? (
                           <div className="flex items-center bg-gray-100 rounded-lg p-0.5 border border-gray-200">
-                            <button
+                            <motion.button
+                              whileTap={{ scale: 0.85 }}
                               type="button"
                               onClick={() => updateQty(p.id, -1)}
-                              className="w-5 h-5 rounded-md bg-white text-gray-700 font-bold text-[10px] flex items-center justify-center active:scale-90"
+                              className="w-5 h-5 rounded-md bg-white text-gray-700 font-bold text-[10px] flex items-center justify-center shadow-2xs"
                             >
                               -
-                            </button>
+                            </motion.button>
                             <span className="w-5 text-center font-extrabold text-[10.5px] text-gray-900">
                               {qty}
                             </span>
-                            <button
+                            <motion.button
+                              whileTap={{ scale: 0.85 }}
                               type="button"
                               onClick={() => updateQty(p.id, 1)}
-                              className="w-5 h-5 rounded-md bg-[#00594C] text-white font-bold text-[10px] flex items-center justify-center active:scale-90"
+                              className="w-5 h-5 rounded-md bg-[#00594C] text-white font-bold text-[10px] flex items-center justify-center shadow-2xs"
                             >
                               +
-                            </button>
+                            </motion.button>
                           </div>
                         ) : (
-                          <button
+                          <motion.button
+                            whileTap={{ scale: 0.92 }}
                             type="button"
                             onClick={() => updateQty(p.id, 1)}
-                            className="h-6 px-2 bg-gray-100 hover:bg-[#00594C] hover:text-white text-gray-800 rounded-lg text-[9.5px] font-bold transition-all active:scale-95"
+                            className="h-6 px-2 bg-gray-100 hover:bg-[#00594C] hover:text-white text-gray-800 rounded-lg text-[9.5px] font-bold transition-colors"
                           >
                             + Añadir
-                          </button>
+                          </motion.button>
                         )}
                       </div>
                     ) : (
@@ -256,34 +260,45 @@ export default function IPhoneMockup({
 
             {/* Bottom Checkout / WhatsApp Confirmation */}
             <div className="pt-2 border-t border-gray-100 mt-2">
-              {orderSent ? (
-                <div className="w-full py-2 px-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-center animate-fade-in">
-                  <div className="flex items-center justify-center gap-1.5 text-[#00594C] font-extrabold text-[11px]">
-                    <Check className="w-3.5 h-3.5" />
-                    <span>¡Abriendo WhatsApp con tu pedido!</span>
-                  </div>
-                  <p className="text-[8.5px] text-gray-500 mt-0.5">
-                    Total: ${total.toFixed(2)} · Datos de pago adjuntos
-                  </p>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleSimulateOrder}
-                  className="w-full py-2.5 px-3 rounded-2xl bg-[#00594C] hover:bg-[#00463C] text-white flex items-center justify-between font-extrabold text-[11px] shadow-sm active:scale-98 transition-all"
-                >
-                  <div className="flex items-center gap-1.5">
-                    <ShoppingBag className="w-3.5 h-3.5" />
-                    <span>Pedir por WhatsApp</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px]">
-                      ${total.toFixed(2)}
-                    </span>
-                    <ArrowRight className="w-3 h-3" />
-                  </div>
-                </button>
-              )}
+              <AnimatePresence mode="wait">
+                {orderSent ? (
+                  <motion.div
+                    key="sent"
+                    initial={{ scale: 0.94, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.94, opacity: 0 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                    className="w-full py-2 px-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-center"
+                  >
+                    <div className="flex items-center justify-center gap-1.5 text-[#00594C] font-extrabold text-[11px]">
+                      <Check className="w-3.5 h-3.5" />
+                      <span>¡Abriendo WhatsApp con tu pedido!</span>
+                    </div>
+                    <p className="text-[8.5px] text-gray-500 mt-0.5">
+                      Total: ${total.toFixed(2)} · Datos de pago adjuntos
+                    </p>
+                  </motion.div>
+                ) : (
+                  <motion.button
+                    key="btn"
+                    whileTap={{ scale: 0.97 }}
+                    type="button"
+                    onClick={handleSimulateOrder}
+                    className="w-full py-2.5 px-3 rounded-2xl bg-[#00594C] hover:bg-[#00463C] text-white flex items-center justify-between font-extrabold text-[11px] shadow-sm transition-colors"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <ShoppingBag className="w-3.5 h-3.5" />
+                      <span>Pedir por WhatsApp</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px]">
+                        ${total.toFixed(2)}
+                      </span>
+                      <ArrowRight className="w-3 h-3" />
+                    </div>
+                  </motion.button>
+                )}
+              </AnimatePresence>
 
               <p className="text-center text-[8.5px] text-gray-400 mt-1">
                 Desliza o toca para confirmar · Sin registro
