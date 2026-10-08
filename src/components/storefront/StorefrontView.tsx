@@ -312,7 +312,7 @@ export default function StorefrontView({
                   key={cat}
                   type="button"
                   onClick={(e) => handleCategorySelect(cat, e)}
-                  className={`relative whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-colors duration-150 outline-none select-none z-10 ${
+                  className={`relative whitespace-nowrap px-3 py-1.5 rounded-full text-[11px] font-bold transition-colors duration-150 outline-none select-none z-10 ${
                     isActive
                       ? 'text-white'
                       : 'border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 active:scale-95'
@@ -418,8 +418,8 @@ export default function StorefrontView({
                         )}
                       </div>
 
-                      {/* Action Controls */}
-                      <div className="mt-2.5 flex items-center h-[38px]">
+                      {/* Action Controls (Compact Steve Jobs Essential) */}
+                      <div className="mt-2 flex items-center h-[28px]">
                         {prod.available ? (
                           count === 0 ? (
                             <button
@@ -429,10 +429,10 @@ export default function StorefrontView({
                                 if (Date.now() - lastDeselectRef.current < 260) return;
                                 updateQty(prod.id, 1);
                               }}
-                              className="h-[38px] inline-flex items-center gap-1.5 text-white text-xs font-semibold px-4 rounded-full active:scale-95 shadow-sm select-none transition-transform"
+                              className="h-[28px] inline-flex items-center gap-1 text-white text-[11px] font-bold px-2.5 rounded-full active:scale-95 shadow-2xs select-none transition-transform"
                               style={{ backgroundColor: business.themeColor || '#18181B' }}
                             >
-                              <Plus size={15} strokeWidth={2.4} />
+                              <Plus size={13} strokeWidth={2.6} />
                               <span>Añadir</span>
                             </button>
                           ) : (

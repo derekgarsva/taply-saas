@@ -23,7 +23,7 @@ export default function NotifySoldOut({ accentColor = '#00594C' }: NotifySoldOut
       onClick={toggle}
       whileTap={{ scale: 0.92 }}
       whileHover={{ scale: 1.03 }}
-      className="inline-flex items-center gap-1.5 h-[38px] px-3.5 rounded-full text-xs font-semibold border transition-colors shadow-2xs select-none"
+      className="inline-flex items-center gap-1 h-[28px] px-2.5 rounded-full text-[10.5px] font-semibold border transition-colors shadow-2xs select-none"
       style={{
         backgroundColor: on ? accentColor : '#F3F4F6',
         borderColor: on ? accentColor : '#E5E7EB',
@@ -42,9 +42,9 @@ export default function NotifySoldOut({ accentColor = '#00594C' }: NotifySoldOut
         }
         className="inline-flex origin-top"
       >
-        {on ? <Check size={14} strokeWidth={2.6} /> : <Bell size={14} strokeWidth={2} />}
+        {on ? <Check size={12} strokeWidth={2.6} /> : <Bell size={12} strokeWidth={2} />}
       </motion.span>
-      <span>{on ? '¡Anotado!' : 'Avisarme al haber'}</span>
+      <span>{on ? '¡Anotado!' : 'Avisarme'}</span>
     </motion.button>
   );
 }

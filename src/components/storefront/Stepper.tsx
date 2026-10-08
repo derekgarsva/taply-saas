@@ -44,7 +44,7 @@ export default function Stepper({ value, onChange, accentColor = '#00594C' }: St
 
   const drag = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (!sweeping) return;
-    const w = rail.current?.offsetWidth ?? 104;
+    const w = rail.current?.offsetWidth ?? 82;
     const next = clamp(Math.round(from.current.v + ((e.clientX - from.current.x) / w) * 15), 0, 99);
     onChange(next);
   };
@@ -64,12 +64,12 @@ export default function Stepper({ value, onChange, accentColor = '#00594C' }: St
     <div className="step-well">
       <motion.div
         animate={{
-          scale: sweeping ? 1.05 : 1,
+          scale: sweeping ? 1.04 : 1,
           boxShadow: sweeping
-            ? `0 0 0 2px ${accentColor}30, 0 8px 16px -4px rgba(0,0,0,0.12)`
-            : '0 1px 3px rgba(0,0,0,0.05)',
+            ? `0 0 0 2px ${accentColor}25, 0 4px 10px -2px rgba(0,0,0,0.1)`
+            : '0 1px 2px rgba(0,0,0,0.04)',
         }}
-        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+        transition={{ type: 'spring', stiffness: 450, damping: 28 }}
         className="step-pill"
         data-sweep={sweeping}
         ref={rail}
@@ -88,20 +88,20 @@ export default function Stepper({ value, onChange, accentColor = '#00594C' }: St
           aria-label={value === 1 ? 'Quitar del carrito' : 'Restar'}
         >
           {value === 1 ? (
-            <Trash2 className="w-3.5 h-3.5 text-red-500 transition-colors" />
+            <Trash2 className="w-3 h-3 text-red-500 transition-colors" />
           ) : (
-            <Minus size={15} strokeWidth={2.4} />
+            <Minus size={12} strokeWidth={2.4} />
           )}
         </motion.button>
 
-        <div className="relative min-w-[24px] h-[38px] flex items-center justify-center overflow-hidden z-10 select-none">
+        <div className="relative min-w-[20px] h-[28px] flex items-center justify-center overflow-hidden z-10 select-none">
           <AnimatePresence mode="popLayout" initial={false}>
             <motion.span
               key={value}
-              initial={{ y: from.current.dir > 0 ? 12 : -12, opacity: 0 }}
+              initial={{ y: from.current.dir > 0 ? 10 : -10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              exit={{ y: from.current.dir > 0 ? -12 : 12, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+              exit={{ y: from.current.dir > 0 ? -10 : 10, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 32 }}
               className="step-value block text-center"
             >
               {value}
@@ -119,7 +119,7 @@ export default function Stepper({ value, onChange, accentColor = '#00594C' }: St
           onPointerCancel={lift}
           aria-label="Sumar"
         >
-          <Plus size={15} strokeWidth={2.4} />
+          <Plus size={12} strokeWidth={2.4} />
         </motion.button>
 
         <motion.i

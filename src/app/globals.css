@@ -190,12 +190,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 38px;
-  width: 104px;
-  border-radius: 19px;
+  height: 28px;
+  width: 82px;
+  border-radius: 14px;
   background: #FFFFFF;
   border: 1px solid #E5E7EB;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   overflow: hidden;
   user-select: none;
   touch-action: none;
@@ -204,12 +204,12 @@ body {
 
 .step-pill[data-sweep="true"] {
   border-color: #00594C;
-  box-shadow: 0 0 0 2px rgba(0, 89, 76, 0.18);
+  box-shadow: 0 0 0 2px rgba(0, 89, 76, 0.16);
 }
 
 .step-side {
-  width: 32px;
-  height: 38px;
+  width: 24px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -227,12 +227,13 @@ body {
 }
 
 .step-value {
-  font-size: 13.5px;
-  font-weight: 700;
+  font-size: 11.5px;
+  font-weight: 800;
   color: #111827;
   z-index: 2;
-  min-width: 24px;
+  min-width: 18px;
   text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 .step-fill {
@@ -245,18 +246,18 @@ body {
   z-index: 1;
 }
 
-/* ── Notify Sold Out (Bell Oscillation) ── */
+/* ── Notify Sold Out (Bell Oscillation Compact) ── */
 .bell-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 38px;
-  padding: 0 14px;
-  border-radius: 19px;
+  gap: 4px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 14px;
   background: #F3F4F6;
   border: 1px solid #E5E7EB;
   color: #4B5563;
-  font-size: 12px;
+  font-size: 10.5px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
