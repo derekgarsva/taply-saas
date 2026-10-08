@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { Business, Product, Category, Order, MultiLinkItem } from '@/types';
 import QRCodeModal from '@/components/storefront/QRCodeModal';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AnimatedGroup, ToggleSwitch } from '@/components/motion';
+import { AnimatedGroup } from '@/components/motion';
 import {
   LayoutDashboard,
   Package,
@@ -669,19 +669,18 @@ function DashboardContent() {
                     </div>
 
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      {/* Minimalist Apple-Style Stock Toggle */}
-                      <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-50 rounded-xl border border-gray-100" title={product.available ? 'En stock' : 'Agotado'}>
-                        <ToggleSwitch
-                          checked={product.available}
-                          onChange={() => handleToggleProductStock(product)}
-                          size="xs"
-                          accentColor="#00594C"
-                          ariaLabel={`Alternar stock para ${product.name}`}
-                        />
-                        <span className={`text-[10px] font-bold ${product.available ? 'text-emerald-700' : 'text-gray-400'}`}>
-                          {product.available ? 'Stock' : 'Agotado'}
-                        </span>
-                      </div>
+                      {/* Stock Toggle */}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleProductStock(product)}
+                        className={`h-8 px-2.5 rounded-lg text-xs font-bold transition-all ${
+                          product.available
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            : 'bg-amber-50 text-amber-700 border border-amber-200'
+                        }`}
+                      >
+                        {product.available ? 'En Stock' : 'Agotado'}
+                      </button>
 
                       {/* Edit */}
                       <button
@@ -1088,33 +1087,31 @@ function DashboardContent() {
                 </div>
 
                 <div className="space-y-2 pt-1">
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                    <span className="text-xs font-semibold text-gray-800">Disponible para pedidos</span>
-                    <ToggleSwitch
+                  <label className="flex items-center gap-2 text-xs text-gray-800 cursor-pointer">
+                    <input
+                      type="checkbox"
                       checked={productModal.product.available !== false}
-                      onChange={(checked) => setProductModal({
+                      onChange={(e) => setProductModal({
                         ...productModal,
-                        product: { ...productModal.product, available: checked }
+                        product: { ...productModal.product, available: e.target.checked }
                       })}
-                      size="sm"
-                      accentColor="#00594C"
-                      ariaLabel="Disponible para pedidos"
+                      className="w-4 h-4 accent-[#00594C]"
                     />
-                  </div>
+                    <span>Producto disponible para pedidos</span>
+                  </label>
 
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                    <span className="text-xs font-semibold text-gray-800">Marcar como Popular / TOP</span>
-                    <ToggleSwitch
+                  <label className="flex items-center gap-2 text-xs text-gray-800 cursor-pointer">
+                    <input
+                      type="checkbox"
                       checked={Boolean(productModal.product.featured)}
-                      onChange={(checked) => setProductModal({
+                      onChange={(e) => setProductModal({
                         ...productModal,
-                        product: { ...productModal.product, featured: checked }
+                        product: { ...productModal.product, featured: e.target.checked }
                       })}
-                      size="sm"
-                      accentColor="#00594C"
-                      ariaLabel="Marcar como popular"
+                      className="w-4 h-4 accent-[#00594C]"
                     />
-                  </div>
+                    <span>Marcar como Popular / Destacado</span>
+                  </label>
                 </div>
 
                 <div className="pt-3">
