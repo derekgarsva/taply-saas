@@ -41,7 +41,7 @@ export default function SlideConfirmWhatsApp({
     updateWidth();
     window.addEventListener('resize', updateWidth);
     return () => window.removeEventListener('resize', updateWidth);
-  }, []);
+  }, [total]);
 
   const TRAVEL = Math.max(10, trackWidth - PAD * 2 - GRIP);
   const progress = clamp(posX / TRAVEL, 0, 1);

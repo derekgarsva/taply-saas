@@ -484,23 +484,24 @@ export default function StorefrontView({
               </Link>
             </div>
           </footer>
-
-          {/* ══ Sticky Bottom Action Bar with Slide WhatsApp ══ */}
-          <motion.aside
-            initial={{ y: 80, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-            className="fixed bottom-0 left-0 right-0 z-30 max-w-md mx-auto p-4 bg-gradient-to-t from-white via-white/95 to-transparent"
-          >
-            <SlideConfirmWhatsApp
-              total={totalPrice}
-              currencySymbol={business.currencySymbol}
-              onConfirm={handleOrderWhatsApp}
-              disabled={totalPrice === 0}
-              accentColor={business.themeColor}
-            />
-          </motion.aside>
         </main>
+      )}
+
+      {/* ══ Fixed Bottom Action Bar: Always Pinned to Viewport Bottom ══ */}
+      {!loading && (
+        <aside className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none pb-[env(safe-area-inset-bottom,0px)]">
+          <div className="max-w-md mx-auto px-4 pb-4 pt-3 bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-[2px]">
+            <div className="pointer-events-auto">
+              <SlideConfirmWhatsApp
+                total={totalPrice}
+                currencySymbol={business.currencySymbol}
+                onConfirm={handleOrderWhatsApp}
+                disabled={totalPrice === 0}
+                accentColor={business.themeColor}
+              />
+            </div>
+          </div>
+        </aside>
       )}
 
       {/* ══ WhatsApp direct fallback popup prompt ══ */}
@@ -511,7 +512,7 @@ export default function StorefrontView({
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 20, opacity: 0, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 400, damping: 26 }}
-            className="fixed bottom-20 left-4 right-4 z-40 max-w-sm mx-auto bg-gray-900/95 backdrop-blur-md text-white p-3 rounded-2xl shadow-xl flex items-center justify-between gap-3 border border-white/10 font-sans"
+            className="fixed bottom-24 left-4 right-4 z-50 max-w-sm mx-auto bg-gray-900/95 backdrop-blur-md text-white p-3 rounded-2xl shadow-xl flex items-center justify-between gap-3 border border-white/10 font-sans"
           >
             <div className="flex items-center gap-2.5 min-w-0">
               <span className="text-emerald-400 text-lg">💬</span>

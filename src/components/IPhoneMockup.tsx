@@ -257,56 +257,56 @@ export default function IPhoneMockup({
                 );
               })}
             </div>
+          </div>
 
-            {/* Bottom Checkout / WhatsApp Confirmation */}
-            <div className="pt-2 border-t border-gray-100 mt-2">
-              <AnimatePresence mode="wait">
-                {orderSent ? (
-                  <motion.div
-                    key="sent"
-                    initial={{ scale: 0.94, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.94, opacity: 0 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                    className="w-full py-2 px-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-center"
-                  >
-                    <div className="flex items-center justify-center gap-1.5 text-[#00594C] font-extrabold text-[11px]">
-                      <Check className="w-3.5 h-3.5" />
-                      <span>¡Abriendo WhatsApp con tu pedido!</span>
-                    </div>
-                    <p className="text-[8.5px] text-gray-500 mt-0.5">
-                      Total: ${total.toFixed(2)} · Datos de pago adjuntos
-                    </p>
-                  </motion.div>
-                ) : (
-                  <motion.button
-                    key="btn"
-                    whileTap={{ scale: 0.97 }}
-                    type="button"
-                    onClick={handleSimulateOrder}
-                    className="w-full py-2.5 px-3 rounded-2xl bg-[#00594C] hover:bg-[#00463C] text-white flex items-center justify-between font-extrabold text-[11px] shadow-sm transition-colors"
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <ShoppingBag className="w-3.5 h-3.5" />
-                      <span>Pedir por WhatsApp</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px]">
-                        ${total.toFixed(2)}
-                      </span>
-                      <ArrowRight className="w-3 h-3" />
-                    </div>
-                  </motion.button>
-                )}
-              </AnimatePresence>
+          {/* Pinned Bottom Checkout Bar (Always fixed at bottom of screen, never scrolls away) */}
+          <div className="px-3.5 pt-2 pb-2.5 border-t border-gray-100/90 bg-white/95 backdrop-blur-md flex-shrink-0 z-20">
+            <AnimatePresence mode="wait">
+              {orderSent ? (
+                <motion.div
+                  key="sent"
+                  initial={{ scale: 0.94, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.94, opacity: 0 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  className="w-full py-2 px-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-center"
+                >
+                  <div className="flex items-center justify-center gap-1.5 text-[#00594C] font-extrabold text-[11px]">
+                    <Check className="w-3.5 h-3.5" />
+                    <span>¡Abriendo WhatsApp con tu pedido!</span>
+                  </div>
+                  <p className="text-[8.5px] text-gray-500 mt-0.5">
+                    Total: ${total.toFixed(2)} · Datos de pago adjuntos
+                  </p>
+                </motion.div>
+              ) : (
+                <motion.button
+                  key="btn"
+                  whileTap={{ scale: 0.97 }}
+                  type="button"
+                  onClick={handleSimulateOrder}
+                  className="w-full py-2.5 px-3 rounded-2xl bg-[#00594C] hover:bg-[#00463C] text-white flex items-center justify-between font-extrabold text-[11px] shadow-sm transition-colors"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <ShoppingBag className="w-3.5 h-3.5" />
+                    <span>Pedir por WhatsApp</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px]">
+                      ${total.toFixed(2)}
+                    </span>
+                    <ArrowRight className="w-3 h-3" />
+                  </div>
+                </motion.button>
+              )}
+            </AnimatePresence>
 
-              <p className="text-center text-[8.5px] text-gray-400 mt-1">
-                Desliza o toca para confirmar · Sin registro
-              </p>
+            <p className="text-center text-[8.5px] text-gray-400 mt-1">
+              Desliza o toca para confirmar · Sin registro
+            </p>
 
-              {/* iOS Home Indicator Bar */}
-              <div className="w-24 h-[3.5px] bg-[#111827] rounded-full mx-auto mt-2 opacity-80" />
-            </div>
+            {/* iOS Home Indicator Bar */}
+            <div className="w-24 h-[3.5px] bg-[#111827] rounded-full mx-auto mt-2 opacity-80" />
           </div>
         </div>
 
