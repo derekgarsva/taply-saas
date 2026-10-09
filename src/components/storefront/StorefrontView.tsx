@@ -303,7 +303,7 @@ export default function StorefrontView({
           {/* Category Bar: Flujo natural sin cortes con píldora deslizante fluida */}
           <div
             ref={categoryBarRef}
-            className="relative w-full px-5 py-2.5 overflow-x-auto no-scrollbar flex items-center gap-2 border-b border-gray-100 bg-white sticky top-0 z-30"
+            className="relative w-full px-5 py-2.5 overflow-x-auto no-scrollbar flex items-center gap-2 border-b border-gray-100 bg-white"
           >
             {categoriesList.map((cat) => {
               const isActive = selectedCategory === cat;
@@ -490,7 +490,13 @@ export default function StorefrontView({
       {/* ══ Fixed Bottom Action Bar: Always Pinned to Viewport Bottom ══ */}
       {!loading && (
         <aside className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none pb-[env(safe-area-inset-bottom,0px)]">
-          <div className="max-w-md mx-auto px-4 pb-4 pt-3 bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-[2px]">
+          <div
+            className="max-w-md mx-auto px-4 pb-4 pt-12"
+            style={{
+              background:
+                'linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,0.96) 45%, rgba(255,255,255,0.6) 75%, rgba(255,255,255,0) 100%)',
+            }}
+          >
             <div className="pointer-events-auto">
               <SlideConfirmWhatsApp
                 total={totalPrice}
