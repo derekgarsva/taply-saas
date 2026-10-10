@@ -34,6 +34,8 @@ export default function StorefrontView({
   const [toast, setToast] = useState<string | null>(null);
   const [directWhatsAppUrl, setDirectWhatsAppUrl] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [categoriesDocked, setCategoriesDocked] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const categoryBarRef = useRef<HTMLDivElement>(null);
   const lastDeselectRef = useRef<number>(0);
@@ -46,12 +48,20 @@ export default function StorefrontView({
     return () => clearTimeout(timer);
   }, []);
 
-  // Track scroll position to frosted-fill header when scrolling past hero
+  // Track scroll position to update header background and dock categories in top middle space
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 40);
+      const y = window.scrollY;
+      setScrolled(y > 30);
+
+      if (categoryBarRef.current) {
+        const rect = categoryBarRef.current.getBoundingClientRect();
+        // Dock into top header when in-page category bar reaches 56px or is above viewport
+        setCategoriesDocked(rect.top <= 56);
+      }
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -69,7 +79,7 @@ export default function StorefrontView({
     return Array.from(set);
   }, [initialCategories, products]);
 
-  const handleCategorySelect = (cat: string, e?: React.MouseEvent<HTMLButtonElement>) => {
+  const handleCategorySelect = (cat: string, e?: React.MouseEvent<HTMLButtonElement>, fromDocked?: boolean) => {
     setSelectedCategory(cat);
     if (e?.currentTarget) {
       e.currentTarget.scrollIntoView({
@@ -77,6 +87,13 @@ export default function StorefrontView({
         inline: 'center',
         block: 'nearest',
       });
+    }
+    // If selected from docked header, scroll smoothly so the product list is aligned right under header
+    if (fromDocked && categoryBarRef.current) {
+      const targetY = categoryBarRef.current.offsetTop - 52;
+      if (window.scrollY > targetY) {
+        window.scrollTo({ top: targetY, behavior: 'smooth' });
+      }
     }
   };
 
@@ -240,22 +257,70 @@ export default function StorefrontView({
 
   return (
     <div className="mx-auto max-w-md bg-white min-h-screen relative shadow-sm border-x border-gray-100 flex flex-col font-sans">
-      {/* ══ Fixed Top Bar: Search on Left | Share & 3 Dots on Right ══ */}
+      {/* ══ Fixed Top Bar: Search on Left | Docked Category Pill in Middle | Share & 3 Dots on Right ══ */}
       {!loading && (
         <header
-          className={`fixed top-0 left-0 right-0 z-40 max-w-md mx-auto h-14 px-4 flex items-center justify-between pointer-events-none transition-colors duration-200 ${
+          className={`fixed top-0 left-0 right-0 z-40 max-w-md mx-auto h-14 px-3 flex items-center justify-between pointer-events-none transition-colors duration-200 ${
             scrolled ? 'bg-white/95 backdrop-blur-md shadow-2xs' : 'bg-transparent'
           }`}
         >
-          <div className="pointer-events-auto">
+          <div className="pointer-events-auto flex-shrink-0">
             <SeekTop
               value={searchQuery}
               onChange={setSearchQuery}
               accentColor={business.themeColor}
+              onOpenChange={setSearchOpen}
             />
           </div>
 
-          <div className="pointer-events-auto flex items-center space-x-2">
+          {/* ══ Middle Space: Morphing Category Pill Slider ══ */}
+          <div className="flex-1 min-w-0 mx-1.5 pointer-events-auto flex items-center justify-center">
+            <AnimatePresence>
+              {categoriesDocked && !searchOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: -4 }}
+                  transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                  className="w-full h-[38px] rounded-full bg-white/95 backdrop-blur-md border border-black/8 shadow-2xs overflow-hidden flex items-center px-1"
+                >
+                  <div className="w-full h-full overflow-x-auto no-scrollbar flex items-center gap-1">
+                    {categoriesList.map((cat) => {
+                      const isActive = selectedCategory === cat;
+                      return (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={(e) => handleCategorySelect(cat, e, true)}
+                          className={`relative whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors duration-150 outline-none select-none z-10 flex-shrink-0 ${
+                            isActive
+                              ? 'text-white'
+                              : 'text-gray-600 hover:text-gray-900 active:scale-95'
+                          }`}
+                        >
+                          {isActive && (
+                            <motion.div
+                              layoutId="docked-active-pill"
+                              className="absolute inset-0 rounded-full shadow-xs -z-10"
+                              style={{ backgroundColor: business.themeColor || '#18181B' }}
+                              transition={{
+                                type: 'spring',
+                                stiffness: 420,
+                                damping: 30,
+                              }}
+                            />
+                          )}
+                          <span className="relative z-10">{cat}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <div className="pointer-events-auto flex items-center space-x-1.5 flex-shrink-0">
             <button
               type="button"
               onClick={handleShare}
@@ -314,10 +379,10 @@ export default function StorefrontView({
           {/* Multilink Buttons Bar (Instagram, Maps, Phone, TikTok) */}
           <MultiLinkBar links={business.links || []} accentColor={business.themeColor} />
 
-          {/* Category Bar: Se autopinea después de los botones (top-14 = 56px) */}
+          {/* Category Bar: Flujo natural en el cuerpo de la página (se transfiere al header al hacer scroll) */}
           <div
             ref={categoryBarRef}
-            className="sticky top-14 z-30 w-full px-5 py-2.5 overflow-x-auto no-scrollbar flex items-center gap-2 border-b border-gray-100 bg-white/95 backdrop-blur-md shadow-2xs"
+            className="relative w-full px-5 py-2.5 overflow-x-auto no-scrollbar flex items-center gap-2 border-b border-gray-100 bg-white"
           >
             {categoriesList.map((cat) => {
               const isActive = selectedCategory === cat;

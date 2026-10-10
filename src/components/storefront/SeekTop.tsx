@@ -8,12 +8,18 @@ interface SeekTopProps {
   value: string;
   onChange: (val: string) => void;
   accentColor?: string;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export default function SeekTop({ value, onChange, accentColor = '#00594C' }: SeekTopProps) {
+export default function SeekTop({ value, onChange, accentColor = '#00594C', onOpenChange }: SeekTopProps) {
   const frame = useRef<HTMLDivElement>(null);
   const field = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
+
+  const updateOpen = (val: boolean) => {
+    setOpen(val);
+    onOpenChange?.(val);
+  };
 
   const SHUT = 38;
   const WIDE = 210;
@@ -23,7 +29,7 @@ export default function SeekTop({ value, onChange, accentColor = '#00594C' }: Se
     const handleOutside = (e: MouseEvent | TouchEvent) => {
       if (frame.current && !frame.current.contains(e.target as Node)) {
         if (!value || !value.trim()) {
-          setOpen(false);
+          updateOpen(false);
           field.current?.blur();
         }
       }
@@ -35,19 +41,19 @@ export default function SeekTop({ value, onChange, accentColor = '#00594C' }: Se
   const start = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (open) return;
-    setOpen(true);
+    updateOpen(true);
     setTimeout(() => field.current?.focus(), 60);
   };
 
   const away = () => {
     if (value && value.trim()) return;
-    setOpen(false);
+    updateOpen(false);
   };
 
   const clear = (e: React.PointerEvent) => {
     e.stopPropagation();
     onChange('');
-    setOpen(false);
+    updateOpen(false);
     field.current?.blur();
   };
 
@@ -89,7 +95,7 @@ export default function SeekTop({ value, onChange, accentColor = '#00594C' }: Se
           onKeyDown={(e) => {
             if (e.key === 'Escape') {
               onChange('');
-              setOpen(false);
+              updateOpen(false);
               field.current?.blur();
             }
           }}
