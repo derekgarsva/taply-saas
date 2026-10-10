@@ -33,6 +33,7 @@ export default function StorefrontView({
   const [modal, setModal] = useState<'taply' | 'about' | 'qr' | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [directWhatsAppUrl, setDirectWhatsAppUrl] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState(false);
 
   const categoryBarRef = useRef<HTMLDivElement>(null);
   const lastDeselectRef = useRef<number>(0);
@@ -43,6 +44,15 @@ export default function StorefrontView({
       setLoading(false);
     }, 240);
     return () => clearTimeout(timer);
+  }, []);
+
+  // Track scroll position to frosted-fill header when scrolling past hero
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 40);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const showToast = (msg: string) => {
@@ -232,7 +242,11 @@ export default function StorefrontView({
     <div className="mx-auto max-w-md bg-white min-h-screen relative shadow-sm border-x border-gray-100 flex flex-col font-sans">
       {/* ══ Fixed Top Bar: Search on Left | Share & 3 Dots on Right ══ */}
       {!loading && (
-        <header className="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto h-14 px-4 flex items-center justify-between pointer-events-none bg-transparent">
+        <header
+          className={`fixed top-0 left-0 right-0 z-40 max-w-md mx-auto h-14 px-4 flex items-center justify-between pointer-events-none transition-colors duration-200 ${
+            scrolled ? 'bg-white/95 backdrop-blur-md shadow-2xs' : 'bg-transparent'
+          }`}
+        >
           <div className="pointer-events-auto">
             <SeekTop
               value={searchQuery}
@@ -300,10 +314,10 @@ export default function StorefrontView({
           {/* Multilink Buttons Bar (Instagram, Maps, Phone, TikTok) */}
           <MultiLinkBar links={business.links || []} accentColor={business.themeColor} />
 
-          {/* Category Bar: Flujo natural sin cortes con píldora deslizante fluida */}
+          {/* Category Bar: Se autopinea después de los botones (top-14 = 56px) */}
           <div
             ref={categoryBarRef}
-            className="relative w-full px-5 py-2.5 overflow-x-auto no-scrollbar flex items-center gap-2 border-b border-gray-100 bg-white"
+            className="sticky top-14 z-30 w-full px-5 py-2.5 overflow-x-auto no-scrollbar flex items-center gap-2 border-b border-gray-100 bg-white/95 backdrop-blur-md shadow-2xs"
           >
             {categoriesList.map((cat) => {
               const isActive = selectedCategory === cat;
