@@ -10,6 +10,7 @@ import Stepper from './Stepper';
 import NotifySoldOut from './NotifySoldOut';
 import SlideConfirmWhatsApp from './SlideConfirmWhatsApp';
 import CartBottomSheet from './CartBottomSheet';
+import ProductDetailSheet from './ProductDetailSheet';
 import QRCodeModal from './QRCodeModal';
 import MultiLinkBar from './MultiLinkBar';
 import { Share2, MapPin, Plus, Check, X, Sparkles, Info, Lock, ShoppingBag } from 'lucide-react';
@@ -38,6 +39,7 @@ export default function StorefrontView({
   const [categoriesDocked, setCategoriesDocked] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const categoryBarRef = useRef<HTMLDivElement>(null);
   const lastDeselectRef = useRef<number>(0);
@@ -469,13 +471,16 @@ export default function StorefrontView({
                       !prod.available ? 'opacity-75' : 'opacity-100'
                     }`}
                   >
-                    {/* Product Image */}
-                    <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-100">
+                    {/* Product Image (clickable) */}
+                    <div
+                      onClick={() => setSelectedProduct(prod)}
+                      className="relative w-20 h-20 rounded-2xl overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-100 cursor-pointer group"
+                    >
                       <img
                         src={prod.image}
                         alt={prod.name}
                         className={`w-full h-full object-cover transition-transform duration-300 ${
-                          !prod.available ? 'grayscale-[25%]' : 'hover:scale-105'
+                          !prod.available ? 'grayscale-[25%]' : 'group-hover:scale-105'
                         }`}
                       />
                       {prod.featured && (
@@ -485,11 +490,14 @@ export default function StorefrontView({
                       )}
                     </div>
 
-                    {/* Product Details */}
+                    {/* Product Details (clickable) */}
                     <div className="flex-1 flex flex-col justify-between min-h-[80px]">
-                      <div>
+                      <div
+                        onClick={() => setSelectedProduct(prod)}
+                        className="cursor-pointer group/info"
+                      >
                         <div className="flex items-start justify-between gap-2">
-                          <h3 className="font-bold text-gray-900 text-sm leading-snug">
+                          <h3 className="font-bold text-gray-900 text-sm leading-snug group-hover/info:text-black transition-colors">
                             {prod.name}
                           </h3>
                           <div className="text-right flex-shrink-0">
@@ -524,7 +532,10 @@ export default function StorefrontView({
                       </div>
 
                       {/* Action Controls */}
-                      <div className="mt-2.5 flex items-center h-[38px]">
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="mt-2.5 flex items-center h-[38px]"
+                      >
                         {prod.available ? (
                           count === 0 ? (
                             <button
@@ -596,7 +607,7 @@ export default function StorefrontView({
       {!loading && (
         <aside
           className={`fixed bottom-0 left-0 right-0 z-40 pointer-events-none pb-[env(safe-area-inset-bottom,0px)] transition-all duration-300 ${
-            cartDrawerOpen ? 'opacity-0 translate-y-6 pointer-events-none' : 'opacity-100 translate-y-0'
+            cartDrawerOpen || !!selectedProduct ? 'opacity-0 translate-y-6 pointer-events-none' : 'opacity-100 translate-y-0'
           }`}
         >
           <div
@@ -627,7 +638,10 @@ export default function StorefrontView({
                     transition={{ type: 'spring', stiffness: 420, damping: 28 }}
                     whileTap={{ scale: 0.92 }}
                     type="button"
-                    onClick={() => setCartDrawerOpen(true)}
+                    onClick={() => {
+                      setDirectWhatsAppUrl(null);
+                      setCartDrawerOpen(true);
+                    }}
                     className="relative flex-shrink-0 h-14 w-14 rounded-full bg-white text-gray-900 border border-gray-200/90 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.12)] flex items-center justify-center cursor-pointer overflow-visible hover:border-gray-300 transition-colors"
                     aria-label="Ver desglose del carrito"
                   >
@@ -666,9 +680,26 @@ export default function StorefrontView({
         }}
       />
 
+      {/* ══ Product Detail Sub-sheet (Arc UI Minimal Style) ══ */}
+      <ProductDetailSheet
+        product={selectedProduct}
+        isOpen={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        currencySymbol={business.currencySymbol}
+        currency={business.currency}
+        themeColor={business.themeColor}
+        quantity={selectedProduct ? cart[selectedProduct.id] || 0 : 0}
+        onUpdateQty={(delta) => {
+          if (selectedProduct) updateQty(selectedProduct.id, delta);
+        }}
+        onSetQty={(count) => {
+          if (selectedProduct) setExactQty(selectedProduct.id, count);
+        }}
+      />
+
       {/* ══ WhatsApp direct fallback popup prompt ══ */}
       <AnimatePresence>
-        {directWhatsAppUrl && totalPrice > 0 && (
+        {!cartDrawerOpen && !selectedProduct && directWhatsAppUrl && totalPrice > 0 && (
           <motion.div
             initial={{ y: 25, opacity: 0, scale: 0.95 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
