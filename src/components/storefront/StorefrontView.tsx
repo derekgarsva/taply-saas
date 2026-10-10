@@ -9,9 +9,10 @@ import TopMenu from './TopMenu';
 import Stepper from './Stepper';
 import NotifySoldOut from './NotifySoldOut';
 import SlideConfirmWhatsApp from './SlideConfirmWhatsApp';
+import CartBottomSheet from './CartBottomSheet';
 import QRCodeModal from './QRCodeModal';
 import MultiLinkBar from './MultiLinkBar';
-import { Share2, MapPin, Plus, Check, X, Sparkles, Info, Lock } from 'lucide-react';
+import { Share2, MapPin, Plus, Check, X, Sparkles, Info, Lock, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface StorefrontViewProps {
@@ -36,6 +37,7 @@ export default function StorefrontView({
   const [scrolled, setScrolled] = useState(false);
   const [categoriesDocked, setCategoriesDocked] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
 
   const categoryBarRef = useRef<HTMLDivElement>(null);
   const lastDeselectRef = useRef<number>(0);
@@ -130,6 +132,18 @@ export default function StorefrontView({
     return Object.values(cart).reduce((a, b) => a + b, 0);
   }, [cart]);
 
+  const uniqueProductCount = useMemo(() => {
+    return Object.entries(cart).filter(([_, qty]) => qty > 0).length;
+  }, [cart]);
+
+  const onRemoveItem = (id: string) => {
+    updateQty(id, -(cart[id] || 0));
+  };
+
+  const onClearCart = () => {
+    setCart({});
+  };
+
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
       const matchesCat = selectedCategory === 'Todos' || p.category === selectedCategory;
@@ -143,7 +157,7 @@ export default function StorefrontView({
   }, [products, selectedCategory, searchQuery]);
 
   // Handle WhatsApp Checkout
-  const handleOrderWhatsApp = async () => {
+  const handleOrderWhatsApp = async (deliveryType?: 'delivery' | 'pickup', note?: string) => {
     if (totalPrice === 0) return;
 
     // Trigger celebratory confetti
@@ -172,7 +186,19 @@ export default function StorefrontView({
     if (business.paymentNotes) {
       message += `💳 *${business.paymentNotes}*\n\n`;
     }
-    message += `📍 *Dirección de Entrega / Retiro:*\n`;
+
+    if (deliveryType === 'delivery') {
+      message += `🛵 *Tipo de Entrega:* Delivery\n`;
+      message += `📍 *Dirección de Entrega:*\n\n`;
+    } else if (deliveryType === 'pickup') {
+      message += `🏪 *Tipo de Entrega:* Retiro en local\n\n`;
+    } else {
+      message += `📍 *Dirección de Entrega / Retiro:*\n\n`;
+    }
+
+    if (note && note.trim()) {
+      message += `📝 *Nota:* ${note.trim()}\n\n`;
+    }
 
     // 2. Save order in real backend database
     try {
@@ -568,7 +594,11 @@ export default function StorefrontView({
 
       {/* ══ Fixed Bottom Action Bar: Always Pinned to Viewport Bottom ══ */}
       {!loading && (
-        <aside className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none pb-[env(safe-area-inset-bottom,0px)]">
+        <aside
+          className={`fixed bottom-0 left-0 right-0 z-40 pointer-events-none pb-[env(safe-area-inset-bottom,0px)] transition-all duration-300 ${
+            cartDrawerOpen ? 'opacity-0 translate-y-6 pointer-events-none' : 'opacity-100 translate-y-0'
+          }`}
+        >
           <div
             className="max-w-md mx-auto px-4 pb-4 pt-12"
             style={{
@@ -576,18 +606,65 @@ export default function StorefrontView({
                 'linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,0.96) 45%, rgba(255,255,255,0.6) 75%, rgba(255,255,255,0) 100%)',
             }}
           >
-            <div className="pointer-events-auto">
-              <SlideConfirmWhatsApp
-                total={totalPrice}
-                currencySymbol={business.currencySymbol}
-                onConfirm={handleOrderWhatsApp}
-                disabled={totalPrice === 0}
-                accentColor={business.themeColor}
-              />
+            <div className="pointer-events-auto flex items-center gap-2.5">
+              <motion.div layout className="flex-1 min-w-0">
+                <SlideConfirmWhatsApp
+                  total={totalPrice}
+                  currencySymbol={business.currencySymbol}
+                  onConfirm={() => handleOrderWhatsApp()}
+                  disabled={totalPrice === 0}
+                  accentColor={business.themeColor}
+                />
+              </motion.div>
+
+              <AnimatePresence>
+                {uniqueProductCount >= 2 && (
+                  <motion.button
+                    key="cart-trigger-btn"
+                    initial={{ scale: 0, opacity: 0, width: 0 }}
+                    animate={{ scale: 1, opacity: 1, width: 56 }}
+                    exit={{ scale: 0, opacity: 0, width: 0 }}
+                    transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+                    whileTap={{ scale: 0.92 }}
+                    type="button"
+                    onClick={() => setCartDrawerOpen(true)}
+                    className="relative flex-shrink-0 h-14 w-14 rounded-full bg-white text-gray-900 border border-gray-200/90 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.12)] flex items-center justify-center cursor-pointer overflow-visible hover:border-gray-300 transition-colors"
+                    aria-label="Ver desglose del carrito"
+                  >
+                    <ShoppingBag className="w-5 h-5 text-gray-800" />
+
+                    {/* Badge */}
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-bold text-white flex items-center justify-center shadow-xs"
+                      style={{ backgroundColor: business.themeColor || '#00594C' }}
+                    >
+                      {uniqueProductCount}
+                    </motion.span>
+                  </motion.button>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </aside>
       )}
+
+      {/* ══ Cart Bottom Sheet (Arc UI Style) ══ */}
+      <CartBottomSheet
+        isOpen={cartDrawerOpen}
+        onClose={() => setCartDrawerOpen(false)}
+        business={business}
+        cart={cart}
+        products={products}
+        totalPrice={totalPrice}
+        onUpdateQty={updateQty}
+        onRemoveItem={onRemoveItem}
+        onClearCart={onClearCart}
+        onOrderConfirm={(deliveryType, note) => {
+          handleOrderWhatsApp(deliveryType, note);
+        }}
+      />
 
       {/* ══ WhatsApp direct fallback popup prompt ══ */}
       <AnimatePresence>

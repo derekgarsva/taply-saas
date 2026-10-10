@@ -40,7 +40,19 @@ export default function SlideConfirmWhatsApp({
     };
     updateWidth();
     window.addEventListener('resize', updateWidth);
-    return () => window.removeEventListener('resize', updateWidth);
+
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined' && track.current) {
+      ro = new ResizeObserver(() => {
+        updateWidth();
+      });
+      ro.observe(track.current);
+    }
+
+    return () => {
+      window.removeEventListener('resize', updateWidth);
+      ro?.disconnect();
+    };
   }, [total]);
 
   const TRAVEL = Math.max(10, trackWidth - PAD * 2 - GRIP);
