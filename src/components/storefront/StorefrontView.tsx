@@ -35,7 +35,6 @@ export default function StorefrontView({
   const [modal, setModal] = useState<'taply' | 'about' | 'qr' | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [directWhatsAppUrl, setDirectWhatsAppUrl] = useState<string | null>(null);
-  const [scrolled, setScrolled] = useState(false);
   const [categoriesDocked, setCategoriesDocked] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
@@ -52,12 +51,9 @@ export default function StorefrontView({
     return () => clearTimeout(timer);
   }, []);
 
-  // Track scroll position to update header background and dock categories in top middle space
+  // Track scroll position to dock categories in top middle space
   useEffect(() => {
     const handleScroll = () => {
-      const y = window.scrollY;
-      setScrolled(y > 30);
-
       if (categoryBarRef.current) {
         const rect = categoryBarRef.current.getBoundingClientRect();
         // Dock into top header when in-page category bar reaches 56px or is above viewport
@@ -287,11 +283,7 @@ export default function StorefrontView({
     <div className="mx-auto max-w-md bg-white min-h-screen relative shadow-sm border-x border-gray-100 flex flex-col font-sans">
       {/* ══ Fixed Top Bar: Search on Left | Docked Category Pill in Middle | Share & 3 Dots on Right ══ */}
       {!loading && (
-        <header
-          className={`fixed top-0 left-0 right-0 z-40 max-w-md mx-auto h-14 px-3 flex items-center justify-between pointer-events-none transition-colors duration-200 ${
-            scrolled ? 'bg-white/95 backdrop-blur-md shadow-2xs' : 'bg-transparent'
-          }`}
-        >
+        <header className="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto h-14 px-3 flex items-center justify-between pointer-events-none bg-transparent">
           <div className="pointer-events-auto flex-shrink-0">
             <SeekTop
               value={searchQuery}
