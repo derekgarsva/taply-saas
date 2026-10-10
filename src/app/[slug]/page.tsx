@@ -17,13 +17,38 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
+  const title = `${business.name} · Catálogo Digital`;
+  const description = business.desc || `Catálogo interactivo de ${business.name}. Haz tu pedido directo por WhatsApp con Taply.`;
+  const banner = business.bannerImage || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1200&q=80';
+  const canonicalUrl = `/${params.slug}`;
+
   return {
-    title: `${business.name} · Catálogo Taply`,
-    description: business.desc || `Pide directo a ${business.name} vía WhatsApp con Taply.`,
+    title,
+    description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
-      title: `${business.name} · Catálogo Digital`,
-      description: business.desc,
-      images: [business.bannerImage || ''],
+      title,
+      description,
+      url: canonicalUrl,
+      siteName: 'Taply',
+      type: 'website',
+      locale: 'es_LA',
+      images: [
+        {
+          url: banner,
+          width: 1200,
+          height: 630,
+          alt: business.name,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [banner],
     },
   };
 }

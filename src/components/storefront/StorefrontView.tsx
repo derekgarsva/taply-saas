@@ -368,6 +368,8 @@ export default function StorefrontView({
             <img
               src={business.bannerImage || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80'}
               alt={business.name}
+              fetchPriority="high"
+              decoding="async"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent" />
@@ -471,6 +473,8 @@ export default function StorefrontView({
                       <img
                         src={prod.image}
                         alt={prod.name}
+                        loading="lazy"
+                        decoding="async"
                         className={`w-full h-full object-cover transition-transform duration-300 ${
                           !prod.available ? 'grayscale-[25%]' : 'group-hover:scale-105'
                         }`}

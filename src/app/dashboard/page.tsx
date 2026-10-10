@@ -30,7 +30,9 @@ import {
   CheckCircle2,
   XCircle,
   Eye,
-  Store
+  Store,
+  Upload,
+  Image as ImageIcon
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -87,6 +89,18 @@ function DashboardContent() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [productSearch, setProductSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('Todas');
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, onComplete: (base64: string) => void) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (uploadEvent) => {
+      if (uploadEvent.target?.result) {
+        onComplete(uploadEvent.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Load initial data
   useEffect(() => {
@@ -886,18 +900,61 @@ function DashboardContent() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Foto de Portada (URL)</label>
-                <div className="flex gap-3 items-center">
-                  <img
-                    src={business.bannerImage}
-                    alt="Portada"
-                    className="w-14 h-14 object-cover rounded-xl border border-gray-200 flex-shrink-0 bg-gray-100"
-                  />
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Foto de Portada del Catálogo</label>
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                  <div className="relative w-28 h-20 rounded-2xl overflow-hidden border border-gray-200 bg-gray-100 flex-shrink-0 shadow-2xs">
+                    {business.bannerImage ? (
+                      <img
+                        src={business.bannerImage}
+                        alt="Portada"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-300">
+                        <ImageIcon className="w-6 h-6" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-1 space-y-1.5 w-full">
+                    <label className="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-xl cursor-pointer shadow-xs active:scale-98 transition-all">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{business.bannerImage ? 'Cambiar Foto de Portada' : 'Adjuntar Foto de Portada'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) =>
+                          handleFileUpload(e, (base64) => setBusiness({ ...business, bannerImage: base64 }))
+                        }
+                      />
+                    </label>
+                    <p className="text-[11px] text-gray-400">
+                      Sube una imagen desde tu dispositivo (JPG, PNG, WebP).
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Símbolo de Moneda</label>
                   <input
                     type="text"
-                    value={business.bannerImage}
-                    onChange={(e) => setBusiness({ ...business, bannerImage: e.target.value })}
-                    className="flex-1 h-11 px-3.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-[#00594C]"
+                    value={business.currencySymbol || '$'}
+                    onChange={(e) => setBusiness({ ...business, currencySymbol: e.target.value })}
+                    placeholder="Ej. $, Bs, €"
+                    className="w-full h-11 px-3.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-[#00594C]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Código de Moneda</label>
+                  <input
+                    type="text"
+                    value={business.currency || 'USD'}
+                    onChange={(e) => setBusiness({ ...business, currency: e.target.value })}
+                    placeholder="Ej. USD, VES, EUR"
+                    className="w-full h-11 px-3.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-[#00594C]"
                   />
                 </div>
               </div>
@@ -1003,23 +1060,44 @@ function DashboardContent() {
 
               <form onSubmit={handleSaveProduct} className="mt-4 space-y-3.5">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Foto del Producto (URL)</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">Foto del Producto</label>
                   <div className="flex items-center gap-3">
-                    <img
-                      src={productModal.product.image || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=200&q=80'}
-                      alt="Previa"
-                      className="w-14 h-14 rounded-xl object-cover border border-gray-200 bg-gray-50 flex-shrink-0"
-                    />
-                    <input
-                      type="text"
-                      placeholder="https://..."
-                      value={productModal.product.image || ''}
-                      onChange={(e) => setProductModal({
-                        ...productModal,
-                        product: { ...productModal.product, image: e.target.value }
-                      })}
-                      className="flex-1 h-10 px-3 text-xs border border-gray-200 rounded-xl outline-none focus:border-[#00594C]"
-                    />
+                    <div className="w-16 h-16 rounded-xl overflow-hidden border border-gray-200 bg-gray-50 flex-shrink-0 shadow-2xs relative">
+                      {productModal.product.image ? (
+                        <img
+                          src={productModal.product.image}
+                          alt="Previa"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-300">
+                          <ImageIcon className="w-6 h-6" />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 space-y-1">
+                      <label className="inline-flex items-center gap-2 px-3.5 py-2 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-xl cursor-pointer shadow-xs active:scale-98 transition-all">
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>{productModal.product.image ? 'Cambiar Foto' : 'Adjuntar Foto'}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) =>
+                            handleFileUpload(e, (base64) =>
+                              setProductModal({
+                                ...productModal,
+                                product: { ...productModal.product, image: base64 },
+                              })
+                            )
+                          }
+                        />
+                      </label>
+                      <p className="text-[10px] text-gray-400">
+                        Sube una foto desde tu galería o archivos.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -1055,7 +1133,7 @@ function DashboardContent() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Precio (${business.currency})</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Precio ({business.currencySymbol}{business.currency})</label>
                     <input
                       type="number"
                       step="0.01"
@@ -1070,6 +1148,22 @@ function DashboardContent() {
                       required
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Precio Antes / Tachado (Opcional)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="Ej. 4.99 (muestra descuento tachado)"
+                    value={productModal.product.compareAtPrice ?? ''}
+                    onChange={(e) => setProductModal({
+                      ...productModal,
+                      product: { ...productModal.product, compareAtPrice: parseFloat(e.target.value) || 0 }
+                    })}
+                    className="w-full h-10 px-3 text-xs border border-gray-200 rounded-xl outline-none focus:border-[#00594C]"
+                  />
                 </div>
 
                 <div>

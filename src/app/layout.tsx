@@ -2,8 +2,14 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://taply-saas.vercel.app'),
   title: 'Taply · Catálogos Multilink & Pedidos a WhatsApp',
   description: 'Crea tu catálogo interactivo multilink en 60 segundos con checkout ultra rápido a WhatsApp y cero comisiones.',
+  openGraph: {
+    siteName: 'Taply',
+    locale: 'es_LA',
+    type: 'website',
+  },
   icons: {
     icon: '/favicon.ico',
   },
