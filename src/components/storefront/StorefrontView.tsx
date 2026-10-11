@@ -65,6 +65,22 @@ export default function StorefrontView({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Auto-dismiss "¿No abrió WhatsApp?" fallback popup after 4 seconds if cart is not opened
+  useEffect(() => {
+    if (!directWhatsAppUrl) return;
+
+    if (cartDrawerOpen) {
+      setDirectWhatsAppUrl(null);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setDirectWhatsAppUrl(null);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [directWhatsAppUrl, cartDrawerOpen]);
+
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
