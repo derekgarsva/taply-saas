@@ -33,7 +33,7 @@ export interface PlatformPayment {
   businessId: string;
   businessName: string;
   businessSlug: string;
-  plan: 'Mensual ($19)' | 'Anual ($190)' | 'Personalizado';
+  plan: 'Plan Inicial ($12)' | 'Big Taply ($34)' | 'Mensual ($19)' | 'Anual ($190)' | 'Personalizado' | string;
   amount: number;
   currency: string;
   method: 'Pago Móvil' | 'Zelle' | 'Binance USDT' | 'Efectivo Divisas' | 'Stripe';

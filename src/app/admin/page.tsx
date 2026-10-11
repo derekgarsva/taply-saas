@@ -136,12 +136,12 @@ function PasscodeGateway({
 
   return (
     <div
-      className={`min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden select-none transition-colors duration-300 ${
+      className={`min-h-[100dvh] flex flex-col items-center justify-center py-6 sm:py-10 px-4 relative overflow-hidden select-none transition-colors duration-300 ${
         isDark ? 'bg-black text-white' : 'bg-[#F8F9FB] text-neutral-900'
       }`}
     >
       {/* Top right theme toggle */}
-      <div className="absolute top-6 right-6 z-20">
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20">
         <ThemeToggle theme={theme} onToggle={onToggleTheme} />
       </div>
 
@@ -154,9 +154,9 @@ function PasscodeGateway({
         className="w-full max-w-sm flex flex-col items-center relative z-10"
       >
         {/* Brand Shield Emblem */}
-        <div className="relative mb-6">
+        <div className="relative mb-4 sm:mb-6">
           <div
-            className={`w-16 h-16 rounded-3xl p-0.5 border shadow-2xl flex items-center justify-center backdrop-blur-xl ${
+            className={`w-14 sm:w-16 h-14 sm:h-16 rounded-3xl p-0.5 border shadow-2xl flex items-center justify-center backdrop-blur-xl ${
               isDark
                 ? 'bg-neutral-900/60 border-neutral-800'
                 : 'bg-white border-neutral-200 shadow-neutral-200/50'
@@ -167,7 +167,7 @@ function PasscodeGateway({
                 isDark ? 'bg-[#0A0A0A]' : 'bg-neutral-50'
               }`}
             >
-              <ShieldCheck className="w-8 h-8 text-emerald-500" />
+              <ShieldCheck className="w-7 sm:w-8 h-7 sm:h-8 text-emerald-500" />
             </div>
           </div>
           <div
@@ -180,11 +180,11 @@ function PasscodeGateway({
         </div>
 
         {/* Title */}
-        <h1 className="text-xl font-bold tracking-tight mb-1 text-center">
+        <h1 className="text-lg sm:text-xl font-bold tracking-tight mb-1 text-center">
           Consola Central Taply
         </h1>
         <p
-          className={`text-xs text-center mb-8 max-w-[260px] ${
+          className={`text-xs text-center mb-5 sm:mb-8 max-w-[260px] ${
             isDark ? 'text-neutral-400' : 'text-neutral-500'
           }`}
         >
@@ -192,7 +192,7 @@ function PasscodeGateway({
         </p>
 
         {/* 6-Digit Indicator Dots */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-3.5 sm:gap-4 mb-5 sm:mb-8">
           {[0, 1, 2, 3, 4, 5].map((index) => {
             const isFilled = index < pin.length;
             return (
@@ -209,7 +209,7 @@ function PasscodeGateway({
                     : 'rgba(0, 0, 0, 0.1)',
                 }}
                 transition={{ duration: 0.2 }}
-                className={`w-3.5 h-3.5 rounded-full border transition-all ${
+                className={`w-3 sm:w-3.5 h-3 sm:h-3.5 rounded-full border transition-all ${
                   error
                     ? 'border-red-500 shadow-lg shadow-red-500/40'
                     : isFilled
@@ -224,7 +224,7 @@ function PasscodeGateway({
         </div>
 
         {/* Feedback / Error Message */}
-        <div className="h-6 mb-4 flex items-center justify-center">
+        <div className="h-6 mb-3 sm:mb-4 flex items-center justify-center">
           {loading && (
             <div className="flex items-center gap-2 text-xs text-emerald-500 font-medium animate-pulse">
               <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Verificando autorización...
@@ -238,13 +238,13 @@ function PasscodeGateway({
         </div>
 
         {/* Apple-style Numeric Keypad */}
-        <div className="grid grid-cols-3 gap-3 w-full max-w-[280px]">
+        <div className="grid grid-cols-3 gap-2.5 sm:gap-3 w-full max-w-[280px]">
           {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
             <button
               key={digit}
               onClick={() => handleKeyPress(digit)}
               disabled={loading}
-              className={`h-16 rounded-2xl text-xl font-medium transition-all flex items-center justify-center active:scale-95 border ${
+              className={`h-13 sm:h-16 rounded-2xl text-lg sm:text-xl font-medium transition-all flex items-center justify-center active:scale-95 touch-manipulation border ${
                 isDark
                   ? 'bg-neutral-900/60 hover:bg-neutral-800 border-neutral-800 text-white'
                   : 'bg-white hover:bg-neutral-100 border-neutral-200 text-neutral-900 shadow-sm'
@@ -256,7 +256,7 @@ function PasscodeGateway({
           <button
             onClick={handleClear}
             disabled={loading || pin.length === 0}
-            className={`h-16 rounded-2xl text-xs uppercase tracking-wider font-semibold transition-all flex items-center justify-center active:scale-95 disabled:opacity-20 ${
+            className={`h-13 sm:h-16 rounded-2xl text-[11px] sm:text-xs uppercase tracking-wider font-semibold transition-all flex items-center justify-center active:scale-95 touch-manipulation disabled:opacity-20 ${
               isDark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-400 hover:text-neutral-700'
             }`}
           >
@@ -265,7 +265,7 @@ function PasscodeGateway({
           <button
             onClick={() => handleKeyPress('0')}
             disabled={loading}
-            className={`h-16 rounded-2xl text-xl font-medium transition-all flex items-center justify-center active:scale-95 border ${
+            className={`h-13 sm:h-16 rounded-2xl text-lg sm:text-xl font-medium transition-all flex items-center justify-center active:scale-95 touch-manipulation border ${
               isDark
                 ? 'bg-neutral-900/60 hover:bg-neutral-800 border-neutral-800 text-white'
                 : 'bg-white hover:bg-neutral-100 border-neutral-200 text-neutral-900 shadow-sm'
@@ -276,7 +276,7 @@ function PasscodeGateway({
           <button
             onClick={handleBackspace}
             disabled={loading || pin.length === 0}
-            className={`h-16 rounded-2xl text-sm font-semibold transition-all flex items-center justify-center active:scale-95 disabled:opacity-20 ${
+            className={`h-13 sm:h-16 rounded-2xl text-sm font-semibold transition-all flex items-center justify-center active:scale-95 touch-manipulation disabled:opacity-20 ${
               isDark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-400 hover:text-neutral-700'
             }`}
           >
@@ -284,13 +284,14 @@ function PasscodeGateway({
           </button>
         </div>
 
-        <div className="mt-12 text-center">
+        <div className="mt-8 sm:mt-10 text-center">
           <p className={`text-[11px] ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>
             Taply Master Operations · Autenticación Server-Side
           </p>
         </div>
       </motion.div>
     </div>
+
   );
 }
 
@@ -314,8 +315,8 @@ export default function SuperAdminPage() {
   const [isPaymentSheetOpen, setIsPaymentSheetOpen] = useState(false);
   const [selectedBizId, setSelectedBizId] = useState('');
   const [customBizName, setCustomBizName] = useState('');
-  const [paymentPlan, setPaymentPlan] = useState<'Mensual ($19)' | 'Anual ($190)' | 'Personalizado'>('Mensual ($19)');
-  const [paymentAmount, setPaymentAmount] = useState('19');
+  const [paymentPlan, setPaymentPlan] = useState<'Plan Inicial ($12)' | 'Big Taply ($34)' | 'Personalizado'>('Plan Inicial ($12)');
+  const [paymentAmount, setPaymentAmount] = useState('12');
   const [paymentMethod, setPaymentMethod] = useState<'Pago Móvil' | 'Zelle' | 'Binance USDT' | 'Efectivo Divisas' | 'Stripe'>('Pago Móvil');
   const [paymentReference, setPaymentReference] = useState('');
   const [paymentNotes, setPaymentNotes] = useState('');
@@ -440,10 +441,10 @@ export default function SuperAdminPage() {
   };
 
   // Handle plan change inside payment sheet
-  const handlePlanChange = (newPlan: 'Mensual ($19)' | 'Anual ($190)' | 'Personalizado') => {
+  const handlePlanChange = (newPlan: 'Plan Inicial ($12)' | 'Big Taply ($34)' | 'Personalizado') => {
     setPaymentPlan(newPlan);
-    if (newPlan === 'Mensual ($19)') setPaymentAmount('19');
-    else if (newPlan === 'Anual ($190)') setPaymentAmount('190');
+    if (newPlan === 'Plan Inicial ($12)') setPaymentAmount('12');
+    else if (newPlan === 'Big Taply ($34)') setPaymentAmount('34');
   };
 
   // Submit payment from BottomSheet
@@ -708,25 +709,27 @@ export default function SuperAdminPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
+      <main className="max-w-7xl mx-auto px-3.5 sm:px-6 py-5 sm:py-8 space-y-6 sm:space-y-8 pb-24 sm:pb-12">
         {/* Navigation Tabs using Arc UI MorphSelect */}
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <MorphSelect
-            layoutId="admin-section-nav"
-            theme={theme}
-            value={activeSection}
-            onChange={(val) => setActiveSection(val as any)}
-            options={[
-              { id: 'all', label: 'Consola General', icon: <Layers className="w-3.5 h-3.5" /> },
-              { id: 'stores', label: 'Comercios', badge: businesses.length },
-              { id: 'payments', label: 'Suscripciones', badge: payments.length },
-              { id: 'timeline', label: 'Auditoría', icon: <Clock className="w-3.5 h-3.5" /> },
-            ]}
-          />
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="overflow-x-auto max-w-full pb-1 -mb-1 scrollbar-none">
+            <MorphSelect
+              layoutId="admin-section-nav"
+              theme={theme}
+              value={activeSection}
+              onChange={(val) => setActiveSection(val as any)}
+              options={[
+                { id: 'all', label: 'Consola General', icon: <Layers className="w-3.5 h-3.5" /> },
+                { id: 'stores', label: 'Comercios', badge: businesses.length },
+                { id: 'payments', label: 'Suscripciones', badge: payments.length },
+                { id: 'timeline', label: 'Auditoría', icon: <Clock className="w-3.5 h-3.5" /> },
+              ]}
+            />
+          </div>
 
           <button
             onClick={() => setIsPaymentSheetOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-black font-semibold text-xs transition-all shadow-md shadow-emerald-500/20"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 sm:py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-black font-semibold text-xs transition-all shadow-md shadow-emerald-500/20"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>+ Registrar Pago</span>
@@ -827,7 +830,7 @@ export default function SuperAdminPage() {
                     placeholder="Buscar negocio..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className={`w-full rounded-xl pl-9 pr-3 py-1.5 text-xs transition-colors focus:outline-none focus:border-emerald-500 border ${
+                    className={`w-full rounded-xl pl-9 pr-3 py-1.5 text-base sm:text-xs transition-colors focus:outline-none focus:border-emerald-500 border ${
                       isDark
                         ? 'bg-neutral-900 border-neutral-800 text-white placeholder-neutral-600'
                         : 'bg-neutral-50 border-neutral-200 text-neutral-900 placeholder-neutral-400'
@@ -1318,7 +1321,7 @@ export default function SuperAdminPage() {
             <select
               value={selectedBizId}
               onChange={(e) => setSelectedBizId(e.target.value)}
-              className={`w-full rounded-2xl px-3.5 py-2.5 text-sm transition-colors border focus:outline-none focus:border-emerald-500 ${
+              className={`w-full rounded-2xl px-3.5 py-2.5 text-base sm:text-sm transition-colors border focus:outline-none focus:border-emerald-500 ${
                 isDark
                   ? 'bg-neutral-900 border-neutral-800 text-white'
                   : 'bg-neutral-50 border-neutral-200 text-neutral-900'
@@ -1345,7 +1348,7 @@ export default function SuperAdminPage() {
                 placeholder="Ej. Pizzería Roma"
                 value={customBizName}
                 onChange={(e) => setCustomBizName(e.target.value)}
-                className={`w-full rounded-2xl px-3.5 py-2.5 text-sm transition-colors border focus:outline-none focus:border-emerald-500 ${
+                className={`w-full rounded-2xl px-3.5 py-2.5 text-base sm:text-sm transition-colors border focus:outline-none focus:border-emerald-500 ${
                   isDark
                     ? 'bg-neutral-900 border-neutral-800 text-white placeholder-neutral-600'
                     : 'bg-neutral-50 border-neutral-200 text-neutral-900 placeholder-neutral-400'
@@ -1360,7 +1363,7 @@ export default function SuperAdminPage() {
               Plan Contratado
             </label>
             <div className="grid grid-cols-3 gap-2">
-              {(['Mensual ($19)', 'Anual ($190)', 'Personalizado'] as const).map((p) => (
+              {(['Plan Inicial ($12)', 'Big Taply ($34)', 'Personalizado'] as const).map((p) => (
                 <button
                   type="button"
                   key={p}
@@ -1390,7 +1393,7 @@ export default function SuperAdminPage() {
                 step="0.01"
                 value={paymentAmount}
                 onChange={(e) => setPaymentAmount(e.target.value)}
-                className={`w-full rounded-2xl px-3.5 py-2.5 text-sm transition-colors border focus:outline-none focus:border-emerald-500 ${
+                className={`w-full rounded-2xl px-3.5 py-2.5 text-base sm:text-sm transition-colors border focus:outline-none focus:border-emerald-500 ${
                   isDark
                     ? 'bg-neutral-900 border-neutral-800 text-white'
                     : 'bg-neutral-50 border-neutral-200 text-neutral-900'
@@ -1405,7 +1408,7 @@ export default function SuperAdminPage() {
               <select
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value as any)}
-                className={`w-full rounded-2xl px-3.5 py-2.5 text-sm transition-colors border focus:outline-none focus:border-emerald-500 ${
+                className={`w-full rounded-2xl px-3.5 py-2.5 text-base sm:text-sm transition-colors border focus:outline-none focus:border-emerald-500 ${
                   isDark
                     ? 'bg-neutral-900 border-neutral-800 text-white'
                     : 'bg-neutral-50 border-neutral-200 text-neutral-900'
@@ -1430,7 +1433,7 @@ export default function SuperAdminPage() {
               placeholder="Ej. PM-0134-8931 o Hash"
               value={paymentReference}
               onChange={(e) => setPaymentReference(e.target.value)}
-              className={`w-full rounded-2xl px-3.5 py-2.5 text-sm transition-colors border focus:outline-none focus:border-emerald-500 ${
+              className={`w-full rounded-2xl px-3.5 py-2.5 text-base sm:text-sm transition-colors border focus:outline-none focus:border-emerald-500 ${
                 isDark
                   ? 'bg-neutral-900 border-neutral-800 text-white placeholder-neutral-600'
                   : 'bg-neutral-50 border-neutral-200 text-neutral-900 placeholder-neutral-400'

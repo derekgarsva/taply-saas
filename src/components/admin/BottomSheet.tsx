@@ -67,14 +67,14 @@ export default function BottomSheet({
                 onClose();
               }
             }}
-            className={`relative z-10 w-full ${maxWidth} rounded-t-[32px] md:rounded-3xl p-6 shadow-2xl border transition-colors max-h-[90vh] flex flex-col ${
+            className={`relative z-10 w-full ${maxWidth} rounded-t-[32px] md:rounded-3xl p-5 sm:p-6 pb-8 md:pb-6 shadow-2xl border transition-colors max-h-[90dvh] flex flex-col ${
               isDark
                 ? 'bg-[#0A0A0A] border-neutral-800 text-white shadow-black/80'
                 : 'bg-white border-neutral-200 text-neutral-900 shadow-xl'
             }`}
           >
             {/* iOS Drag Handle Pill (Mobile) */}
-            <div className="w-12 h-1.5 rounded-full bg-neutral-400/40 mx-auto mb-4 md:hidden cursor-grab active:cursor-grabbing" />
+            <div className="w-12 h-1.5 rounded-full bg-neutral-400/40 mx-auto mb-3 md:hidden cursor-grab active:cursor-grabbing" />
 
             {/* Header */}
             <div className="flex items-start justify-between gap-3 mb-5">

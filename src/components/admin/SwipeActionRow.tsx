@@ -99,12 +99,13 @@ export default function SwipeActionRow({
       <motion.div
         style={{ x }}
         drag={disabled ? false : 'x'}
+        dragDirectionLock
         dragConstraints={{ left: -160, right: 0 }}
         dragElastic={0.08}
         onDragEnd={handleDragEnd}
         animate={{ x: isOpen ? -160 : 0 }}
         transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-        className={`relative z-10 transition-colors ${
+        className={`relative z-10 transition-colors touch-pan-y ${
           isDark
             ? 'bg-[#0A0A0A] border border-neutral-800/80 hover:border-neutral-700'
             : 'bg-white border border-neutral-200 hover:border-neutral-300'

@@ -95,23 +95,31 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.3 }}
-          className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3"
+          className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-md sm:max-w-none mx-auto"
         >
-          <MagneticButton strength={14} className="w-full sm:w-auto">
+          <MagneticButton strength={12} className="w-full sm:w-auto">
             <Link
               href="/onboarding"
-              className="w-full sm:w-auto h-13 px-8 rounded-full bg-[#00594C] text-white hover:bg-[#00463C] text-sm font-extrabold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all"
+              className="group relative w-full sm:w-auto h-14 px-8 rounded-2xl bg-[#00594C] text-white hover:bg-[#00483d] active:scale-[0.98] text-sm sm:text-base font-bold flex items-center justify-center gap-2.5 shadow-lg shadow-[#00594C]/25 hover:shadow-xl hover:shadow-[#00594C]/35 transition-all overflow-hidden border border-emerald-400/25"
             >
-              <span>Crear Catálogo Gratis</span>
-              <ArrowRight className="w-4 h-4" />
+              {/* Subtle top light sheen */}
+              <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+              <Sparkles className="w-4 h-4 text-emerald-300 group-hover:rotate-12 transition-transform" />
+              <span className="tracking-tight">Crear Catálogo Gratis</span>
+              <ArrowRight className="w-4 h-4 text-emerald-200 group-hover:translate-x-1 transition-transform" />
             </Link>
           </MagneticButton>
 
           <Link
             href="/panaderia-la-estrella"
-            className="w-full sm:w-auto h-13 px-7 rounded-full bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 active:scale-98 text-sm font-bold flex items-center justify-center gap-2 shadow-2xs transition-all hover:border-gray-300"
+            className="group w-full sm:w-auto h-14 px-7 rounded-2xl bg-white/90 hover:bg-white active:scale-[0.98] border border-gray-200/90 hover:border-gray-300 text-gray-900 text-sm sm:text-base font-bold flex items-center justify-center gap-2.5 shadow-sm hover:shadow-md transition-all backdrop-blur-xl"
           >
-            <span>Ver Demo: Panadería La Estrella 🥐</span>
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span>Ver Demo en Vivo: La Estrella 🥐</span>
+            <ArrowRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-900 group-hover:translate-x-1 transition-all" />
           </Link>
         </motion.div>
 
@@ -302,16 +310,16 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto items-stretch">
-            {/* Free Plan */}
+            {/* Starter Plan $12 */}
             <div className="p-8 rounded-3xl bg-white border border-gray-200 shadow-2xs flex flex-col justify-between">
               <div>
-                <span className="text-xs font-bold text-gray-500 uppercase">PLAN GRATIS</span>
+                <span className="text-xs font-bold text-gray-500 uppercase">PLAN INICIAL</span>
                 <div className="mt-2 flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold text-gray-900">$0</span>
-                  <span className="text-xs text-gray-400">/ para siempre</span>
+                  <span className="text-4xl font-extrabold text-gray-900">$12</span>
+                  <span className="text-xs text-gray-400">/ mes</span>
                 </div>
                 <p className="text-xs text-gray-600 mt-3">
-                  Ideal para emprendimientos y locales que inician su catálogo digital.
+                  Perfecto para locales y marcas que inician su catálogo digital profesional.
                 </p>
 
                 <ul className="mt-6 space-y-2.5 text-xs text-gray-700">
@@ -321,7 +329,7 @@ export default function LandingPage() {
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>Hasta 20 productos activos</span>
+                    <span>Hasta <strong>100 productos activos</strong></span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
@@ -333,7 +341,11 @@ export default function LandingPage() {
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>0% de comisiones</span>
+                    <span>Botón con tus datos de pago (Pago Móvil, Zelle)</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                    <span><strong>0% de comisiones por tus ventas</strong></span>
                   </li>
                 </ul>
               </div>
@@ -343,32 +355,36 @@ export default function LandingPage() {
                   href="/onboarding"
                   className="w-full h-11 rounded-2xl bg-gray-900 text-white font-bold text-xs flex items-center justify-center hover:bg-black transition-colors"
                 >
-                  Empezar Gratis
+                  Empezar con Plan Inicial ($12)
                 </Link>
               </div>
             </div>
 
-            {/* Pro Plan con 3D Tilt */}
+            {/* Big Taply $34 con 3D Tilt */}
             <TiltCard maxTilt={5} scaleHover={1.02} className="h-full">
               <div className="p-8 rounded-3xl bg-gradient-to-b from-emerald-950 to-gray-950 text-white border border-emerald-900 shadow-md flex flex-col justify-between relative overflow-hidden h-full">
                 <div className="absolute top-4 right-4 bg-emerald-500 text-emerald-950 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                  RECOMENDADO
+                  MÁS DE 100 PRODUCTOS
                 </div>
 
                 <div>
-                  <span className="text-xs font-bold text-emerald-400 uppercase">PLAN PRO</span>
+                  <span className="text-xs font-bold text-emerald-400 uppercase">BIG TAPLY</span>
                   <div className="mt-2 flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold text-white">$9</span>
+                    <span className="text-4xl font-extrabold text-white">$34</span>
                     <span className="text-xs text-emerald-300">/ mes</span>
                   </div>
                   <p className="text-xs text-gray-300 mt-3">
-                    Para negocios en crecimiento que quieren análisis y máxima personalización.
+                    Para bodegones, panaderías grandes, restaurantes y tiendas con inventario masivo.
                   </p>
 
                   <ul className="mt-6 space-y-2.5 text-xs text-gray-200">
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      <span><strong>Productos ilimitados</strong></span>
+                      <span><strong>Más de 100 productos e inventario masivo</strong></span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      <span>Múltiples categorías y buscador avanzado</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
@@ -384,7 +400,7 @@ export default function LandingPage() {
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      <span>Soporte prioritario por WhatsApp</span>
+                      <span>Soporte prioritario VIP por WhatsApp</span>
                     </li>
                   </ul>
                 </div>
@@ -394,12 +410,13 @@ export default function LandingPage() {
                     href="/onboarding"
                     className="w-full h-11 rounded-2xl bg-white text-gray-950 font-extrabold text-xs flex items-center justify-center hover:bg-emerald-50 transition-colors shadow-sm"
                   >
-                    Probar Pro Gratis por 14 días
+                    Elegir Big Taply ($34)
                   </Link>
                 </div>
               </div>
             </TiltCard>
           </div>
+
         </div>
       </section>
 

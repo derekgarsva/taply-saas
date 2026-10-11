@@ -32,7 +32,7 @@ export default function MorphSelect<T extends string = string>({
   return (
     <div
       role="radiogroup"
-      className={`inline-flex items-center p-1 rounded-2xl border transition-colors ${
+      className={`inline-flex items-center p-1 rounded-2xl border transition-colors max-w-full overflow-x-auto scrollbar-none whitespace-nowrap ${
         isDark
           ? 'bg-neutral-950 border-neutral-800/80 text-neutral-300'
           : 'bg-neutral-100 border-neutral-200 text-neutral-600'
@@ -48,7 +48,7 @@ export default function MorphSelect<T extends string = string>({
             role="radio"
             aria-checked={isSelected}
             onClick={() => onChange(opt.id)}
-            className={`relative flex items-center justify-center gap-1.5 rounded-xl font-medium transition-colors z-10 focus:outline-none ${
+            className={`relative flex-shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 rounded-xl font-medium transition-colors z-10 focus:outline-none ${
               size === 'sm' ? 'px-2.5 py-1 text-xs' : 'px-3.5 py-1.5 text-xs'
             } ${
               isSelected
