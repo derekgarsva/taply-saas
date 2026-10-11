@@ -96,7 +96,7 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.3 }}
-          className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3"
+          className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-xs sm:max-w-none mx-auto"
         >
           <MagneticButton as="div" strength={14} className="w-full sm:w-auto">
             <G2Button href="/onboarding" variant="primary">

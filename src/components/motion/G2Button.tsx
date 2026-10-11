@@ -56,13 +56,13 @@ export function G2Button({
     <Link
       ref={ref}
       href={href}
-      className={`group relative w-full sm:w-auto h-13 px-8 text-sm font-extrabold flex items-center justify-center gap-2 active:scale-98 transition-all duration-200 select-none ${
+      className={`group relative w-full sm:w-auto h-14 min-h-[56px] px-8 py-3.5 text-sm sm:text-base font-extrabold flex items-center justify-center gap-2.5 active:scale-98 transition-all duration-200 select-none ${
         isPrimary
           ? 'text-white shadow-md hover:shadow-lg'
           : 'text-gray-900 shadow-2xs hover:shadow-sm'
       } ${className}`}
       style={{
-        borderRadius: '26px',
+        borderRadius: '28px',
         // @ts-ignore
         cornerShape: 'squircle',
         WebkitCornerShape: 'squircle',
@@ -94,7 +94,7 @@ export function G2Button({
               : 'bg-white border border-gray-300 group-hover:bg-gray-50'
           }`}
           style={{
-            borderRadius: '26px',
+            borderRadius: '28px',
             // @ts-ignore
             cornerShape: 'squircle',
             WebkitCornerShape: 'squircle',
