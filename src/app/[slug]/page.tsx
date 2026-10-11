@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getBusinessBySlug, getProductsByBusinessId, getCategoriesByBusinessId, recordPageView } from '@/lib/data';
 import StorefrontView from '@/components/storefront/StorefrontView';
+import DeactivatedStoreView from '@/components/storefront/DeactivatedStoreView';
 
 interface PageProps {
   params: {
@@ -63,6 +64,11 @@ export default async function StorePage({ params }: PageProps) {
   // Increment page view count in backend
   await recordPageView(business.id);
 
+  // If business was deactivated by SuperAdmin or owner, show elegant discreet message
+  if (business.active === false) {
+    return <DeactivatedStoreView business={business} />;
+  }
+
   const [products, categories] = await Promise.all([
     getProductsByBusinessId(business.id),
     getCategoriesByBusinessId(business.id),
@@ -76,3 +82,4 @@ export default async function StorePage({ params }: PageProps) {
     />
   );
 }
+

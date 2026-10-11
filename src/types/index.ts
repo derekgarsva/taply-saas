@@ -22,7 +22,34 @@ export interface Business {
   paymentNotes: string;
   links: MultiLinkItem[];
   pageViews: number;
+  active?: boolean;
+  plan?: 'gratis' | 'mensual' | 'anual';
+  planExpiresAt?: string;
   createdAt: string;
+}
+
+export interface PlatformPayment {
+  id: string;
+  businessId: string;
+  businessName: string;
+  businessSlug: string;
+  plan: 'Mensual ($19)' | 'Anual ($190)' | 'Personalizado';
+  amount: number;
+  currency: string;
+  method: 'Pago Móvil' | 'Zelle' | 'Binance USDT' | 'Efectivo Divisas' | 'Stripe';
+  reference?: string;
+  notes?: string;
+  status: 'completado' | 'pendiente';
+  createdAt: string;
+}
+
+export interface PlatformMetrics {
+  mrr: number;
+  totalRevenue: number;
+  totalGmv: number;
+  totalOrders: number;
+  activeStores: number;
+  totalStores: number;
 }
 
 export interface Category {

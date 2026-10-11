@@ -1,4 +1,4 @@
-import { Business, Category, Product, Order, MultiLinkItem } from '@/types';
+import { Business, Category, Product, Order, MultiLinkItem, PlatformPayment, PlatformMetrics } from '@/types';
 
 // In-memory global store with pre-seeded sample businesses
 interface StoreData {
@@ -6,6 +6,7 @@ interface StoreData {
   categories: Record<string, Category[]>;
   products: Record<string, Product[]>;
   orders: Record<string, Order[]>;
+  payments: PlatformPayment[];
 }
 
 // Global persistence for serverless dev/prod
@@ -32,6 +33,8 @@ const initialBusinesses: Record<string, Business> = {
       { id: 'l3', type: 'phone', label: 'Llamar al local', url: 'tel:+584146001234', active: true },
     ],
     pageViews: 1420,
+    active: true,
+    plan: 'mensual',
     createdAt: new Date(Date.now() - 30 * 86400000).toISOString(),
   },
   'burger-station': {
@@ -54,9 +57,53 @@ const initialBusinesses: Record<string, Business> = {
       { id: 'l3', type: 'maps', label: 'Local Las Mercedes', url: 'https://maps.google.com', active: true },
     ],
     pageViews: 2850,
+    active: true,
+    plan: 'anual',
     createdAt: new Date(Date.now() - 15 * 86400000).toISOString(),
   }
 };
+
+const initialPayments: PlatformPayment[] = [
+  {
+    id: 'pay_101',
+    businessId: 'biz_burger_2',
+    businessName: 'Burger Station 🍔',
+    businessSlug: 'burger-station',
+    plan: 'Anual ($190)',
+    amount: 190,
+    currency: 'USD',
+    method: 'Zelle',
+    reference: 'ZEL-894218',
+    status: 'completado',
+    createdAt: new Date(Date.now() - 15 * 86400000).toISOString(),
+  },
+  {
+    id: 'pay_102',
+    businessId: 'biz_estrella_1',
+    businessName: 'Panadería La Estrella',
+    businessSlug: 'panaderia-la-estrella',
+    plan: 'Mensual ($19)',
+    amount: 19,
+    currency: 'USD',
+    method: 'Pago Móvil',
+    reference: 'PM-0134-9921',
+    status: 'completado',
+    createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+  },
+  {
+    id: 'pay_103',
+    businessId: 'biz_estrella_1',
+    businessName: 'Panadería La Estrella',
+    businessSlug: 'panaderia-la-estrella',
+    plan: 'Mensual ($19)',
+    amount: 19,
+    currency: 'USD',
+    method: 'Pago Móvil',
+    reference: 'PM-0134-5831',
+    status: 'completado',
+    createdAt: new Date(Date.now() - 32 * 86400000).toISOString(),
+  }
+];
 
 const initialCategories: Record<string, Category[]> = {
   biz_estrella_1: [
@@ -198,6 +245,7 @@ function getStore(): StoreData {
       categories: { ...initialCategories },
       products: { ...initialProducts },
       orders: { ...initialOrders },
+      payments: [...initialPayments],
     };
   }
   return globalForData.taplyStore;
@@ -220,6 +268,22 @@ export async function getAllBusinesses(): Promise<Business[]> {
   return Object.values(store.businesses);
 }
 
+export async function getAllBusinessesWithStats(): Promise<Array<Business & { productCount: number; orderCount: number; totalSales: number }>> {
+  const store = getStore();
+  const businesses = Object.values(store.businesses);
+  return businesses.map(b => {
+    const products = store.products[b.id] || [];
+    const orders = store.orders[b.id] || [];
+    const totalSales = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+    return {
+      ...b,
+      productCount: products.length,
+      orderCount: orders.length,
+      totalSales,
+    };
+  });
+}
+
 export async function updateBusiness(id: string, updates: Partial<Business>): Promise<Business | null> {
   const store = getStore();
   if (!store.businesses[id]) {
@@ -232,22 +296,103 @@ export async function updateBusiness(id: string, updates: Partial<Business>): Pr
   return { ...store.businesses[id] };
 }
 
-export async function createBusiness(data: Omit<Business, 'id' | 'pageViews' | 'createdAt'>): Promise<Business> {
+export async function toggleBusinessStatus(id: string): Promise<Business | null> {
+  const store = getStore();
+  const biz = store.businesses[id] || Object.values(store.businesses).find(b => b.id === id || b.slug === id);
+  if (!biz) return null;
+  biz.active = biz.active === false ? true : false;
+  return { ...biz };
+}
+
+export async function setBusinessActive(id: string, active: boolean): Promise<Business | null> {
+  const store = getStore();
+  const biz = store.businesses[id] || Object.values(store.businesses).find(b => b.id === id || b.slug === id);
+  if (!biz) return null;
+  biz.active = active;
+  return { ...biz };
+}
+
+export async function createBusiness(data: Omit<Business, 'id' | 'pageViews' | 'createdAt' | 'active'> & { active?: boolean }): Promise<Business> {
   const store = getStore();
   const id = 'biz_' + Math.random().toString(36).substring(2, 9);
   const newBiz: Business = {
     ...data,
     id,
+    active: true,
+    plan: data.plan || 'mensual',
     pageViews: 1,
     createdAt: new Date().toISOString(),
   };
   store.businesses[data.slug] = newBiz;
   store.categories[id] = [
-    { id: 'cat_' + Math.random().toString(36).substring(2, 6), businessId: id, name: 'General', order: 1 }
+    { id: 'cat_' + Math.random().toString(36).substring(2, 6), businessId: id, name: 'Favoritos', order: 1 }
   ];
-  store.products[id] = [];
+  // Seed with 2 starter products so the store isn't empty!
+  store.products[id] = [
+    {
+      id: 'prod_' + Math.random().toString(36).substring(2, 7),
+      businessId: id,
+      name: 'Combo Especial de Bienvenida',
+      category: 'Favoritos',
+      price: 12.50,
+      compareAtPrice: 15.00,
+      available: true,
+      featured: true,
+      description: 'Nuestra combinación estrella preparada con ingredientes frescos para deleitar a tus clientes.',
+      image: data.bannerImage || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80',
+    },
+    {
+      id: 'prod_' + Math.random().toString(36).substring(2, 7),
+      businessId: id,
+      name: 'Producto Clásico de la Casa',
+      category: 'Favoritos',
+      price: 5.00,
+      available: true,
+      featured: false,
+      description: 'El favorito de todos los días. Sabor artesanal y calidad garantizada.',
+      image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80',
+    }
+  ];
   store.orders[id] = [];
   return newBiz;
+}
+
+// ── SuperAdmin Platform Queries ──
+export async function getPlatformMetrics(): Promise<PlatformMetrics> {
+  const store = getStore();
+  const allStores = Object.values(store.businesses);
+  const activeStores = allStores.filter(b => b.active !== false).length;
+  const allOrders = Object.values(store.orders).flat();
+  const totalGmv = allOrders.reduce((sum, ord) => sum + (ord.total || 0), 0);
+  const totalRevenue = (store.payments || []).reduce((sum, p) => sum + (p.status === 'completado' ? p.amount : 0), 0);
+  const mrr = (store.payments || []).filter(p => p.plan.includes('Mensual') && p.status === 'completado').reduce((sum, p) => sum + p.amount, 0)
+    + (store.payments || []).filter(p => p.plan.includes('Anual') && p.status === 'completado').reduce((sum, p) => sum + Math.round(p.amount / 12), 0);
+
+  return {
+    mrr: mrr || 38,
+    totalRevenue: totalRevenue || 228,
+    totalGmv,
+    totalOrders: allOrders.length,
+    activeStores,
+    totalStores: allStores.length,
+  };
+}
+
+export async function getPlatformPayments(): Promise<PlatformPayment[]> {
+  const store = getStore();
+  return store.payments ? [...store.payments] : [];
+}
+
+export async function addPlatformPayment(data: Omit<PlatformPayment, 'id' | 'createdAt'>): Promise<PlatformPayment> {
+  const store = getStore();
+  if (!store.payments) store.payments = [];
+  const newPayment: PlatformPayment = {
+    ...data,
+    id: 'pay_' + Math.random().toString(36).substring(2, 8),
+    createdAt: new Date().toISOString(),
+  };
+  store.payments.unshift(newPayment);
+  return newPayment;
 }
 
 export async function recordPageView(businessId: string): Promise<void> {
