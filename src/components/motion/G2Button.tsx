@@ -20,7 +20,6 @@ export function G2Button({
   cornerSmoothing = 0.6,
 }: G2ButtonProps) {
   const ref = useRef<HTMLAnchorElement>(null);
-  const [dimensions, setDimensions] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
   const [svgPath, setSvgPath] = useState<string>('');
 
   useEffect(() => {
@@ -31,7 +30,6 @@ export function G2Button({
       const width = el.offsetWidth;
       const height = el.offsetHeight;
       if (width > 0 && height > 0) {
-        setDimensions({ width, height });
         const radius = Math.floor(height / 2);
         const path = getSvgPath({
           width,
@@ -56,52 +54,19 @@ export function G2Button({
     <Link
       ref={ref}
       href={href}
-      className={`group relative w-full sm:w-auto h-14 min-h-[56px] px-8 py-3.5 text-sm sm:text-base font-extrabold flex items-center justify-center gap-2.5 active:scale-98 transition-all duration-200 select-none ${
+      className={`group relative inline-flex w-full sm:w-auto h-14 min-h-[56px] px-8 py-3.5 text-sm sm:text-base font-extrabold items-center justify-center gap-2.5 active:scale-98 transition-all duration-200 select-none ${
         isPrimary
-          ? 'text-white shadow-md hover:shadow-lg'
-          : 'text-gray-900 shadow-2xs hover:shadow-sm'
+          ? 'bg-[#00594C] hover:bg-[#00463C] text-white shadow-md hover:shadow-lg'
+          : 'bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 shadow-2xs hover:shadow-sm'
       } ${className}`}
       style={{
         borderRadius: '28px',
         // @ts-ignore
         cornerShape: 'squircle',
         WebkitCornerShape: 'squircle',
+        ...(svgPath ? { clipPath: `path('${svgPath}')` } : {}),
       }}
     >
-      {/* Background layer with G2 Curvature Continuity */}
-      {svgPath ? (
-        <svg
-          className="absolute inset-0 w-full h-full -z-10 pointer-events-none"
-          viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
-          style={{ width: dimensions.width, height: dimensions.height }}
-        >
-          <path
-            d={svgPath}
-            className={`transition-colors duration-200 ${
-              isPrimary
-                ? 'fill-[#00594C] group-hover:fill-[#00463C]'
-                : 'fill-white stroke-gray-300 group-hover:fill-gray-50'
-            }`}
-            strokeWidth={isPrimary ? 0 : 1}
-          />
-        </svg>
-      ) : (
-        /* SSR & initial mount fallback */
-        <div
-          className={`absolute inset-0 -z-10 rounded-full transition-colors duration-200 ${
-            isPrimary
-              ? 'bg-[#00594C] group-hover:bg-[#00463C]'
-              : 'bg-white border border-gray-300 group-hover:bg-gray-50'
-          }`}
-          style={{
-            borderRadius: '28px',
-            // @ts-ignore
-            cornerShape: 'squircle',
-            WebkitCornerShape: 'squircle',
-          }}
-        />
-      )}
-
       {children}
     </Link>
   );
