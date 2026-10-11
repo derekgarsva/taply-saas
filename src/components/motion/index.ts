@@ -3,4 +3,5 @@ export * from './InView';
 export * from './AnimatedGroup';
 export * from './SlidingTabs';
 export * from './MagneticButton';
+export * from './G2Button';
 export * from './TiltCard';

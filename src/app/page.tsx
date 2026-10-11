@@ -7,6 +7,7 @@ import {
   TextEffect,
   AnimatedGroup,
   MagneticButton,
+  G2Button,
   TiltCard,
 } from '@/components/motion';
 import { motion } from 'framer-motion';
@@ -90,37 +91,25 @@ export default function LandingPage() {
           Crea tu catálogo interactivo multilink en 60 segundos. Tus clientes eligen sus productos con un toque, deslizan para confirmar y te envían el pedido ordenado y listo con sus datos de pago.
         </motion.p>
 
-        {/* Hero CTAs con Magnetic Button */}
+        {/* Hero CTAs con Magnetic Button y Continuidad G2 */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.3 }}
-          className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-md sm:max-w-none mx-auto"
+          className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3"
         >
-          <MagneticButton strength={12} className="w-full sm:w-auto">
-            <Link
-              href="/onboarding"
-              className="group relative w-full sm:w-auto h-14 px-8 rounded-2xl bg-[#00594C] text-white hover:bg-[#00483d] active:scale-[0.98] text-sm sm:text-base font-bold flex items-center justify-center gap-2.5 shadow-lg shadow-[#00594C]/25 hover:shadow-xl hover:shadow-[#00594C]/35 transition-all overflow-hidden border border-emerald-400/25"
-            >
-              {/* Subtle top light sheen */}
-              <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-              <Sparkles className="w-4 h-4 text-emerald-300 group-hover:rotate-12 transition-transform" />
-              <span className="tracking-tight">Crear Catálogo Gratis</span>
-              <ArrowRight className="w-4 h-4 text-emerald-200 group-hover:translate-x-1 transition-transform" />
-            </Link>
+          <MagneticButton as="div" strength={14} className="w-full sm:w-auto">
+            <G2Button href="/onboarding" variant="primary">
+              <span>Crear Catálogo Gratis</span>
+              <ArrowRight className="w-4 h-4" />
+            </G2Button>
           </MagneticButton>
 
-          <Link
-            href="/panaderia-la-estrella"
-            className="group w-full sm:w-auto h-14 px-7 rounded-2xl bg-white/90 hover:bg-white active:scale-[0.98] border border-gray-200/90 hover:border-gray-300 text-gray-900 text-sm sm:text-base font-bold flex items-center justify-center gap-2.5 shadow-sm hover:shadow-md transition-all backdrop-blur-xl"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span>Ver Demo en Vivo: La Estrella 🥐</span>
-            <ArrowRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-900 group-hover:translate-x-1 transition-all" />
-          </Link>
+          <MagneticButton as="div" strength={14} className="w-full sm:w-auto">
+            <G2Button href="/panaderia-la-estrella" variant="secondary">
+              <span>Ver Demo en Vivo</span>
+            </G2Button>
+          </MagneticButton>
         </motion.div>
 
         <p className="mt-3 text-xs text-gray-400">
