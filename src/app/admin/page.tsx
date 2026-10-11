@@ -2,12 +2,10 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShieldCheck,
   Lock,
-  Unlock,
   Power,
   RefreshCw,
   Search,
@@ -20,17 +18,27 @@ import {
   CheckCircle2,
   AlertCircle,
   CreditCard,
-  Building2,
   Calendar,
   X,
   ChevronRight,
   Filter,
-  ArrowUpRight,
-  Sparkles,
   BarChart3,
-  Layers
+  Layers,
+  Clock,
+  Sparkles,
+  ArrowUpRight,
+  Copy,
+  Activity
 } from 'lucide-react';
 import { Business, PlatformPayment, PlatformMetrics } from '@/types';
+import ThemeToggle from '@/components/admin/ThemeToggle';
+import MorphSelect, { MorphOption } from '@/components/admin/MorphSelect';
+import Sparkline from '@/components/admin/Sparkline';
+import MetricCard from '@/components/admin/MetricCard';
+import LineChart, { DataPoint } from '@/components/admin/LineChart';
+import SwipeActionRow from '@/components/admin/SwipeActionRow';
+import BottomSheet from '@/components/admin/BottomSheet';
+import Timeline, { TimelineItem } from '@/components/admin/Timeline';
 
 type BusinessWithStats = Business & {
   productCount: number;
@@ -41,43 +49,55 @@ type BusinessWithStats = Business & {
 // ─────────────────────────────────────────────────────────────
 // 1. Passcode Gateway Component (PIN 548282 server verified)
 // ─────────────────────────────────────────────────────────────
-function PasscodeGateway({ onAuthenticated }: { onAuthenticated: () => void }) {
+function PasscodeGateway({
+  onAuthenticated,
+  theme,
+  onToggleTheme,
+}: {
+  onAuthenticated: () => void;
+  theme: 'dark' | 'light';
+  onToggleTheme: () => void;
+}) {
+  const isDark = theme === 'dark';
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [shake, setShake] = useState(false);
 
-  const handleSubmit = useCallback(async (pinToVerify: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/admin/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin: pinToVerify }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        onAuthenticated();
-      } else {
-        setError(data.error || 'Código de acceso no válido');
+  const handleSubmit = useCallback(
+    async (pinToVerify: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch('/api/admin/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin: pinToVerify }),
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          onAuthenticated();
+        } else {
+          setError(data.error || 'Código de acceso no válido');
+          setShake(true);
+          setTimeout(() => {
+            setShake(false);
+            setPin('');
+          }, 600);
+        }
+      } catch (err) {
+        setError('Error al contactar con el servidor');
         setShake(true);
         setTimeout(() => {
           setShake(false);
           setPin('');
         }, 600);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError('Error al contactar con el servidor');
-      setShake(true);
-      setTimeout(() => {
-        setShake(false);
-        setPin('');
-      }, 600);
-    } finally {
-      setLoading(false);
-    }
-  }, [onAuthenticated]);
+    },
+    [onAuthenticated]
+  );
 
   const handleKeyPress = (num: string) => {
     if (loading || pin.length >= 6) return;
@@ -100,7 +120,6 @@ function PasscodeGateway({ onAuthenticated }: { onAuthenticated: () => void }) {
     setError(null);
   };
 
-  // Listen to physical keyboard events
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (/^[0-9]$/.test(e.key)) {
@@ -116,10 +135,18 @@ function PasscodeGateway({ onAuthenticated }: { onAuthenticated: () => void }) {
   }, [pin, loading, handleSubmit]);
 
   return (
-    <div className="min-h-screen bg-[#07090E] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden select-none">
+    <div
+      className={`min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden select-none transition-colors duration-300 ${
+        isDark ? 'bg-black text-white' : 'bg-[#F8F9FB] text-neutral-900'
+      }`}
+    >
+      {/* Top right theme toggle */}
+      <div className="absolute top-6 right-6 z-20">
+        <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+      </div>
+
       {/* Ambient background glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-[350px] h-[350px] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-emerald-500/10 rounded-full blur-[130px] pointer-events-none" />
 
       <motion.div
         animate={shake ? { x: [-12, 12, -8, 8, -4, 4, 0] } : {}}
@@ -128,21 +155,39 @@ function PasscodeGateway({ onAuthenticated }: { onAuthenticated: () => void }) {
       >
         {/* Brand Shield Emblem */}
         <div className="relative mb-6">
-          <div className="w-16 h-16 rounded-3xl bg-gradient-to-b from-white/10 to-white/[0.02] p-0.5 border border-white/10 shadow-2xl flex items-center justify-center backdrop-blur-xl">
-            <div className="w-full h-full rounded-[22px] bg-[#0E131F] flex items-center justify-center">
-              <ShieldCheck className="w-8 h-8 text-emerald-400" />
+          <div
+            className={`w-16 h-16 rounded-3xl p-0.5 border shadow-2xl flex items-center justify-center backdrop-blur-xl ${
+              isDark
+                ? 'bg-neutral-900/60 border-neutral-800'
+                : 'bg-white border-neutral-200 shadow-neutral-200/50'
+            }`}
+          >
+            <div
+              className={`w-full h-full rounded-[22px] flex items-center justify-center ${
+                isDark ? 'bg-[#0A0A0A]' : 'bg-neutral-50'
+              }`}
+            >
+              <ShieldCheck className="w-8 h-8 text-emerald-500" />
             </div>
           </div>
-          <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center border-2 border-[#07090E]">
+          <div
+            className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center border-2 ${
+              isDark ? 'border-black' : 'border-white'
+            }`}
+          >
             <Lock className="w-2.5 h-2.5 text-black" />
           </div>
         </div>
 
         {/* Title */}
-        <h1 className="text-xl font-semibold tracking-tight text-white mb-1">
+        <h1 className="text-xl font-bold tracking-tight mb-1 text-center">
           Consola Central Taply
         </h1>
-        <p className="text-xs text-white/40 text-center mb-8 max-w-[260px]">
+        <p
+          className={`text-xs text-center mb-8 max-w-[260px] ${
+            isDark ? 'text-neutral-400' : 'text-neutral-500'
+          }`}
+        >
           Ingresa la clave de autorización de 6 dígitos para acceder al SuperAdmin
         </p>
 
@@ -150,7 +195,6 @@ function PasscodeGateway({ onAuthenticated }: { onAuthenticated: () => void }) {
         <div className="flex items-center gap-4 mb-8">
           {[0, 1, 2, 3, 4, 5].map((index) => {
             const isFilled = index < pin.length;
-            const isCurrent = index === pin.length && loading;
             return (
               <motion.div
                 key={index}
@@ -160,15 +204,19 @@ function PasscodeGateway({ onAuthenticated }: { onAuthenticated: () => void }) {
                     ? '#EF4444'
                     : isFilled
                     ? '#10B981'
-                    : 'rgba(255, 255, 255, 0.1)',
+                    : isDark
+                    ? 'rgba(255, 255, 255, 0.1)'
+                    : 'rgba(0, 0, 0, 0.1)',
                 }}
                 transition={{ duration: 0.2 }}
-                className={`w-3.5 h-3.5 rounded-full border ${
+                className={`w-3.5 h-3.5 rounded-full border transition-all ${
                   error
                     ? 'border-red-500 shadow-lg shadow-red-500/40'
                     : isFilled
-                    ? 'border-emerald-400 shadow-lg shadow-emerald-500/50'
-                    : 'border-white/10'
+                    ? 'border-emerald-400 shadow-lg shadow-emerald-500/40'
+                    : isDark
+                    ? 'border-neutral-800'
+                    : 'border-neutral-300'
                 }`}
               />
             );
@@ -178,12 +226,12 @@ function PasscodeGateway({ onAuthenticated }: { onAuthenticated: () => void }) {
         {/* Feedback / Error Message */}
         <div className="h-6 mb-4 flex items-center justify-center">
           {loading && (
-            <div className="flex items-center gap-2 text-xs text-emerald-400 animate-pulse font-medium">
+            <div className="flex items-center gap-2 text-xs text-emerald-500 font-medium animate-pulse">
               <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Verificando autorización...
             </div>
           )}
           {error && !loading && (
-            <p className="text-xs text-red-400 font-medium flex items-center gap-1.5">
+            <p className="text-xs text-red-500 font-medium flex items-center gap-1.5">
               <AlertCircle className="w-3.5 h-3.5" /> {error}
             </p>
           )}
@@ -196,7 +244,11 @@ function PasscodeGateway({ onAuthenticated }: { onAuthenticated: () => void }) {
               key={digit}
               onClick={() => handleKeyPress(digit)}
               disabled={loading}
-              className="h-16 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] active:bg-white/[0.12] active:scale-95 border border-white/5 text-xl font-medium text-white transition-all flex items-center justify-center focus:outline-none"
+              className={`h-16 rounded-2xl text-xl font-medium transition-all flex items-center justify-center active:scale-95 border ${
+                isDark
+                  ? 'bg-neutral-900/60 hover:bg-neutral-800 border-neutral-800 text-white'
+                  : 'bg-white hover:bg-neutral-100 border-neutral-200 text-neutral-900 shadow-sm'
+              }`}
             >
               {digit}
             </button>
@@ -204,29 +256,36 @@ function PasscodeGateway({ onAuthenticated }: { onAuthenticated: () => void }) {
           <button
             onClick={handleClear}
             disabled={loading || pin.length === 0}
-            className="h-16 rounded-2xl bg-transparent hover:bg-white/[0.04] active:scale-95 text-xs uppercase tracking-wider font-semibold text-white/40 hover:text-white/70 transition-all flex items-center justify-center focus:outline-none disabled:opacity-20"
+            className={`h-16 rounded-2xl text-xs uppercase tracking-wider font-semibold transition-all flex items-center justify-center active:scale-95 disabled:opacity-20 ${
+              isDark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-400 hover:text-neutral-700'
+            }`}
           >
             Borrar
           </button>
           <button
             onClick={() => handleKeyPress('0')}
             disabled={loading}
-            className="h-16 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] active:bg-white/[0.12] active:scale-95 border border-white/5 text-xl font-medium text-white transition-all flex items-center justify-center focus:outline-none"
+            className={`h-16 rounded-2xl text-xl font-medium transition-all flex items-center justify-center active:scale-95 border ${
+              isDark
+                ? 'bg-neutral-900/60 hover:bg-neutral-800 border-neutral-800 text-white'
+                : 'bg-white hover:bg-neutral-100 border-neutral-200 text-neutral-900 shadow-sm'
+            }`}
           >
             0
           </button>
           <button
             onClick={handleBackspace}
             disabled={loading || pin.length === 0}
-            className="h-16 rounded-2xl bg-transparent hover:bg-white/[0.04] active:scale-95 text-sm font-semibold text-white/40 hover:text-white/70 transition-all flex items-center justify-center focus:outline-none disabled:opacity-20"
+            className={`h-16 rounded-2xl text-sm font-semibold transition-all flex items-center justify-center active:scale-95 disabled:opacity-20 ${
+              isDark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-400 hover:text-neutral-700'
+            }`}
           >
             ⌫
           </button>
         </div>
 
-        {/* Footer info */}
         <div className="mt-12 text-center">
-          <p className="text-[11px] text-white/25">
+          <p className={`text-[11px] ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>
             Taply Master Operations · Autenticación Server-Side
           </p>
         </div>
@@ -236,415 +295,10 @@ function PasscodeGateway({ onAuthenticated }: { onAuthenticated: () => void }) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// 2. Interactive SVG Revenue & Order Performance Chart
-// ─────────────────────────────────────────────────────────────
-function PerformanceChart({
-  payments,
-  metrics,
-}: {
-  payments: PlatformPayment[];
-  metrics: PlatformMetrics;
-}) {
-  const [chartMode, setChartMode] = useState<'revenue' | 'volume'>('revenue');
-
-  // Generate 7-day mock series based on actual data
-  const dataPoints = useMemo(() => {
-    if (chartMode === 'revenue') {
-      const base = metrics.totalRevenue;
-      return [
-        { label: 'Lun', val: Math.round(base * 0.45) },
-        { label: 'Mar', val: Math.round(base * 0.58) },
-        { label: 'Mié', val: Math.round(base * 0.65) },
-        { label: 'Jue', val: Math.round(base * 0.72) },
-        { label: 'Vie', val: Math.round(base * 0.84) },
-        { label: 'Sáb', val: Math.round(base * 0.92) },
-        { label: 'Hoy', val: base },
-      ];
-    } else {
-      const gmv = metrics.totalGmv || 120;
-      return [
-        { label: 'Lun', val: Math.round(gmv * 0.3) },
-        { label: 'Mar', val: Math.round(gmv * 0.45) },
-        { label: 'Mié', val: Math.round(gmv * 0.6) },
-        { label: 'Jue', val: Math.round(gmv * 0.55) },
-        { label: 'Vie', val: Math.round(gmv * 0.8) },
-        { label: 'Sáb', val: Math.round(gmv * 0.95) },
-        { label: 'Hoy', val: gmv },
-      ];
-    }
-  }, [chartMode, metrics]);
-
-  const maxVal = Math.max(...dataPoints.map((d) => d.val), 10);
-  const width = 600;
-  const height = 180;
-  const paddingX = 30;
-  const paddingY = 25;
-
-  const points = dataPoints.map((d, i) => {
-    const x = paddingX + (i / (dataPoints.length - 1)) * (width - paddingX * 2);
-    const y = height - paddingY - (d.val / maxVal) * (height - paddingY * 2);
-    return { x, y, ...d };
-  });
-
-  const pathD = points.reduce((acc, p, i) => {
-    if (i === 0) return `M ${p.x} ${p.y}`;
-    const prev = points[i - 1];
-    const cx1 = prev.x + (p.x - prev.x) / 2;
-    const cy1 = prev.y;
-    const cx2 = prev.x + (p.x - prev.x) / 2;
-    const cy2 = p.y;
-    return `${acc} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${p.x} ${p.y}`;
-  }, '');
-
-  const areaD = `${pathD} L ${points[points.length - 1].x} ${height} L ${points[0].x} ${height} Z`;
-
-  return (
-    <div className="bg-[#0F131C] border border-white/[0.07] rounded-3xl p-6 backdrop-blur-xl">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <BarChart3 className="w-4 h-4 text-emerald-400" />
-            <h3 className="text-sm font-semibold text-white tracking-wide">
-              Rendimiento Financiero & Tráfico
-            </h3>
-          </div>
-          <p className="text-xs text-white/50">
-            {chartMode === 'revenue'
-              ? 'Flujo de ingresos por suscripciones SaaS (MRR / Facturación)'
-              : 'Volumen transaccionado por los catálogos en WhatsApp (GMV)'}
-          </p>
-        </div>
-
-        {/* Toggle Buttons */}
-        <div className="flex items-center p-1 bg-white/[0.04] rounded-2xl border border-white/5">
-          <button
-            onClick={() => setChartMode('revenue')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-              chartMode === 'revenue'
-                ? 'bg-emerald-500 text-black shadow-md shadow-emerald-500/20'
-                : 'text-white/60 hover:text-white'
-            }`}
-          >
-            Ingresos SaaS ($)
-          </button>
-          <button
-            onClick={() => setChartMode('volume')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-              chartMode === 'volume'
-                ? 'bg-emerald-500 text-black shadow-md shadow-emerald-500/20'
-                : 'text-white/60 hover:text-white'
-            }`}
-          >
-            GMV WhatsApp ($)
-          </button>
-        </div>
-      </div>
-
-      {/* SVG Canvas */}
-      <div className="w-full overflow-hidden">
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-44 overflow-visible">
-          <defs>
-            <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#10B981" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#10B981" stopOpacity="0.0" />
-            </linearGradient>
-          </defs>
-
-          {/* Grid lines */}
-          <line
-            x1={paddingX}
-            y1={height - paddingY}
-            x2={width - paddingX}
-            y2={height - paddingY}
-            stroke="rgba(255,255,255,0.06)"
-            strokeDasharray="4 4"
-          />
-          <line
-            x1={paddingX}
-            y1={paddingY}
-            x2={width - paddingX}
-            y2={paddingY}
-            stroke="rgba(255,255,255,0.06)"
-            strokeDasharray="4 4"
-          />
-
-          {/* Gradient area */}
-          <path d={areaD} fill="url(#areaGradient)" />
-
-          {/* Smooth line */}
-          <path d={pathD} fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" />
-
-          {/* Circles and Values */}
-          {points.map((p, i) => (
-            <g key={i}>
-              <circle
-                cx={p.x}
-                cy={p.y}
-                r="4.5"
-                fill="#07090E"
-                stroke="#10B981"
-                strokeWidth="2"
-              />
-              <text
-                x={p.x}
-                y={p.y - 10}
-                textAnchor="middle"
-                fontSize="10"
-                fill="#FFFFFF"
-                opacity="0.8"
-                fontWeight="500"
-              >
-                ${p.val}
-              </text>
-              <text
-                x={p.x}
-                y={height - 8}
-                textAnchor="middle"
-                fontSize="10"
-                fill="rgba(255,255,255,0.4)"
-              >
-                {p.label}
-              </text>
-            </g>
-          ))}
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────
-// 3. New Payment Registration Modal
-// ─────────────────────────────────────────────────────────────
-function RecordPaymentModal({
-  businesses,
-  isOpen,
-  onClose,
-  onPaymentCreated,
-}: {
-  businesses: BusinessWithStats[];
-  isOpen: boolean;
-  onClose: () => void;
-  onPaymentCreated: () => void;
-}) {
-  const [selectedBizId, setSelectedBizId] = useState(businesses[0]?.id || '');
-  const [customBizName, setCustomBizName] = useState('');
-  const [plan, setPlan] = useState<'Mensual ($19)' | 'Anual ($190)' | 'Personalizado'>('Mensual ($19)');
-  const [amount, setAmount] = useState('19');
-  const [method, setMethod] = useState<'Pago Móvil' | 'Zelle' | 'Binance USDT' | 'Efectivo Divisas' | 'Stripe'>('Pago Móvil');
-  const [reference, setReference] = useState('');
-  const [notes, setNotes] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Update amount automatically when plan changes
-  const handlePlanChange = (newPlan: 'Mensual ($19)' | 'Anual ($190)' | 'Personalizado') => {
-    setPlan(newPlan);
-    if (newPlan === 'Mensual ($19)') setAmount('19');
-    else if (newPlan === 'Anual ($190)') setAmount('190');
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setError(null);
-
-    const business = businesses.find((b) => b.id === selectedBizId);
-    const businessName = business ? business.name : customBizName;
-    const businessSlug = business ? business.slug : customBizName.toLowerCase().replace(/\s+/g, '-');
-
-    if (!businessName.trim()) {
-      setError('Selecciona o ingresa el nombre del negocio');
-      setSubmitting(false);
-      return;
-    }
-
-    try {
-      const res = await fetch('/api/admin/payments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          businessId: selectedBizId || 'biz_custom',
-          businessName,
-          businessSlug,
-          plan,
-          amount: Number(amount) || 0,
-          currency: 'USD',
-          method,
-          reference: reference.trim() || undefined,
-          notes: notes.trim() || undefined,
-          status: 'completado',
-        }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Error al guardar');
-      }
-
-      onPaymentCreated();
-      onClose();
-    } catch (err: any) {
-      setError(err.message || 'Error al registrar el pago');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-[#111622] border border-white/10 rounded-3xl w-full max-w-lg p-6 text-white shadow-2xl relative"
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-xl text-white/40 hover:text-white bg-white/[0.04] transition-all"
-        >
-          <X className="w-4 h-4" />
-        </button>
-
-        <div className="flex items-center gap-2.5 mb-5">
-          <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-            <DollarSign className="w-5 h-5 text-emerald-400" />
-          </div>
-          <div>
-            <h3 className="text-base font-semibold text-white">Registrar Pago de Suscripción</h3>
-            <p className="text-xs text-white/50">Asigna y asienta un cobro recibido a un comercio</p>
-          </div>
-        </div>
-
-        {error && (
-          <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-400 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" /> {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Select Business */}
-          <div>
-            <label className="block text-xs font-medium text-white/70 mb-1.5">Comercio Titular</label>
-            <select
-              value={selectedBizId}
-              onChange={(e) => setSelectedBizId(e.target.value)}
-              className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
-            >
-              {businesses.map((biz) => (
-                <option key={biz.id} value={biz.id} className="bg-[#111622] text-white">
-                  {biz.name} ({biz.city || biz.category})
-                </option>
-              ))}
-              <option value="" className="bg-[#111622] text-white">
-                Otro comercio (Nuevo / Externo)
-              </option>
-            </select>
-          </div>
-
-          {!selectedBizId && (
-            <div>
-              <label className="block text-xs font-medium text-white/70 mb-1.5">Nombre del Negocio</label>
-              <input
-                type="text"
-                placeholder="Ej. Pizzería Roma"
-                value={customBizName}
-                onChange={(e) => setCustomBizName(e.target.value)}
-                className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-          )}
-
-          {/* Plan Selector */}
-          <div>
-            <label className="block text-xs font-medium text-white/70 mb-1.5">Plan Contratado</label>
-            <div className="grid grid-cols-3 gap-2">
-              {(['Mensual ($19)', 'Anual ($190)', 'Personalizado'] as const).map((p) => (
-                <button
-                  type="button"
-                  key={p}
-                  onClick={() => handlePlanChange(p)}
-                  className={`py-2 px-2 rounded-xl text-xs font-medium border transition-all text-center ${
-                    plan === p
-                      ? 'bg-emerald-500/10 border-emerald-500 text-emerald-400 font-semibold'
-                      : 'bg-white/[0.03] border-white/5 text-white/60 hover:text-white'
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Amount and Payment Method */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-white/70 mb-1.5">Monto ($ USD)</label>
-              <input
-                type="number"
-                step="0.01"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-white/70 mb-1.5">Método de Cobro</label>
-              <select
-                value={method}
-                onChange={(e) => setMethod(e.target.value as any)}
-                className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
-              >
-                <option value="Pago Móvil" className="bg-[#111622]">Pago Móvil</option>
-                <option value="Zelle" className="bg-[#111622]">Zelle</option>
-                <option value="Binance USDT" className="bg-[#111622]">Binance USDT</option>
-                <option value="Efectivo Divisas" className="bg-[#111622]">Efectivo Divisas</option>
-                <option value="Stripe" className="bg-[#111622]">Stripe (Tarjeta)</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Reference */}
-          <div>
-            <label className="block text-xs font-medium text-white/70 mb-1.5">Referencia Bancaria / ID</label>
-            <input
-              type="text"
-              placeholder="Ej. PM-0134-8931 o Hash"
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
-              className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-emerald-500"
-            />
-          </div>
-
-          {/* Submit */}
-          <div className="pt-2 flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2.5 rounded-xl text-xs font-medium text-white/60 hover:text-white transition-all"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-black font-semibold text-xs transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50"
-            >
-              {submitting ? 'Registrando...' : 'Confirmar y Asentar Pago'}
-            </button>
-          </div>
-        </form>
-      </motion.div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────
-// 4. Main SuperAdmin Command Center Page
+// 2. Main SuperAdmin Command Center Page
 // ─────────────────────────────────────────────────────────────
 export default function SuperAdminPage() {
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [metrics, setMetrics] = useState<PlatformMetrics | null>(null);
   const [businesses, setBusinesses] = useState<BusinessWithStats[]>([]);
@@ -652,9 +306,42 @@ export default function SuperAdminPage() {
   const [loadingData, setLoadingData] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [activeSection, setActiveSection] = useState<'all' | 'stores' | 'payments' | 'timeline'>('all');
   const [togglingId, setTogglingId] = useState<string | null>(null);
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [feedbackToast, setFeedbackToast] = useState<string | null>(null);
+
+  // Bottom Sheet Modal state for new payment
+  const [isPaymentSheetOpen, setIsPaymentSheetOpen] = useState(false);
+  const [selectedBizId, setSelectedBizId] = useState('');
+  const [customBizName, setCustomBizName] = useState('');
+  const [paymentPlan, setPaymentPlan] = useState<'Mensual ($19)' | 'Anual ($190)' | 'Personalizado'>('Mensual ($19)');
+  const [paymentAmount, setPaymentAmount] = useState('19');
+  const [paymentMethod, setPaymentMethod] = useState<'Pago Móvil' | 'Zelle' | 'Binance USDT' | 'Efectivo Divisas' | 'Stripe'>('Pago Móvil');
+  const [paymentReference, setPaymentReference] = useState('');
+  const [paymentNotes, setPaymentNotes] = useState('');
+  const [submittingPayment, setSubmittingPayment] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+
+  const isDark = theme === 'dark';
+
+  // Toggle Theme
+  const handleToggleTheme = () => {
+    const nextTheme = isDark ? 'light' : 'dark';
+    setTheme(nextTheme);
+    try {
+      localStorage.setItem('taply-admin-theme', nextTheme);
+    } catch (e) {}
+  };
+
+  // Restore theme on mount
+  useEffect(() => {
+    try {
+      const savedTheme = localStorage.getItem('taply-admin-theme') as 'dark' | 'light' | null;
+      if (savedTheme === 'light' || savedTheme === 'dark') {
+        setTheme(savedTheme);
+      }
+    } catch (e) {}
+  }, []);
 
   // Check existing session on mount
   useEffect(() => {
@@ -685,13 +372,16 @@ export default function SuperAdminPage() {
         setBusinesses(bizData.businesses || []);
         setMetrics(payData.metrics || null);
         setPayments(payData.payments || []);
+        if (bizData.businesses && bizData.businesses.length > 0 && !selectedBizId) {
+          setSelectedBizId(bizData.businesses[0].id);
+        }
       }
     } catch (err) {
       console.error('Error fetching admin data', err);
     } finally {
       setLoadingData(false);
     }
-  }, []);
+  }, [selectedBizId]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -731,7 +421,6 @@ export default function SuperAdminPage() {
           ? `🟢 "${biz.name}" reactivado. Catálogo en línea.`
           : `⏸️ "${biz.name}" pausado. Catálogo en modo discreto.`
       );
-      // Refresh metrics to keep count accurate
       fetchData();
     } catch (error) {
       // Revert on error
@@ -741,6 +430,70 @@ export default function SuperAdminPage() {
       triggerToast('❌ Error al actualizar el estado del comercio');
     } finally {
       setTogglingId(null);
+    }
+  };
+
+  // Open payment sheet pre-selecting a business
+  const handleOpenPaymentForBiz = (bizId: string) => {
+    setSelectedBizId(bizId);
+    setIsPaymentSheetOpen(true);
+  };
+
+  // Handle plan change inside payment sheet
+  const handlePlanChange = (newPlan: 'Mensual ($19)' | 'Anual ($190)' | 'Personalizado') => {
+    setPaymentPlan(newPlan);
+    if (newPlan === 'Mensual ($19)') setPaymentAmount('19');
+    else if (newPlan === 'Anual ($190)') setPaymentAmount('190');
+  };
+
+  // Submit payment from BottomSheet
+  const handleSubmitPayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmittingPayment(true);
+    setPaymentError(null);
+
+    const business = businesses.find((b) => b.id === selectedBizId);
+    const businessName = business ? business.name : customBizName;
+    const businessSlug = business ? business.slug : customBizName.toLowerCase().replace(/\s+/g, '-');
+
+    if (!businessName.trim()) {
+      setPaymentError('Selecciona o ingresa el nombre del negocio');
+      setSubmittingPayment(false);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/admin/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessId: selectedBizId || 'biz_custom',
+          businessName,
+          businessSlug,
+          plan: paymentPlan,
+          amount: Number(paymentAmount) || 0,
+          currency: 'USD',
+          method: paymentMethod,
+          reference: paymentReference.trim() || undefined,
+          notes: paymentNotes.trim() || undefined,
+          status: 'completado',
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Error al guardar');
+      }
+
+      setIsPaymentSheetOpen(false);
+      setPaymentReference('');
+      setPaymentNotes('');
+      triggerToast('✅ Cobro asentado y balance actualizado.');
+      fetchData();
+    } catch (err: any) {
+      setPaymentError(err.message || 'Error al registrar el pago');
+    } finally {
+      setSubmittingPayment(false);
     }
   };
 
@@ -770,22 +523,106 @@ export default function SuperAdminPage() {
     });
   }, [businesses, searchQuery, statusFilter]);
 
-  // Loading initial authentication state
+  // Dynamic Series for Arc UI LineChart
+  const chartSeries = useMemo(() => {
+    const rev = metrics?.totalRevenue || 228;
+    const gmv = metrics?.totalGmv || 52;
+    const ord = metrics?.totalOrders || 8;
+
+    const days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Hoy'];
+
+    const revenueSeries: DataPoint[] = days.map((d, i) => ({
+      label: d,
+      value: Math.round(rev * (0.35 + (i / 6) * 0.65)),
+      date: `Octubre ${i + 5}`,
+    }));
+
+    const gmvSeries: DataPoint[] = days.map((d, i) => ({
+      label: d,
+      value: Math.round(gmv * (0.2 + (i / 6) * 0.8)),
+      date: `Octubre ${i + 5}`,
+    }));
+
+    const ordersSeries: DataPoint[] = days.map((d, i) => ({
+      label: d,
+      value: Math.max(1, Math.round(ord * (0.25 + (i / 6) * 0.75))),
+      date: `Octubre ${i + 5}`,
+    }));
+
+    return {
+      revenue: revenueSeries,
+      gmv: gmvSeries,
+      orders: ordersSeries,
+    };
+  }, [metrics]);
+
+  // Timeline Activity Items
+  const timelineItems: TimelineItem[] = useMemo(() => {
+    const items: TimelineItem[] = [];
+
+    // Payments events
+    payments.forEach((p) => {
+      items.push({
+        id: `tl_${p.id}`,
+        title: `Pago Recibido · ${p.businessName}`,
+        subtitle: `${p.plan} mediante ${p.method} (Ref: ${p.reference || 'N/A'})`,
+        timestamp: new Date(p.createdAt).toLocaleDateString('es-LA', {
+          day: '2-digit',
+          month: 'short',
+        }),
+        type: 'payment',
+        badge: p.method,
+        amount: p.amount,
+      });
+    });
+
+    // Business milestone events
+    businesses.forEach((b) => {
+      items.push({
+        id: `tl_biz_${b.id}`,
+        title: `Comercio Registrado · ${b.name}`,
+        subtitle: `${b.category} en ${b.city || 'Venezuela'} · ${b.productCount} productos`,
+        timestamp: b.createdAt
+          ? new Date(b.createdAt).toLocaleDateString('es-LA', { day: '2-digit', month: 'short' })
+          : 'Reciente',
+        type: 'store',
+        badge: b.active !== false ? 'Activo' : 'Pausado',
+      });
+    });
+
+    return items.slice(0, 8);
+  }, [payments, businesses]);
+
+  // Initial authentication check loading
   if (isAuthenticated === null) {
     return (
-      <div className="min-h-screen bg-[#07090E] flex items-center justify-center text-white">
-        <RefreshCw className="w-6 h-6 animate-spin text-emerald-400" />
+      <div
+        className={`min-h-screen flex items-center justify-center transition-colors ${
+          isDark ? 'bg-black text-white' : 'bg-[#F8F9FB] text-neutral-900'
+        }`}
+      >
+        <RefreshCw className="w-6 h-6 animate-spin text-emerald-500" />
       </div>
     );
   }
 
-  // If not authenticated, show passcode screen
+  // Not authenticated: show Passcode Screen
   if (!isAuthenticated) {
-    return <PasscodeGateway onAuthenticated={() => setIsAuthenticated(true)} />;
+    return (
+      <PasscodeGateway
+        onAuthenticated={() => setIsAuthenticated(true)}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
+      />
+    );
   }
 
   return (
-    <div className="min-h-screen bg-[#07090E] text-white selection:bg-emerald-500/30 selection:text-emerald-200">
+    <div
+      className={`min-h-screen transition-colors duration-300 font-sans ${
+        isDark ? 'bg-black text-white' : 'bg-[#F8F9FB] text-neutral-900'
+      }`}
+    >
       {/* Toast Feedback */}
       <AnimatePresence>
         {feedbackToast && (
@@ -793,7 +630,11 @@ export default function SuperAdminPage() {
             initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl bg-[#141A29] border border-white/10 shadow-2xl backdrop-blur-xl text-xs font-medium text-white flex items-center gap-2"
+            className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl border shadow-2xl backdrop-blur-xl text-xs font-semibold flex items-center gap-2 ${
+              isDark
+                ? 'bg-neutral-900/95 border-neutral-700 text-white'
+                : 'bg-white/95 border-neutral-300 text-neutral-900'
+            }`}
           >
             <span>{feedbackToast}</span>
           </motion.div>
@@ -801,462 +642,823 @@ export default function SuperAdminPage() {
       </AnimatePresence>
 
       {/* Top Navbar */}
-      <header className="sticky top-0 z-40 bg-[#07090E]/80 backdrop-blur-2xl border-b border-white/[0.06] px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <header
+        className={`sticky top-0 z-40 px-4 sm:px-6 py-3.5 border-b backdrop-blur-2xl transition-colors ${
+          isDark
+            ? 'bg-black/80 border-neutral-800/80'
+            : 'bg-white/85 border-neutral-200 shadow-sm'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          {/* Logo & Brand Pill */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-black font-black text-sm shadow-lg shadow-emerald-500/20">
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-black font-black text-sm shadow-md shadow-emerald-500/20 flex-shrink-0">
               T
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-sm tracking-tight text-white">Taply SuperAdmin</span>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-semibold text-emerald-400 tracking-wider uppercase">
+                <span className="font-bold text-sm tracking-tight">Taply SuperAdmin</span>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-semibold text-emerald-500 uppercase tracking-wider">
                   Master
                 </span>
               </div>
-              <p className="text-[11px] text-white/40 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
+              <p
+                className={`text-[11px] hidden sm:flex items-center gap-1.5 ${
+                  isDark ? 'text-neutral-400' : 'text-neutral-500'
+                }`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
                 SaaS Operations En Vivo
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* Quick Actions & Theme Switch */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <ThemeToggle theme={theme} onToggle={handleToggleTheme} />
+
             <button
               onClick={fetchData}
               disabled={loadingData}
-              className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-white/60 hover:text-white border border-white/5 transition-all text-xs flex items-center gap-1.5 disabled:opacity-40"
+              className={`p-2 rounded-2xl border transition-all text-xs flex items-center gap-1.5 disabled:opacity-40 ${
+                isDark
+                  ? 'bg-neutral-900 border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
+                  : 'bg-white border-neutral-200 text-neutral-700 hover:text-black hover:border-neutral-300 shadow-sm'
+              }`}
               title="Refrescar datos"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loadingData ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Actualizar</span>
+              <span className="hidden md:inline">Actualizar</span>
             </button>
 
             <button
               onClick={handleLogout}
-              className="p-2 rounded-xl bg-white/[0.04] hover:bg-red-500/10 text-white/60 hover:text-red-400 border border-white/5 transition-all text-xs flex items-center gap-1.5"
+              className={`p-2 rounded-2xl border transition-all text-xs flex items-center gap-1.5 ${
+                isDark
+                  ? 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-red-400 hover:border-red-900/50'
+                  : 'bg-white border-neutral-200 text-neutral-600 hover:text-red-600 hover:border-red-200 shadow-sm'
+              }`}
               title="Bloquear consola"
             >
               <Lock className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Bloquear</span>
+              <span className="hidden md:inline">Bloquear</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-        {/* KPI Cards Grid */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card 1: MRR */}
-          <div className="bg-[#0F131C] border border-white/[0.07] rounded-3xl p-5 relative overflow-hidden backdrop-blur-xl">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-medium text-white/50 tracking-wider uppercase">
-                MRR (Recurrente)
-              </span>
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                <TrendingUp className="w-4 h-4 text-emerald-400" />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2 mb-1">
-              <span className="text-2xl font-bold tracking-tight text-white">
-                ${metrics?.mrr || 38}.00
-              </span>
-              <span className="text-xs text-white/40 font-medium">/ mes</span>
-            </div>
-            <p className="text-[11px] text-emerald-400/90 font-medium flex items-center gap-1">
-              <span>●</span> Suscripciones activas facturando
-            </p>
-          </div>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
+        {/* Navigation Tabs using Arc UI MorphSelect */}
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <MorphSelect
+            layoutId="admin-section-nav"
+            theme={theme}
+            value={activeSection}
+            onChange={(val) => setActiveSection(val as any)}
+            options={[
+              { id: 'all', label: 'Consola General', icon: <Layers className="w-3.5 h-3.5" /> },
+              { id: 'stores', label: 'Comercios', badge: businesses.length },
+              { id: 'payments', label: 'Suscripciones', badge: payments.length },
+              { id: 'timeline', label: 'Auditoría', icon: <Clock className="w-3.5 h-3.5" /> },
+            ]}
+          />
 
-          {/* Card 2: Total Balance */}
-          <div className="bg-[#0F131C] border border-white/[0.07] rounded-3xl p-5 relative overflow-hidden backdrop-blur-xl">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-medium text-white/50 tracking-wider uppercase">
-                Balance Cobrado
-              </span>
-              <div className="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                <DollarSign className="w-4 h-4 text-blue-400" />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2 mb-1">
-              <span className="text-2xl font-bold tracking-tight text-white">
-                ${metrics?.totalRevenue || 228}.00
-              </span>
-              <span className="text-xs text-white/40 font-medium">USD</span>
-            </div>
-            <p className="text-[11px] text-white/40">
-              Total histórico recaudado en planes
-            </p>
-          </div>
+          <button
+            onClick={() => setIsPaymentSheetOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-black font-semibold text-xs transition-all shadow-md shadow-emerald-500/20"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>+ Registrar Pago</span>
+          </button>
+        </div>
 
-          {/* Card 3: GMV WhatsApp */}
-          <div className="bg-[#0F131C] border border-white/[0.07] rounded-3xl p-5 relative overflow-hidden backdrop-blur-xl">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-medium text-white/50 tracking-wider uppercase">
-                GMV Plataforma
-              </span>
-              <div className="w-8 h-8 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                <ShoppingBag className="w-4 h-4 text-purple-400" />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2 mb-1">
-              <span className="text-2xl font-bold tracking-tight text-white">
-                ${metrics?.totalGmv?.toFixed(2) || '52.00'}
-              </span>
-              <span className="text-xs text-white/40 font-medium">USD</span>
-            </div>
-            <p className="text-[11px] text-white/40">
-              {metrics?.totalOrders || 0} pedidos generados por clientes
-            </p>
-          </div>
+        {/* 1. Arc UI Metric Cards Grid with Sparklines */}
+        {(activeSection === 'all' || activeSection === 'payments') && (
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <MetricCard
+              theme={theme}
+              title="MRR Recurrente"
+              value={`$${metrics?.mrr || 38}.00`}
+              unit="/ mes"
+              trend={{ value: '+18.4%', positive: true }}
+              subtitle="Suscripciones activas"
+              sparklineData={[19, 19, 19, 38, 38, 38, 38]}
+              sparklineColor="#10B981"
+              icon={<TrendingUp className="w-4 h-4 text-emerald-500" />}
+            />
 
-          {/* Card 4: Store Health */}
-          <div className="bg-[#0F131C] border border-white/[0.07] rounded-3xl p-5 relative overflow-hidden backdrop-blur-xl">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-medium text-white/50 tracking-wider uppercase">
-                Comercios Activos
-              </span>
-              <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                <Store className="w-4 h-4 text-amber-400" />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2 mb-1">
-              <span className="text-2xl font-bold tracking-tight text-white">
-                {metrics?.activeStores || 0}
-              </span>
-              <span className="text-xs text-white/40 font-medium">
-                / {metrics?.totalStores || 0} registrados
-              </span>
-            </div>
-            <p className="text-[11px] text-emerald-400 font-medium">
-              100% Retención en plataforma
-            </p>
-          </div>
-        </section>
+            <MetricCard
+              theme={theme}
+              title="Balance Cobrado"
+              value={`$${metrics?.totalRevenue || 228}.00`}
+              unit="USD"
+              trend={{ value: '+24.0%', positive: true }}
+              subtitle="Total ingresos en software"
+              sparklineData={[38, 57, 76, 114, 152, 190, 228]}
+              sparklineColor="#3B82F6"
+              icon={<DollarSign className="w-4 h-4 text-blue-500" />}
+            />
 
-        {/* Real Performance Chart */}
-        {metrics && (
-          <PerformanceChart payments={payments} metrics={metrics} />
+            <MetricCard
+              theme={theme}
+              title="GMV Plataforma"
+              value={`$${metrics?.totalGmv?.toFixed(2) || '52.00'}`}
+              unit="USD"
+              trend={{ value: '+31.5%', positive: true }}
+              subtitle={`${metrics?.totalOrders || 2} pedidos por WhatsApp`}
+              sparklineData={[15, 22, 28, 35, 42, 48, 52]}
+              sparklineColor="#A855F7"
+              icon={<ShoppingBag className="w-4 h-4 text-purple-500" />}
+            />
+
+            <MetricCard
+              theme={theme}
+              title="Comercios Activos"
+              value={metrics?.activeStores || 2}
+              unit={`/ ${metrics?.totalStores || 2}`}
+              trend={{ value: '100%', positive: true }}
+              subtitle="Tasa de retención sólida"
+              sparklineData={[1, 1, 2, 2, 2, 2, 2]}
+              sparklineColor="#F59E0B"
+              icon={<Store className="w-4 h-4 text-amber-500" />}
+            />
+          </section>
         )}
 
-        {/* Master Businesses Table with 1-Click Killswitch */}
-        <section className="bg-[#0F131C] border border-white/[0.07] rounded-3xl p-6 backdrop-blur-xl">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Store className="w-4 h-4 text-emerald-400" />
-                <h3 className="text-base font-semibold text-white tracking-tight">
-                  Control Central de Comercios
-                </h3>
-              </div>
-              <p className="text-xs text-white/50">
-                Supervisa cada catálogo en vivo y gestiona su estado de publicación con el interruptor maestro
-              </p>
-            </div>
+        {/* 2. Arc UI Interactive Line Chart */}
+        {(activeSection === 'all' || activeSection === 'payments') && (
+          <section>
+            <LineChart series={chartSeries} theme={theme} />
+          </section>
+        )}
 
-            {/* Search and Filters */}
-            <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-              <div className="relative flex-1 sm:w-56">
-                <Search className="w-3.5 h-3.5 text-white/40 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Buscar negocio..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-white/30 focus:outline-none focus:border-emerald-500"
+        {/* 3. Master Stores Section (with Arc UI Swipe Actions on Mobile) */}
+        {(activeSection === 'all' || activeSection === 'stores') && (
+          <section
+            className={`rounded-3xl p-5 sm:p-6 border transition-colors ${
+              isDark
+                ? 'bg-[#0A0A0A] border-neutral-800'
+                : 'bg-white border-neutral-200 shadow-sm'
+            }`}
+          >
+            {/* Header and Filters */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Store className="w-4 h-4 text-emerald-500" />
+                  <h3 className="text-base font-bold tracking-tight">
+                    Control Central de Comercios
+                  </h3>
+                </div>
+                <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                  En móvil desliza hacia la izquierda para acciones rápidas o usa el switch de 1 clic
+                </p>
+              </div>
+
+              {/* Search & Morph Filter */}
+              <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+                <div className="relative flex-1 md:w-52">
+                  <Search className={`w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 ${
+                    isDark ? 'text-neutral-500' : 'text-neutral-400'
+                  }`} />
+                  <input
+                    type="text"
+                    placeholder="Buscar negocio..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={`w-full rounded-xl pl-9 pr-3 py-1.5 text-xs transition-colors focus:outline-none focus:border-emerald-500 border ${
+                      isDark
+                        ? 'bg-neutral-900 border-neutral-800 text-white placeholder-neutral-600'
+                        : 'bg-neutral-50 border-neutral-200 text-neutral-900 placeholder-neutral-400'
+                    }`}
+                  />
+                </div>
+
+                <MorphSelect
+                  layoutId="store-filter-pill"
+                  theme={theme}
+                  size="sm"
+                  value={statusFilter}
+                  onChange={(val) => setStatusFilter(val as any)}
+                  options={[
+                    { id: 'all', label: 'Todos' },
+                    { id: 'active', label: 'Activos' },
+                    { id: 'inactive', label: 'Pausados' },
+                  ]}
                 />
               </div>
-
-              <div className="flex items-center p-1 bg-white/[0.04] rounded-xl border border-white/5 text-xs">
-                <button
-                  onClick={() => setStatusFilter('all')}
-                  className={`px-2.5 py-1 rounded-lg transition-all ${
-                    statusFilter === 'all'
-                      ? 'bg-white/10 text-white font-medium'
-                      : 'text-white/50 hover:text-white'
-                  }`}
-                >
-                  Todos
-                </button>
-                <button
-                  onClick={() => setStatusFilter('active')}
-                  className={`px-2.5 py-1 rounded-lg transition-all ${
-                    statusFilter === 'active'
-                      ? 'bg-emerald-500/20 text-emerald-400 font-medium'
-                      : 'text-white/50 hover:text-white'
-                  }`}
-                >
-                  Activos
-                </button>
-                <button
-                  onClick={() => setStatusFilter('inactive')}
-                  className={`px-2.5 py-1 rounded-lg transition-all ${
-                    statusFilter === 'inactive'
-                      ? 'bg-red-500/20 text-red-400 font-medium'
-                      : 'text-white/50 hover:text-white'
-                  }`}
-                >
-                  Pausados
-                </button>
-              </div>
             </div>
-          </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-white/[0.06] text-white/40 uppercase tracking-wider text-[10px]">
-                  <th className="pb-3 font-semibold">Negocio</th>
-                  <th className="pb-3 font-semibold">Plan</th>
-                  <th className="pb-3 font-semibold text-center">Catálogo</th>
-                  <th className="pb-3 font-semibold text-center">Pedidos</th>
-                  <th className="pb-3 font-semibold text-right">Ventas GMV</th>
-                  <th className="pb-3 font-semibold text-center">Enlaces</th>
-                  <th className="pb-3 font-semibold text-right">Estado / Killswitch</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/[0.04]">
-                {filteredBusinesses.map((biz) => {
-                  const isActive = biz.active !== false;
-                  const isToggling = togglingId === biz.id;
+            {/* Mobile / Tablet Cards with Arc UI SwipeActions */}
+            <div className="space-y-3 md:hidden">
+              {filteredBusinesses.map((biz) => {
+                const isActive = biz.active !== false;
 
-                  return (
-                    <tr key={biz.id} className="hover:bg-white/[0.02] transition-colors">
-                      {/* Business info */}
-                      <td className="py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-2xl overflow-hidden relative bg-white/5 border border-white/10 flex-shrink-0">
-                            {biz.logoImage ? (
-                              <Image
-                                src={biz.logoImage}
-                                alt={biz.name}
-                                fill
-                                className="object-cover"
-                                sizes="40px"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center font-bold text-white/50">
-                                {biz.name.substring(0, 2).toUpperCase()}
-                              </div>
-                            )}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-white flex items-center gap-1.5">
-                              <span>{biz.name}</span>
-                              <span className="text-[10px] text-white/40 font-mono">/{biz.slug}</span>
+                return (
+                  <SwipeActionRow
+                    key={biz.id}
+                    theme={theme}
+                    isActive={isActive}
+                    onToggleActive={() => handleToggleBusiness(biz)}
+                    onViewStore={() => window.open(`/${biz.slug}`, '_blank')}
+                    onRecordPayment={() => handleOpenPaymentForBiz(biz.id)}
+                  >
+                    <div className="p-4 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className={`w-12 h-12 rounded-2xl overflow-hidden relative flex-shrink-0 border ${
+                            isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-neutral-100 border-neutral-200'
+                          }`}
+                        >
+                          {biz.logoImage ? (
+                            <Image
+                              src={biz.logoImage}
+                              alt={biz.name}
+                              fill
+                              className="object-cover"
+                              sizes="48px"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center font-bold text-neutral-500">
+                              {biz.name.substring(0, 2).toUpperCase()}
                             </div>
-                            <p className="text-[11px] text-white/40">
-                              {biz.category} {biz.city ? `· ${biz.city}` : ''}
-                            </p>
+                          )}
+                        </div>
+
+                        <div className="min-w-0">
+                          <div className="font-bold text-sm truncate flex items-center gap-1.5">
+                            <span>{biz.name}</span>
+                            <span
+                              className={`text-[10px] font-mono px-1.5 py-0.2 rounded-md ${
+                                isDark ? 'bg-neutral-900 text-neutral-400' : 'bg-neutral-100 text-neutral-600'
+                              }`}
+                            >
+                              /{biz.slug}
+                            </span>
                           </div>
-                        </div>
-                      </td>
-
-                      {/* Plan */}
-                      <td className="py-4">
-                        <span className="px-2.5 py-1 rounded-xl bg-white/[0.05] border border-white/5 font-medium text-white/80 capitalize">
-                          {biz.plan || 'Mensual ($19)'}
-                        </span>
-                      </td>
-
-                      {/* Products */}
-                      <td className="py-4 text-center">
-                        <span className="font-semibold text-white">{biz.productCount}</span>
-                        <span className="text-white/40 text-[10px] block">productos</span>
-                      </td>
-
-                      {/* Orders */}
-                      <td className="py-4 text-center">
-                        <span className="font-semibold text-white">{biz.orderCount}</span>
-                        <span className="text-white/40 text-[10px] block">pedidos</span>
-                      </td>
-
-                      {/* Sales GMV */}
-                      <td className="py-4 text-right">
-                        <span className="font-semibold text-emerald-400">
-                          ${biz.totalSales?.toFixed(2) || '0.00'}
-                        </span>
-                        <span className="text-white/40 text-[10px] block">WhatsApp</span>
-                      </td>
-
-                      {/* Links */}
-                      <td className="py-4 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <a
-                            href={`/${biz.slug}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-white/60 hover:text-white transition-all"
-                            title="Ver Catálogo en vivo"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
-                          <a
-                            href="/dashboard"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-white/60 hover:text-white transition-all"
-                            title="Ver Panel de Dueño"
-                          >
-                            <Store className="w-3.5 h-3.5" />
-                          </a>
-                        </div>
-                      </td>
-
-                      {/* 1-Click Killswitch Toggle */}
-                      <td className="py-4 text-right">
-                        <div className="inline-flex items-center gap-2.5">
-                          <span
-                            className={`text-[11px] font-medium ${
-                              isActive ? 'text-emerald-400' : 'text-amber-400'
+                          <p
+                            className={`text-xs truncate ${
+                              isDark ? 'text-neutral-400' : 'text-neutral-500'
                             }`}
                           >
-                            {isActive ? 'En Línea' : 'Pausado'}
-                          </span>
-
-                          <button
-                            onClick={() => handleToggleBusiness(biz)}
-                            disabled={isToggling}
-                            className={`w-12 h-6 rounded-full p-0.5 transition-colors duration-200 ease-in-out relative focus:outline-none ${
-                              isActive ? 'bg-emerald-500' : 'bg-white/20'
-                            } ${isToggling ? 'opacity-50' : ''}`}
-                            title={isActive ? 'Desactivar comercio' : 'Activar comercio'}
-                          >
-                            <motion.div
-                              layout
-                              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                              className={`w-5 h-5 rounded-full bg-white shadow-md transform ${
-                                isActive ? 'translate-x-6' : 'translate-x-0'
-                              }`}
-                            />
-                          </button>
+                            {biz.category} {biz.city ? `· ${biz.city}` : ''}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[10px] text-emerald-500 font-semibold">
+                              ${biz.totalSales?.toFixed(2) || '0.00'} GMV
+                            </span>
+                            <span className={`text-[10px] ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                              • {biz.productCount} prods
+                            </span>
+                          </div>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                      </div>
+
+                      {/* 1-Click Killswitch toggle button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleBusiness(biz);
+                        }}
+                        disabled={togglingId === biz.id}
+                        className={`w-12 h-6 rounded-full p-0.5 transition-colors relative flex-shrink-0 ${
+                          isActive ? 'bg-emerald-500' : isDark ? 'bg-neutral-800' : 'bg-neutral-300'
+                        }`}
+                        title={isActive ? 'Pausar catálogo' : 'Activar catálogo'}
+                      >
+                        <motion.div
+                          layout
+                          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                          className={`w-5 h-5 rounded-full bg-white shadow-md transform ${
+                            isActive ? 'translate-x-6' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </SwipeActionRow>
+                );
+              })}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr
+                    className={`border-b uppercase tracking-wider text-[10px] font-semibold ${
+                      isDark ? 'border-neutral-800 text-neutral-500' : 'border-neutral-200 text-neutral-400'
+                    }`}
+                  >
+                    <th className="pb-3">Negocio</th>
+                    <th className="pb-3">Plan</th>
+                    <th className="pb-3 text-center">Catálogo</th>
+                    <th className="pb-3 text-center">Pedidos</th>
+                    <th className="pb-3 text-right">Ventas GMV</th>
+                    <th className="pb-3 text-center">Enlaces</th>
+                    <th className="pb-3 text-right">Interruptor (Killswitch)</th>
+                  </tr>
+                </thead>
+                <tbody
+                  className={`divide-y ${
+                    isDark ? 'divide-neutral-900' : 'divide-neutral-100'
+                  }`}
+                >
+                  {filteredBusinesses.map((biz) => {
+                    const isActive = biz.active !== false;
+                    const isToggling = togglingId === biz.id;
+
+                    return (
+                      <tr
+                        key={biz.id}
+                        className={`transition-colors ${
+                          isDark ? 'hover:bg-neutral-900/40' : 'hover:bg-neutral-50'
+                        }`}
+                      >
+                        {/* Business Info */}
+                        <td className="py-4">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-10 h-10 rounded-2xl overflow-hidden relative flex-shrink-0 border ${
+                                isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-neutral-100 border-neutral-200'
+                              }`}
+                            >
+                              {biz.logoImage ? (
+                                <Image
+                                  src={biz.logoImage}
+                                  alt={biz.name}
+                                  fill
+                                  className="object-cover"
+                                  sizes="40px"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center font-bold text-neutral-500">
+                                  {biz.name.substring(0, 2).toUpperCase()}
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-bold flex items-center gap-1.5">
+                                <span>{biz.name}</span>
+                                <span className={`text-[10px] font-mono ${
+                                  isDark ? 'text-neutral-500' : 'text-neutral-400'
+                                }`}>
+                                  /{biz.slug}
+                                </span>
+                              </div>
+                              <p className={`text-[11px] ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                                {biz.category} {biz.city ? `· ${biz.city}` : ''}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Plan */}
+                        <td className="py-4">
+                          <span
+                            className={`px-2.5 py-1 rounded-xl border font-medium capitalize text-[11px] ${
+                              isDark
+                                ? 'bg-neutral-900 border-neutral-800 text-neutral-300'
+                                : 'bg-neutral-100 border-neutral-200 text-neutral-700'
+                            }`}
+                          >
+                            {biz.plan || 'Mensual ($19)'}
+                          </span>
+                        </td>
+
+                        {/* Products */}
+                        <td className="py-4 text-center">
+                          <span className="font-bold">{biz.productCount}</span>
+                          <span className={`text-[10px] block ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                            ítems
+                          </span>
+                        </td>
+
+                        {/* Orders */}
+                        <td className="py-4 text-center">
+                          <span className="font-bold">{biz.orderCount}</span>
+                          <span className={`text-[10px] block ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                            pedidos
+                          </span>
+                        </td>
+
+                        {/* GMV Sales */}
+                        <td className="py-4 text-right">
+                          <span className="font-bold text-emerald-500">
+                            ${biz.totalSales?.toFixed(2) || '0.00'}
+                          </span>
+                          <span className={`text-[10px] block ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                            WhatsApp
+                          </span>
+                        </td>
+
+                        {/* Links & Quick Actions */}
+                        <td className="py-4 text-center">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <a
+                              href={`/${biz.slug}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`p-1.5 rounded-xl border transition-colors ${
+                                isDark
+                                  ? 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white'
+                                  : 'bg-neutral-100 border-neutral-200 text-neutral-600 hover:text-black'
+                              }`}
+                              title="Ver Catálogo en vivo"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                            <button
+                              onClick={() => handleOpenPaymentForBiz(biz.id)}
+                              className="p-1.5 rounded-xl border bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20 transition-colors"
+                              title="Asentar cobro a esta tienda"
+                            >
+                              <DollarSign className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+
+                        {/* 1-Click Killswitch Toggle */}
+                        <td className="py-4 text-right">
+                          <div className="inline-flex items-center gap-2.5">
+                            <span
+                              className={`text-[11px] font-semibold ${
+                                isActive ? 'text-emerald-500' : 'text-amber-500'
+                              }`}
+                            >
+                              {isActive ? 'En Línea' : 'Pausado'}
+                            </span>
+
+                            <button
+                              onClick={() => handleToggleBusiness(biz)}
+                              disabled={isToggling}
+                              className={`w-12 h-6 rounded-full p-0.5 transition-colors relative focus:outline-none ${
+                                isActive
+                                  ? 'bg-emerald-500'
+                                  : isDark
+                                  ? 'bg-neutral-800'
+                                  : 'bg-neutral-300'
+                              } ${isToggling ? 'opacity-50' : ''}`}
+                              title={isActive ? 'Desactivar comercio' : 'Activar comercio'}
+                            >
+                              <motion.div
+                                layout
+                                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                                className={`w-5 h-5 rounded-full bg-white shadow-md transform ${
+                                  isActive ? 'translate-x-6' : 'translate-x-0'
+                                }`}
+                              />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
 
             {filteredBusinesses.length === 0 && (
-              <div className="py-12 text-center text-white/40 text-xs">
+              <div className={`py-12 text-center text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                 No se encontraron comercios con los criterios de búsqueda.
               </div>
             )}
-          </div>
-        </section>
+          </section>
+        )}
 
-        {/* Subscription Payments Ledger */}
-        <section className="bg-[#0F131C] border border-white/[0.07] rounded-3xl p-6 backdrop-blur-xl">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <CreditCard className="w-4 h-4 text-emerald-400" />
-                <h3 className="text-base font-semibold text-white tracking-tight">
-                  Libro de Pagos de Suscripciones
-                </h3>
+        {/* 4. Timeline & Audit Stream (Arc UI Timeline) */}
+        {(activeSection === 'all' || activeSection === 'timeline') && (
+          <section
+            className={`rounded-3xl p-5 sm:p-6 border transition-colors ${
+              isDark
+                ? 'bg-[#0A0A0A] border-neutral-800'
+                : 'bg-white border-neutral-200 shadow-sm'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Activity className="w-4 h-4 text-emerald-500" />
+                  <h3 className="text-base font-bold tracking-tight">
+                    Línea de Tiempo & Registro de Actividad
+                  </h3>
+                </div>
+                <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                  Eventos en vivo de facturación, altas de comercios y cambios de estado
+                </p>
               </div>
-              <p className="text-xs text-white/50">
-                Registro financiero de cobros de software cobrados a cada dueño de comercio
-              </p>
+
+              <span
+                className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border ${
+                  isDark
+                    ? 'bg-neutral-900 border-neutral-800 text-neutral-400'
+                    : 'bg-neutral-100 border-neutral-200 text-neutral-600'
+                }`}
+              >
+                {timelineItems.length} eventos registrados
+              </span>
             </div>
 
-            <button
-              onClick={() => setIsPaymentModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-black font-semibold text-xs transition-all shadow-lg shadow-emerald-500/20"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Registrar Nuevo Pago</span>
-            </button>
-          </div>
+            <Timeline items={timelineItems} theme={theme} />
+          </section>
+        )}
 
-          {/* Payments Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-white/[0.06] text-white/40 uppercase tracking-wider text-[10px]">
-                  <th className="pb-3 font-semibold">Fecha</th>
-                  <th className="pb-3 font-semibold">Comercio</th>
-                  <th className="pb-3 font-semibold">Plan</th>
-                  <th className="pb-3 font-semibold">Método</th>
-                  <th className="pb-3 font-semibold">Referencia</th>
-                  <th className="pb-3 font-semibold text-right">Monto USD</th>
-                  <th className="pb-3 font-semibold text-right">Estado</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/[0.04]">
-                {payments.map((p) => (
-                  <tr key={p.id} className="hover:bg-white/[0.02] transition-colors">
-                    {/* Date */}
-                    <td className="py-3.5 text-white/60">
-                      {new Date(p.createdAt).toLocaleDateString('es-LA', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
-                    </td>
-
-                    {/* Business */}
-                    <td className="py-3.5">
-                      <span className="font-medium text-white">{p.businessName}</span>
-                      <span className="text-[10px] text-white/40 block font-mono">
-                        /{p.businessSlug}
-                      </span>
-                    </td>
-
-                    {/* Plan */}
-                    <td className="py-3.5 text-white/80">{p.plan}</td>
-
-                    {/* Method */}
-                    <td className="py-3.5">
-                      <span className="px-2 py-0.5 rounded-lg bg-white/[0.05] border border-white/5 text-[11px] text-white/70">
-                        {p.method}
-                      </span>
-                    </td>
-
-                    {/* Ref */}
-                    <td className="py-3.5 text-white/50 font-mono text-[11px]">
-                      {p.reference || '—'}
-                    </td>
-
-                    {/* Amount */}
-                    <td className="py-3.5 text-right font-bold text-emerald-400">
-                      ${p.amount.toFixed(2)}
-                    </td>
-
-                    {/* Status */}
-                    <td className="py-3.5 text-right">
-                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-medium">
-                        <CheckCircle2 className="w-3 h-3" />
-                        Completado
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {payments.length === 0 && (
-              <div className="py-12 text-center text-white/40 text-xs">
-                No hay pagos registrados aún en el libro financiero.
+        {/* 5. Subscription Payments Ledger */}
+        {(activeSection === 'all' || activeSection === 'payments') && (
+          <section
+            className={`rounded-3xl p-5 sm:p-6 border transition-colors ${
+              isDark
+                ? 'bg-[#0A0A0A] border-neutral-800'
+                : 'bg-white border-neutral-200 shadow-sm'
+            }`}
+          >
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <CreditCard className="w-4 h-4 text-emerald-500" />
+                  <h3 className="text-base font-bold tracking-tight">
+                    Libro de Pagos de Suscripciones
+                  </h3>
+                </div>
+                <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                  Registro financiero de cobros de software recaudados a los titulares
+                </p>
               </div>
-            )}
-          </div>
-        </section>
+
+              <button
+                onClick={() => setIsPaymentSheetOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-black font-semibold text-xs transition-all shadow-md shadow-emerald-500/20"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Registrar Cobro</span>
+              </button>
+            </div>
+
+            {/* Payments Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr
+                    className={`border-b uppercase tracking-wider text-[10px] font-semibold ${
+                      isDark ? 'border-neutral-800 text-neutral-500' : 'border-neutral-200 text-neutral-400'
+                    }`}
+                  >
+                    <th className="pb-3">Fecha</th>
+                    <th className="pb-3">Comercio</th>
+                    <th className="pb-3">Plan</th>
+                    <th className="pb-3">Método</th>
+                    <th className="pb-3">Referencia</th>
+                    <th className="pb-3 text-right">Monto USD</th>
+                    <th className="pb-3 text-right">Estado</th>
+                  </tr>
+                </thead>
+                <tbody
+                  className={`divide-y ${
+                    isDark ? 'divide-neutral-900' : 'divide-neutral-100'
+                  }`}
+                >
+                  {payments.map((p) => (
+                    <tr
+                      key={p.id}
+                      className={`transition-colors ${
+                        isDark ? 'hover:bg-neutral-900/40' : 'hover:bg-neutral-50'
+                      }`}
+                    >
+                      <td className={`py-3.5 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                        {new Date(p.createdAt).toLocaleDateString('es-LA', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </td>
+
+                      <td className="py-3.5">
+                        <span className="font-semibold">{p.businessName}</span>
+                        <span
+                          className={`text-[10px] block font-mono ${
+                            isDark ? 'text-neutral-500' : 'text-neutral-400'
+                          }`}
+                        >
+                          /{p.businessSlug}
+                        </span>
+                      </td>
+
+                      <td className={`py-3.5 ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                        {p.plan}
+                      </td>
+
+                      <td className="py-3.5">
+                        <span
+                          className={`px-2 py-0.5 rounded-lg border text-[11px] font-medium ${
+                            isDark
+                              ? 'bg-neutral-900 border-neutral-800 text-neutral-300'
+                              : 'bg-neutral-100 border-neutral-200 text-neutral-700'
+                          }`}
+                        >
+                          {p.method}
+                        </span>
+                      </td>
+
+                      <td className={`py-3.5 font-mono text-[11px] ${
+                        isDark ? 'text-neutral-500' : 'text-neutral-400'
+                      }`}>
+                        {p.reference || '—'}
+                      </td>
+
+                      <td className="py-3.5 text-right font-bold text-emerald-500">
+                        ${p.amount.toFixed(2)}
+                      </td>
+
+                      <td className="py-3.5 text-right">
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 text-[10px] font-semibold">
+                          <CheckCircle2 className="w-3 h-3" />
+                          Completado
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {payments.length === 0 && (
+                <div className={`py-12 text-center text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                  No hay pagos registrados aún en el libro financiero.
+                </div>
+              )}
+            </div>
+          </section>
+        )}
       </main>
 
-      {/* Record Payment Modal */}
-      <RecordPaymentModal
-        businesses={businesses}
-        isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
-        onPaymentCreated={() => {
-          triggerToast('✅ Pago registrado con éxito y balance actualizado.');
-          fetchData();
-        }}
-      />
+      {/* 6. Arc UI Bottom Sheet for Registering Payments (Drag to dismiss on mobile) */}
+      <BottomSheet
+        theme={theme}
+        isOpen={isPaymentSheetOpen}
+        onClose={() => setIsPaymentSheetOpen(false)}
+        title="Registrar Pago de Suscripción"
+        description="Asienta un cobro recibido y actualiza el balance de la plataforma"
+      >
+        {paymentError && (
+          <div className="mb-4 p-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-xs text-red-500 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" /> {paymentError}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmitPayment} className="space-y-4">
+          {/* Select Business */}
+          <div>
+            <label
+              className={`block text-xs font-semibold mb-1.5 ${
+                isDark ? 'text-neutral-300' : 'text-neutral-700'
+              }`}
+            >
+              Comercio Titular
+            </label>
+            <select
+              value={selectedBizId}
+              onChange={(e) => setSelectedBizId(e.target.value)}
+              className={`w-full rounded-2xl px-3.5 py-2.5 text-sm transition-colors border focus:outline-none focus:border-emerald-500 ${
+                isDark
+                  ? 'bg-neutral-900 border-neutral-800 text-white'
+                  : 'bg-neutral-50 border-neutral-200 text-neutral-900'
+              }`}
+            >
+              {businesses.map((biz) => (
+                <option key={biz.id} value={biz.id} className={isDark ? 'bg-neutral-900 text-white' : 'bg-white text-black'}>
+                  {biz.name} ({biz.city || biz.category})
+                </option>
+              ))}
+              <option value="" className={isDark ? 'bg-neutral-900 text-white' : 'bg-white text-black'}>
+                Otro comercio (Nuevo / Externo)
+              </option>
+            </select>
+          </div>
+
+          {!selectedBizId && (
+            <div>
+              <label className={`block text-xs font-semibold mb-1.5 ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                Nombre del Negocio
+              </label>
+              <input
+                type="text"
+                placeholder="Ej. Pizzería Roma"
+                value={customBizName}
+                onChange={(e) => setCustomBizName(e.target.value)}
+                className={`w-full rounded-2xl px-3.5 py-2.5 text-sm transition-colors border focus:outline-none focus:border-emerald-500 ${
+                  isDark
+                    ? 'bg-neutral-900 border-neutral-800 text-white placeholder-neutral-600'
+                    : 'bg-neutral-50 border-neutral-200 text-neutral-900 placeholder-neutral-400'
+                }`}
+              />
+            </div>
+          )}
+
+          {/* Plan Selector using Morph style */}
+          <div>
+            <label className={`block text-xs font-semibold mb-1.5 ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+              Plan Contratado
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {(['Mensual ($19)', 'Anual ($190)', 'Personalizado'] as const).map((p) => (
+                <button
+                  type="button"
+                  key={p}
+                  onClick={() => handlePlanChange(p)}
+                  className={`py-2 px-2 rounded-xl text-xs font-semibold border transition-all text-center ${
+                    paymentPlan === p
+                      ? 'bg-emerald-500/15 border-emerald-500 text-emerald-500'
+                      : isDark
+                      ? 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white'
+                      : 'bg-neutral-100 border-neutral-200 text-neutral-600 hover:text-black'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Amount and Method */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={`block text-xs font-semibold mb-1.5 ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                Monto ($ USD)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+                className={`w-full rounded-2xl px-3.5 py-2.5 text-sm transition-colors border focus:outline-none focus:border-emerald-500 ${
+                  isDark
+                    ? 'bg-neutral-900 border-neutral-800 text-white'
+                    : 'bg-neutral-50 border-neutral-200 text-neutral-900'
+                }`}
+              />
+            </div>
+
+            <div>
+              <label className={`block text-xs font-semibold mb-1.5 ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                Método de Cobro
+              </label>
+              <select
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value as any)}
+                className={`w-full rounded-2xl px-3.5 py-2.5 text-sm transition-colors border focus:outline-none focus:border-emerald-500 ${
+                  isDark
+                    ? 'bg-neutral-900 border-neutral-800 text-white'
+                    : 'bg-neutral-50 border-neutral-200 text-neutral-900'
+                }`}
+              >
+                <option value="Pago Móvil" className={isDark ? 'bg-neutral-900' : 'bg-white'}>Pago Móvil</option>
+                <option value="Zelle" className={isDark ? 'bg-neutral-900' : 'bg-white'}>Zelle</option>
+                <option value="Binance USDT" className={isDark ? 'bg-neutral-900' : 'bg-white'}>Binance USDT</option>
+                <option value="Efectivo Divisas" className={isDark ? 'bg-neutral-900' : 'bg-white'}>Efectivo Divisas</option>
+                <option value="Stripe" className={isDark ? 'bg-neutral-900' : 'bg-white'}>Stripe (Tarjeta)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Reference */}
+          <div>
+            <label className={`block text-xs font-semibold mb-1.5 ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+              Referencia Bancaria / ID
+            </label>
+            <input
+              type="text"
+              placeholder="Ej. PM-0134-8931 o Hash"
+              value={paymentReference}
+              onChange={(e) => setPaymentReference(e.target.value)}
+              className={`w-full rounded-2xl px-3.5 py-2.5 text-sm transition-colors border focus:outline-none focus:border-emerald-500 ${
+                isDark
+                  ? 'bg-neutral-900 border-neutral-800 text-white placeholder-neutral-600'
+                  : 'bg-neutral-50 border-neutral-200 text-neutral-900 placeholder-neutral-400'
+              }`}
+            />
+          </div>
+
+          {/* Buttons */}
+          <div className="pt-3 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setIsPaymentSheetOpen(false)}
+              className={`px-4 py-2.5 rounded-2xl text-xs font-semibold transition-colors ${
+                isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'
+              }`}
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={submittingPayment}
+              className="px-5 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-black font-bold text-xs transition-all shadow-md shadow-emerald-500/20 disabled:opacity-50"
+            >
+              {submittingPayment ? 'Registrando...' : 'Confirmar y Asentar Pago'}
+            </button>
+          </div>
+        </form>
+      </BottomSheet>
     </div>
   );
 }
