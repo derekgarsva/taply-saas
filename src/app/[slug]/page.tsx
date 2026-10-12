@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getBusinessBySlug, getProductsByBusinessId, getCategoriesByBusinessId, recordPageView } from '@/lib/data';
+import { getBusinessBySlug, getProductsByBusinessId, getCategoriesByBusinessId, recordPageView } from '@/lib/db';
 import StorefrontView from '@/components/storefront/StorefrontView';
 import DeactivatedStoreView from '@/components/storefront/DeactivatedStoreView';
 

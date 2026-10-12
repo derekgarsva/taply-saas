@@ -90,16 +90,55 @@ function DashboardContent() {
   const [productSearch, setProductSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('Todas');
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, onComplete: (base64: string) => void) => {
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const handleFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    onComplete: (url: string) => void,
+    folder: string = 'products'
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (uploadEvent) => {
-      if (uploadEvent.target?.result) {
-        onComplete(uploadEvent.target.result as string);
+
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', folder);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          onComplete(data.url);
+          setToast('Imagen subida correctamente');
+          return;
+        }
       }
-    };
-    reader.readAsDataURL(file);
+
+      // Fallback to local DataURL
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        if (uploadEvent.target?.result) {
+          onComplete(uploadEvent.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        if (uploadEvent.target?.result) {
+          onComplete(uploadEvent.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   // Load initial data
@@ -918,14 +957,15 @@ function DashboardContent() {
 
                   <div className="flex-1 space-y-1.5 w-full">
                     <label className="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-xl cursor-pointer shadow-xs active:scale-98 transition-all">
-                      <Upload className="w-3.5 h-3.5" />
-                      <span>{business.bannerImage ? 'Cambiar Foto de Portada' : 'Adjuntar Foto de Portada'}</span>
+                      <Upload className={`w-3.5 h-3.5 ${uploadingImage ? 'animate-spin' : ''}`} />
+                      <span>{uploadingImage ? 'Subiendo...' : business.bannerImage ? 'Cambiar Foto de Portada' : 'Adjuntar Foto de Portada'}</span>
                       <input
                         type="file"
                         accept="image/*"
                         className="hidden"
+                        disabled={uploadingImage}
                         onChange={(e) =>
-                          handleFileUpload(e, (base64) => setBusiness({ ...business, bannerImage: base64 }))
+                          handleFileUpload(e, (url) => setBusiness({ ...business, bannerImage: url }), 'banners')
                         }
                       />
                     </label>
@@ -1078,18 +1118,22 @@ function DashboardContent() {
 
                     <div className="flex-1 space-y-1">
                       <label className="inline-flex items-center gap-2 px-3.5 py-2 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-xl cursor-pointer shadow-xs active:scale-98 transition-all">
-                        <Upload className="w-3.5 h-3.5" />
-                        <span>{productModal.product.image ? 'Cambiar Foto' : 'Adjuntar Foto'}</span>
+                        <Upload className={`w-3.5 h-3.5 ${uploadingImage ? 'animate-spin' : ''}`} />
+                        <span>{uploadingImage ? 'Subiendo...' : productModal.product.image ? 'Cambiar Foto' : 'Adjuntar Foto'}</span>
                         <input
                           type="file"
                           accept="image/*"
                           className="hidden"
+                          disabled={uploadingImage}
                           onChange={(e) =>
-                            handleFileUpload(e, (base64) =>
-                              setProductModal({
-                                ...productModal,
-                                product: { ...productModal.product, image: base64 },
-                              })
+                            handleFileUpload(
+                              e,
+                              (url) =>
+                                setProductModal({
+                                  ...productModal,
+                                  product: { ...productModal.product, image: url },
+                                }),
+                              'products'
                             )
                           }
                         />

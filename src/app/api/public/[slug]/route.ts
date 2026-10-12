@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBusinessBySlug, getProductsByBusinessId, getCategoriesByBusinessId } from '@/lib/data';
+import { getBusinessBySlug, getProductsByBusinessId, getCategoriesByBusinessId, recordPageView } from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
@@ -10,6 +10,9 @@ export async function GET(
     if (!business) {
       return NextResponse.json({ error: 'Negocio no encontrado' }, { status: 404 });
     }
+
+    // Fire & forget page view tracking
+    recordPageView(business.id).catch(() => {});
 
     const [products, categories] = await Promise.all([
       getProductsByBusinessId(business.id),

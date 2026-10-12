@@ -16,6 +16,8 @@ export default function OnboardingPage() {
     category: 'PANADERÍA / CAFÉ',
     city: 'Caracas, Venezuela',
     phone: '',
+    ownerEmail: '',
+    ownerPin: '',
     desc: 'Los mejores productos artesanales preparados cada día con ingredientes frescos.',
     themeColor: '#00594C',
   });
@@ -164,6 +166,37 @@ export default function OnboardingPage() {
               <span className="text-[10px] text-gray-400 mt-1 block">
                 Solo números con código de país (ej. 58 para Venezuela).
               </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  Correo Electrónico (Dueño)
+                </label>
+                <input
+                  type="email"
+                  placeholder="admin@minegocio.com"
+                  value={formData.ownerEmail}
+                  onChange={(e) => setFormData({ ...formData, ownerEmail: e.target.value })}
+                  className="w-full h-11 px-3.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-[#00594C]"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  PIN de Acceso (4 dígitos)
+                </label>
+                <input
+                  type="password"
+                  placeholder="••••"
+                  maxLength={6}
+                  value={formData.ownerPin}
+                  onChange={(e) => setFormData({ ...formData, ownerPin: e.target.value })}
+                  className="w-full h-11 px-3.5 text-xs font-mono bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-[#00594C]"
+                  required
+                />
+              </div>
             </div>
 
             <div className="pt-2">

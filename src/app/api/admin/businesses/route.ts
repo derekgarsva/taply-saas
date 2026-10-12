@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { getAllBusinessesWithStats, toggleBusinessStatus, setBusinessActive } from '@/lib/data';
+import { getAllBusinessesWithStats, toggleBusinessStatus, setBusinessActive } from '@/lib/db';
 
 function checkAuth(): boolean {
   const cookieStore = cookies();

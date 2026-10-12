@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBusinessBySlug, getBusinessById, getAllBusinesses, updateBusiness, createBusiness } from '@/lib/data';
+import { getBusinessBySlug, getBusinessById, getAllBusinesses, updateBusiness, createBusiness } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -50,6 +50,9 @@ export async function POST(request: NextRequest) {
       currencySymbol: body.currencySymbol || '$',
       paymentNotes: body.paymentNotes || '• Pago Móvil\n• Zelle\n• Efectivo al retirar',
       links: body.links || [],
+      plan: body.plan || 'Plan Inicial ($12)',
+      ownerEmail: body.ownerEmail || body.email || '',
+      ownerPin: body.ownerPin || body.pin || '1234',
     });
 
     return NextResponse.json(created, { status: 201 });

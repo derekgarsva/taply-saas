@@ -35,6 +35,8 @@ const initialBusinesses: Record<string, Business> = {
     pageViews: 1420,
     active: true,
     plan: 'mensual',
+    ownerEmail: 'dueno@laestrella.com',
+    ownerPin: '1234',
     createdAt: new Date(Date.now() - 30 * 86400000).toISOString(),
   },
   'burger-station': {
@@ -59,6 +61,8 @@ const initialBusinesses: Record<string, Business> = {
     pageViews: 2850,
     active: true,
     plan: 'anual',
+    ownerEmail: 'dueno@burgerstation.com',
+    ownerPin: '1234',
     createdAt: new Date(Date.now() - 15 * 86400000).toISOString(),
   }
 };
@@ -321,6 +325,8 @@ export async function createBusiness(data: Omit<Business, 'id' | 'pageViews' | '
     active: true,
     plan: data.plan || 'mensual',
     pageViews: 1,
+    ownerEmail: data.ownerEmail || '',
+    ownerPin: data.ownerPin || '1234',
     createdAt: new Date().toISOString(),
   };
   store.businesses[data.slug] = newBiz;

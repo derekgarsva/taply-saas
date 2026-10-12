@@ -26,6 +26,8 @@ export interface Business {
   plan?: 'gratis' | 'mensual' | 'anual';
   planExpiresAt?: string;
   createdAt: string;
+  ownerEmail?: string;
+  ownerPin?: string;
 }
 
 export interface PlatformPayment {

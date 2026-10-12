@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { getPlatformMetrics, getPlatformPayments, addPlatformPayment } from '@/lib/data';
+import { getPlatformMetrics, getPlatformPayments, addPlatformPayment } from '@/lib/db';
 
 function checkAuth(): boolean {
   const cookieStore = cookies();
