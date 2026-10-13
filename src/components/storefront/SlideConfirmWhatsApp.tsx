@@ -12,19 +12,23 @@ const GRIP = H - PAD * 2; // 48px
 const HOLD = 1600;
 
 interface SlideConfirmProps {
-  total: number;
+  total?: number;
   currencySymbol?: string;
   onConfirm: () => void;
   disabled?: boolean;
   accentColor?: string;
+  label?: string;
+  doneLabel?: string;
 }
 
 export default function SlideConfirmWhatsApp({
-  total,
+  total = 0,
   currencySymbol = '$',
   onConfirm,
   disabled,
   accentColor = '#00594C',
+  label,
+  doneLabel = '¡Abriendo WhatsApp!',
 }: SlideConfirmProps) {
   const [done, setDone] = useState(false);
   const [held, setHeld] = useState(false);
@@ -167,8 +171,7 @@ export default function SlideConfirmWhatsApp({
         >
           <WhatsAppIcon className="w-5 h-5 flex-shrink-0" />
           <span>
-            Pedir por WhatsApp · {currencySymbol}
-            {total.toFixed(2)}
+            {label ? label : `Pedir por WhatsApp · ${currencySymbol}${total.toFixed(2)}`}
           </span>
         </motion.span>
 
@@ -189,7 +192,7 @@ export default function SlideConfirmWhatsApp({
           style={{
             color: accentColor,
           }}
-          aria-label={done ? '¡Abriendo WhatsApp!' : 'Desliza para pedir por WhatsApp'}
+          aria-label={done ? doneLabel : label || 'Desliza para pedir por WhatsApp'}
         >
           <AnimatePresence mode="wait">
             {!done ? (
@@ -212,7 +215,7 @@ export default function SlideConfirmWhatsApp({
                 style={{ color: accentColor }}
               >
                 <Check size={19} strokeWidth={2.8} />
-                <span>¡Abriendo WhatsApp!</span>
+                <span>{doneLabel}</span>
               </motion.span>
             )}
           </AnimatePresence>
