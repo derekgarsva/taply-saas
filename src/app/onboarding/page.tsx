@@ -18,6 +18,7 @@ export default function OnboardingPage() {
     phone: '',
     ownerEmail: '',
     ownerPin: '',
+    plan: 'Plan Inicial ($12)',
     desc: 'Los mejores productos artesanales preparados cada día con ingredientes frescos.',
     themeColor: '#00594C',
   });
@@ -199,13 +200,62 @@ export default function OnboardingPage() {
               </div>
             </div>
 
+            <div className="pt-1">
+              <label className="block text-xs font-semibold text-gray-700 mb-2">
+                Selecciona tu Plan Taply
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {/* Plan Inicial */}
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, plan: 'Plan Inicial ($12)' })}
+                  className={`p-3.5 rounded-2xl border text-left transition-all ${
+                    formData.plan === 'Plan Inicial ($12)'
+                      ? 'border-[#00594C] bg-emerald-50/70 ring-2 ring-[#00594C]/20 shadow-xs'
+                      : 'border-gray-200 bg-gray-50/60 hover:bg-gray-100/60'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-extrabold text-xs text-gray-900">Plan Inicial</span>
+                    <span className="font-extrabold text-xs text-[#00594C] bg-white px-2 py-0.5 rounded-full border border-emerald-200 shadow-2xs">
+                      $12/mes
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-gray-500 leading-snug">
+                    Hasta 100 productos, multilink, QR y pedidos WhatsApp ilimitados.
+                  </p>
+                </button>
+
+                {/* Big Taply */}
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, plan: 'Big Taply ($34)' })}
+                  className={`p-3.5 rounded-2xl border text-left transition-all ${
+                    formData.plan === 'Big Taply ($34)'
+                      ? 'border-[#00594C] bg-emerald-50/70 ring-2 ring-[#00594C]/20 shadow-xs'
+                      : 'border-gray-200 bg-gray-50/60 hover:bg-gray-100/60'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-extrabold text-xs text-gray-900">Big Taply</span>
+                    <span className="font-extrabold text-xs text-gray-900 bg-white px-2 py-0.5 rounded-full border border-gray-200 shadow-2xs">
+                      $34/mes
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-gray-500 leading-snug">
+                    Inventario masivo (&gt;100 productos), sin marca de agua y soporte VIP.
+                  </p>
+                </button>
+              </div>
+            </div>
+
             <div className="pt-2">
               <button
                 type="submit"
                 disabled={loading}
                 className="w-full h-12 bg-[#00594C] text-white font-extrabold text-xs rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition-transform shadow-sm"
               >
-                <span>{loading ? 'Creando catálogo...' : 'Crear mi Catálogo Gratis'}</span>
+                <span>{loading ? 'Creando catálogo...' : 'Crear mi Catálogo con ' + formData.plan}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -213,10 +263,10 @@ export default function OnboardingPage() {
 
           <div className="mt-6 text-center">
             <Link
-              href="/dashboard?store=panaderia-la-estrella"
+              href="/solicitar-acceso"
               className="text-xs text-gray-500 hover:text-gray-900 font-medium"
             >
-              ¿Quieres probar una demo ya lista? <span className="underline font-bold text-[#00594C]">Entrar a La Estrella</span>
+              ¿Quieres probar una demo guiada? <span className="underline font-bold text-[#00594C]">Solicitar acceso con el fundador</span>
             </Link>
           </div>
         </div>

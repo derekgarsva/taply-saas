@@ -32,7 +32,11 @@ import {
   Eye,
   Store,
   Upload,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Crown,
+  Zap,
+  CreditCard,
+  ShieldCheck,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -65,6 +69,7 @@ function DashboardContent() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [toast, setToast] = useState<string | null>(null);
   const [showQR, setShowQR] = useState(false);
+  const [showPlanModal, setShowPlanModal] = useState(false);
 
   // Modals state
   const [productModal, setProductModal] = useState<{
@@ -183,6 +188,18 @@ function DashboardContent() {
     if (!business?.pageViews || business.pageViews === 0) return 0;
     return Math.min(100, ((orders.length / business.pageViews) * 100)).toFixed(1);
   }, [business, orders]);
+
+  const currentPlanLabel = useMemo(() => {
+    if (!business?.plan) return 'Plan Inicial ($12)';
+    const p = business.plan.toLowerCase();
+    if (p.includes('big') || p.includes('34') || p.includes('37')) return 'Big Taply ($34)';
+    if (p.includes('anual')) return 'Plan Anual';
+    return 'Plan Inicial ($12)';
+  }, [business?.plan]);
+
+  const isBigPlan = useMemo(() => {
+    return currentPlanLabel.includes('Big') || currentPlanLabel.includes('34') || currentPlanLabel.includes('37');
+  }, [currentPlanLabel]);
 
   // Product CRUD
   const handleSaveProduct = async (e: React.FormEvent) => {
@@ -422,6 +439,17 @@ function DashboardContent() {
               <span className="hidden sm:inline">Código QR</span>
             </button>
 
+            <button
+              type="button"
+              onClick={() => setShowPlanModal(true)}
+              className="h-9 px-3 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 active:scale-95 text-xs font-bold flex items-center gap-1.5 transition-all"
+              title="Ver detalles o cambiar de plan"
+            >
+              <Crown className="w-3.5 h-3.5 text-amber-500" />
+              <span className="hidden sm:inline">{currentPlanLabel}</span>
+              <span className="sm:hidden">Plan</span>
+            </button>
+
             <a
               href={liveStoreUrl}
               target="_blank"
@@ -506,6 +534,44 @@ function DashboardContent() {
                 >
                   <QrCode className="w-3.5 h-3.5" />
                   <span>Descargar QR</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Subscription & Current Plan Card */}
+            <div className="p-5 rounded-3xl bg-white border border-gray-200 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-start sm:items-center gap-3.5">
+                <div className={`w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 ${
+                  isBigPlan ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-[#00594C]'
+                }`}>
+                  {isBigPlan ? <Crown className="w-5 h-5" /> : <Zap className="w-5 h-5" />}
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Plan Activo:</span>
+                    <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      {currentPlanLabel}
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                      Suscripción Activa • 0% Comisiones
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1">
+                    {isBigPlan
+                      ? `Disfrutas de catálogo ilimitado y atención directa con el fundador. (${products.length} productos activos).`
+                      : `Catálogo de hasta 100 productos (${products.length}/100 cargados). Si superas los 100 o requieres soporte VIP puedes cambiar a Big Taply.`}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setShowPlanModal(true)}
+                  className="w-full md:w-auto h-10 px-4 rounded-full bg-gray-900 hover:bg-black text-white font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xs"
+                >
+                  <Crown className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Cambiar de Plan</span>
                 </button>
               </div>
             </div>
@@ -1054,6 +1120,40 @@ function DashboardContent() {
               </div>
             </div>
 
+            {/* Plan and Subscription Section */}
+            <div className="bg-white p-5 rounded-3xl border border-gray-200 shadow-2xs space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-extrabold text-gray-900 text-base">Plan y Facturación</h4>
+                  <p className="text-xs text-gray-500">Administra tu suscripción mensual en Taply</p>
+                </div>
+                <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  {currentPlanLabel}
+                </span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <p className="text-xs font-bold text-gray-900">
+                    {isBigPlan ? 'Catálogo Ilimitado + Soporte Prioritario VIP' : 'Plan Inicial: hasta 100 productos (0% Comisiones)'}
+                  </p>
+                  <p className="text-[11px] text-gray-500">
+                    {isBigPlan
+                      ? '¿Deseas cambiar al Plan Inicial ($12/mes)? Puedes solicitarlo al fundador en cualquier momento.'
+                      : '¿Necesitas más de 100 productos? Mejora al plan Big Taply ($37) para soporte VIP y catálogo ilimitado.'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPlanModal(true)}
+                  className="h-9 px-4 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-xs flex-shrink-0"
+                >
+                  <Crown className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Gestionar Plan</span>
+                </button>
+              </div>
+            </div>
+
             {/* Save Button */}
             <button
               type="submit"
@@ -1261,6 +1361,207 @@ function DashboardContent() {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ══ PLAN MANAGEMENT MODAL ══ */}
+      <AnimatePresence>
+        {showPlanModal && business && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+            onClick={() => setShowPlanModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.94, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ type: 'spring', stiffness: 360, damping: 26 }}
+              className="bg-white rounded-3xl p-6 w-full max-w-lg shadow-2xl relative my-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between pb-3.5 border-b border-gray-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <Crown className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-gray-900 text-base leading-tight">
+                      Planes y Suscripción Taply
+                    </h3>
+                    <p className="text-[11px] text-gray-500">
+                      Gestiona tu suscripción activa para {business.name}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPlanModal(false)}
+                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Plans Comparison */}
+              <div className="mt-4 space-y-3">
+                {/* Plan Inicial */}
+                <div className={`p-4 rounded-2xl border transition-all ${
+                  !isBigPlan
+                    ? 'border-[#00594C] bg-emerald-50/40 ring-2 ring-[#00594C]/10'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-extrabold text-sm text-gray-900">Plan Inicial</span>
+                        {!isBigPlan && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#00594C] text-white">
+                            Tu Plan Actual
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Para marcas y tiendas con hasta 100 productos en catálogo.
+                      </p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <span className="text-lg font-black text-gray-900">$12</span>
+                      <span className="text-[11px] text-gray-400 font-medium">/mes</span>
+                    </div>
+                  </div>
+
+                  <ul className="mt-3 space-y-1.5 text-xs text-gray-600">
+                    <li className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                      <span>Hasta 100 productos activos en catálogo</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                      <span>Checkout WhatsApp instantáneo (0% comisiones)</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                      <span>Generador QR para mesas y mostrador</span>
+                    </li>
+                  </ul>
+
+                  {isBigPlan ? (
+                    <div className="mt-3.5 pt-3 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <p className="text-[11px] text-gray-500">
+                        Si bajas a este plan, abonas tu suscripción de <strong>$12</strong> correspondiente a la nueva mensualidad.
+                      </p>
+                      <a
+                        href={`https://wa.me/584243087887?text=${encodeURIComponent(
+                          `Hola Derek, soy el dueño de *${business.name}* (taply.app/${business.slug}). Actualmente estoy en el plan Big Taply y deseo cambiar al *Plan Inicial ($12/mes)*. Entiendo que pagaré los $12 de mi suscripción mensual. ¿Me indicas los datos para el pago?`
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3.5 py-2 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-bold whitespace-nowrap active:scale-95 transition-transform flex items-center justify-center gap-1.5"
+                      >
+                        <span>Bajar a Inicial ($12)</span>
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="mt-3 pt-2 text-[11px] font-semibold text-emerald-800 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Estás disfrutando de este plan actualmente.</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Big Taply */}
+                <div className={`p-4 rounded-2xl border transition-all ${
+                  isBigPlan
+                    ? 'border-[#00594C] bg-emerald-50/40 ring-2 ring-[#00594C]/10'
+                    : 'border-amber-300 bg-amber-50/30'
+                }`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-extrabold text-sm text-gray-900">Big Taply</span>
+                        {isBigPlan ? (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#00594C] text-white">
+                            Tu Plan Actual
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400 text-amber-950">
+                            Recomendado
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Para catálogos grandes, inventarios masivos y marcas líderes.
+                      </p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <span className="text-lg font-black text-gray-900">$37</span>
+                      <span className="text-[11px] text-gray-400 font-medium">/mes</span>
+                    </div>
+                  </div>
+
+                  <ul className="mt-3 space-y-1.5 text-xs text-gray-600">
+                    <li className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                      <span className="font-bold text-gray-900">Catálogo de productos ILIMITADO (&gt;100 productos)</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                      <span>Soporte prioritario VIP 1 a 1 directo con el fundador</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                      <span>Checkout ultra-rápido por WhatsApp + 0% comisiones</span>
+                    </li>
+                  </ul>
+
+                  {!isBigPlan ? (
+                    <div className="mt-3.5 pt-3 border-t border-amber-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <p className="text-[11px] text-amber-900">
+                        Para pasar de Inicial a Big Taply, se abonan <strong>$37</strong> para activación inmediata.
+                      </p>
+                      <a
+                        href={`https://wa.me/584243087887?text=${encodeURIComponent(
+                          `Hola Derek, soy el dueño de *${business.name}* (taply.app/${business.slug}). Actualmente estoy en el *Plan Inicial ($12/mes)* y deseo mejorar al plan *Big Taply ($37)* para tener productos ilimitados y soporte prioritario. ¿Me indicas los datos para transferir los $37?`
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2.5 rounded-xl bg-[#00594C] hover:bg-[#00463C] text-white text-xs font-extrabold whitespace-nowrap active:scale-95 transition-transform flex items-center justify-center gap-1.5 shadow-xs"
+                      >
+                        <Crown className="w-3.5 h-3.5 text-amber-300" />
+                        <span>Mejorar a Big Taply ($37)</span>
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="mt-3 pt-2 text-[11px] font-semibold text-emerald-800 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Tienes acceso completo a todas las funciones ilimitadas.</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Founder WhatsApp Direct Info Box */}
+              <div className="mt-4 p-3.5 bg-gray-50 rounded-2xl border border-gray-200/80 flex items-center justify-between gap-3">
+                <div className="text-[11px] text-gray-500 leading-relaxed">
+                  <span className="font-bold text-gray-800 block">Atención directa con el Fundador</span>
+                  Activaciones y cambios de plan procesados en minutos vía Pago Móvil, Zelle o Binance.
+                </div>
+                <a
+                  href={`https://wa.me/584243087887?text=${encodeURIComponent(
+                    `Hola Derek, soy el dueño de *${business.name}* (taply.app/${business.slug}). Tengo una consulta sobre mi plan de suscripción en Taply.`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-100 text-gray-800 text-[11px] font-bold flex-shrink-0 active:scale-95 transition-all"
+                >
+                  WhatsApp: +58 424 3087887
+                </a>
+              </div>
             </motion.div>
           </motion.div>
         )}

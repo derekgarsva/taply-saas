@@ -43,7 +43,7 @@ function mapDbBusiness(row: any): Business {
     links: Array.isArray(row.links) ? row.links : [],
     pageViews: row.page_views || 0,
     active: row.active !== false,
-    plan: row.plan || 'mensual',
+    plan: row.plan || 'Plan Inicial ($12)',
     createdAt: row.created_at,
     ownerEmail: row.owner_email || '',
     ownerPin: row.owner_pin || '1234',

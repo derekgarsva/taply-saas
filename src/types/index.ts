@@ -23,7 +23,7 @@ export interface Business {
   links: MultiLinkItem[];
   pageViews: number;
   active?: boolean;
-  plan?: 'gratis' | 'mensual' | 'anual';
+  plan?: 'gratis' | 'mensual' | 'anual' | 'Plan Inicial ($12)' | 'Big Taply ($34)' | string;
   planExpiresAt?: string;
   createdAt: string;
   ownerEmail?: string;

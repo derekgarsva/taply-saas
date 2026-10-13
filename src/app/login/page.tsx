@@ -288,40 +288,22 @@ function LoginFormContent() {
             </div>
           </form>
 
-          {/* ════ SOLICITAR ACCESO A PANEL DUEÑO CON EL FUNDADOR DE TAPLY (LEAD GATEWAY) ════ */}
-          <div className="mt-6 pt-5 border-t border-gray-100">
-            <div className="bg-emerald-50/70 border border-emerald-200/90 rounded-2xl p-4 text-center">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#00594C] text-white text-[10px] font-extrabold uppercase tracking-wider mb-2">
-                Demostración Guiada
-              </span>
-              <h4 className="font-extrabold text-sm text-gray-900 leading-snug">
-                ¿Quieres probar el Panel de Dueño?
-              </h4>
-              <p className="text-[11px] text-gray-600 mt-1 mb-3.5 leading-relaxed">
-                Por privacidad y seguridad, solicita acceso directamente con el fundador de Taply para recibir tus credenciales de prueba y un recorrido personalizado.
-              </p>
+          {/* Footer Navigation Links */}
+          <div className="mt-6 pt-5 border-t border-gray-100 text-center space-y-2.5">
+            <Link
+              href="/solicitar-acceso"
+              className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-[#00594C] font-medium transition-colors"
+            >
+              <span>¿Quieres probar una demo guiada?</span>
+              <span className="font-bold underline text-[#00594C]">Solicitar acceso con el fundador →</span>
+            </Link>
 
-              <a
-                href="https://wa.me/584243087887?text=%C2%A1Hola!%20Quiero%20solicitar%20acceso%20demo%20al%20Panel%20de%20Due%C3%B1o%20de%20Taply%20para%20probar%20c%C3%B3mo%20gestionar%20mi%20cat%C3%A1logo."
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full h-11 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-extrabold flex items-center justify-center gap-2 shadow-xs active:scale-98 transition-all"
-              >
-                <MessageCircle className="w-4 h-4 fill-current" />
-                <span>Solicitar Acceso con el Fundador</span>
-              </a>
-
-              <span className="block text-[10px] text-gray-400 mt-2">
-                Atención directa por WhatsApp al +58 424 308 7887
-              </span>
-            </div>
-
-            <div className="mt-5 text-center">
+            <div>
               <Link
                 href="/onboarding"
-                className="text-xs text-gray-500 hover:text-gray-900 font-medium"
+                className="text-xs text-gray-400 hover:text-gray-700 font-medium"
               >
-                ¿Quieres crear tu propia tienda ahora? <span className="underline font-bold text-[#00594C]">Crear gratis en 60s</span>
+                ¿Quieres crear tu propia tienda ahora? <span className="underline font-bold text-gray-900">Crear gratis en 60s</span>
               </Link>
             </div>
           </div>

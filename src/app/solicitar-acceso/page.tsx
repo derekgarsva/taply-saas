@@ -138,24 +138,24 @@ export default function SolicitarAccesoPage() {
           </div>
         </div>
 
-        {/* ── THE INTERACTIVE SLIDE-TO-CONFIRM ACTION (SAME AS PRODUCT STOREFRONT) ── */}
-        <div className="bg-white rounded-3xl p-6 border-2 border-[#00594C]/20 shadow-md text-center">
-          <div className="flex items-center justify-center gap-2 mb-2 text-[#00594C]">
-            <MessageCircle className="w-5 h-5 fill-current" />
-            <span className="font-extrabold text-xs uppercase tracking-wider">
-              Solicitud Instantánea por WhatsApp
+        {/* ── THE INTERACTIVE SLIDE-TO-CONFIRM ACTION (SIN CONTENEDOR, EDGE-TO-EDGE EN MÓVIL) ── */}
+        <div className="w-full text-center py-3">
+          <div className="flex items-center justify-center gap-1.5 mb-1.5 text-[#00594C]">
+            <MessageCircle className="w-4 h-4 fill-current" />
+            <span className="font-extrabold text-[11px] uppercase tracking-wider">
+              Solicitud Directa por WhatsApp
             </span>
           </div>
 
-          <h3 className="font-extrabold text-base text-gray-950 mb-1">
+          <h3 className="font-extrabold text-lg sm:text-xl text-gray-950 mb-1 tracking-tight">
             Desliza para conectar con el fundador
           </h3>
           <p className="text-xs text-gray-500 mb-5">
-            Recibirás tu clave de prueba (PIN: <strong>4321</strong>) directamente en tu chat.
+            Recibirás tu clave directamente en tu chat.
           </p>
 
-          {/* Reusable Storefront Slide Component with Custom Label */}
-          <div className="max-w-md mx-auto">
+          {/* Edge-to-edge responsive slider con espacio lateral simétrico */}
+          <div className="w-full px-2 sm:px-4 mx-auto max-w-lg">
             <SlideConfirmWhatsApp
               onConfirm={handleSlideConfirm}
               accentColor="#00594C"
@@ -166,7 +166,7 @@ export default function SolicitarAccesoPage() {
 
           <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-gray-400">
             <PhoneCall className="w-3.5 h-3.5 text-gray-400" />
-            <span>Atención directa al <strong>+58 424 308 7887</strong></span>
+            <span>Atención personal al <strong>+58 424 308 7887</strong></span>
           </div>
         </div>
 

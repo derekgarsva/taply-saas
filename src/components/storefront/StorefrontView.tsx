@@ -289,7 +289,8 @@ export default function StorefrontView({
     else if (action === 'qr') setModal('qr');
     else if (action === 'copy') copyLink();
     else if (action === 'admin') {
-      window.location.href = `/login?store=${business.slug}`;
+      const isDemo = business.slug === 'panaderia-la-estrella' || business.slug === 'burger-station';
+      window.location.href = isDemo ? '/solicitar-acceso' : `/login?store=${business.slug}`;
     }
   };
 
@@ -604,7 +605,11 @@ export default function StorefrontView({
               </button>
               <span className="text-gray-300">•</span>
               <Link
-                href={`/login?store=${business.slug}`}
+                href={
+                  business.slug === 'panaderia-la-estrella' || business.slug === 'burger-station'
+                    ? '/solicitar-acceso'
+                    : `/login?store=${business.slug}`
+                }
                 className="inline-flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-700 font-medium"
               >
                 <Lock className="w-3 h-3 text-gray-400" />
