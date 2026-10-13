@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -15,15 +15,40 @@ import {
   Mail,
   Clock,
   ShieldAlert,
+  MessageCircle,
   X
 } from 'lucide-react';
 
 export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center p-6">
+          <div className="w-8 h-8 border-3 border-gray-300 border-t-[#00594C] rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <LoginFormContent />
+    </Suspense>
+  );
+}
+
+function LoginFormContent() {
   const router = useRouter();
-  const [identifier, setIdentifier] = useState('');
+  const searchParams = useSearchParams();
+  const prefilledStore = searchParams.get('store') || '';
+
+  const [identifier, setIdentifier] = useState(prefilledStore);
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Set store from query param if available
+  useEffect(() => {
+    if (prefilledStore) {
+      setIdentifier(prefilledStore);
+    }
+  }, [prefilledStore]);
 
   // Recovery modal state
   const [showForgotModal, setShowForgotModal] = useState(false);
@@ -188,10 +213,10 @@ export default function LoginPage() {
           </span>
         </Link>
         <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">
-          Acceso al Panel de Control
+          Acceso al Panel de Dueño
         </h2>
         <p className="mt-1 text-xs text-gray-500">
-          Gestiona tus productos, categorías y pedidos WhatsApp
+          Gestiona tus productos, categorías, precios y pedidos de WhatsApp
         </p>
       </div>
 
@@ -212,7 +237,7 @@ export default function LoginPage() {
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="dueno@laestrella.com o panaderia-la-estrella"
+                  placeholder="ej. panaderia-la-estrella o tu-correo@ejemplo.com"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   className="w-full h-11 px-3.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-[#00594C] transition-colors"
@@ -242,7 +267,7 @@ export default function LoginPage() {
               <div className="relative">
                 <input
                   type="password"
-                  placeholder="PIN de 4 a 6 dígitos (ej. 1234)"
+                  placeholder="PIN de 4 dígitos"
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
                   className="w-full h-11 px-3.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-[#00594C] transition-colors"
@@ -257,44 +282,38 @@ export default function LoginPage() {
                 disabled={loading}
                 className="w-full h-12 bg-[#00594C] text-white font-extrabold text-xs rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition-transform shadow-sm disabled:opacity-70"
               >
-                <span>{loading ? 'Verificando...' : 'Entrar al Panel'}</span>
+                <span>{loading ? 'Verificando credenciales...' : 'Entrar al Panel de Control'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </form>
 
-          {/* Quick Demo Access Buttons */}
+          {/* ════ SOLICITAR ACCESO A PANEL DUEÑO CON EL FUNDADOR DE TAPLY (LEAD GATEWAY) ════ */}
           <div className="mt-6 pt-5 border-t border-gray-100">
-            <span className="block text-center text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">
-              O entra directo en modo Demo
-            </span>
+            <div className="bg-emerald-50/70 border border-emerald-200/90 rounded-2xl p-4 text-center">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#00594C] text-white text-[10px] font-extrabold uppercase tracking-wider mb-2">
+                Demostración Guiada
+              </span>
+              <h4 className="font-extrabold text-sm text-gray-900 leading-snug">
+                ¿Quieres probar el Panel de Dueño?
+              </h4>
+              <p className="text-[11px] text-gray-600 mt-1 mb-3.5 leading-relaxed">
+                Por privacidad y seguridad, solicita acceso directamente con el fundador de Taply para recibir tus credenciales de prueba y un recorrido personalizado.
+              </p>
 
-            <div className="space-y-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setIdentifier('panaderia-la-estrella');
-                  setPin('1234');
-                  router.push('/dashboard?store=panaderia-la-estrella');
-                }}
-                className="w-full h-10 px-3 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 text-xs font-bold text-gray-800 flex items-center justify-between transition-colors"
+              <a
+                href="https://wa.me/584243087887?text=%C2%A1Hola!%20Quiero%20solicitar%20acceso%20demo%20al%20Panel%20de%20Due%C3%B1o%20de%20Taply%20para%20probar%20c%C3%B3mo%20gestionar%20mi%20cat%C3%A1logo."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full h-11 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-extrabold flex items-center justify-center gap-2 shadow-xs active:scale-98 transition-all"
               >
-                <span>🥐 Panadería La Estrella</span>
-                <span className="text-[10px] text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">Probar</span>
-              </button>
+                <MessageCircle className="w-4 h-4 fill-current" />
+                <span>Solicitar Acceso con el Fundador</span>
+              </a>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setIdentifier('burger-station');
-                  setPin('1234');
-                  router.push('/dashboard?store=burger-station');
-                }}
-                className="w-full h-10 px-3 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 text-xs font-bold text-gray-800 flex items-center justify-between transition-colors"
-              >
-                <span>🍔 Burger Station</span>
-                <span className="text-[10px] text-red-700 bg-red-100 px-2 py-0.5 rounded-full">Probar</span>
-              </button>
+              <span className="block text-[10px] text-gray-400 mt-2">
+                Atención directa por WhatsApp al +58 424 308 7887
+              </span>
             </div>
 
             <div className="mt-5 text-center">
@@ -302,7 +321,7 @@ export default function LoginPage() {
                 href="/onboarding"
                 className="text-xs text-gray-500 hover:text-gray-900 font-medium"
               >
-                ¿Aún no tienes tu catálogo? <span className="underline font-bold text-[#00594C]">Crear gratis en 60s</span>
+                ¿Quieres crear tu propia tienda ahora? <span className="underline font-bold text-[#00594C]">Crear gratis en 60s</span>
               </Link>
             </div>
           </div>

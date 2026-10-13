@@ -36,7 +36,7 @@ const initialBusinesses: Record<string, Business> = {
     active: true,
     plan: 'mensual',
     ownerEmail: 'dueno@laestrella.com',
-    ownerPin: '1234',
+    ownerPin: '4321',
     createdAt: new Date(Date.now() - 30 * 86400000).toISOString(),
   },
   'burger-station': {
@@ -62,7 +62,7 @@ const initialBusinesses: Record<string, Business> = {
     active: true,
     plan: 'anual',
     ownerEmail: 'dueno@burgerstation.com',
-    ownerPin: '1234',
+    ownerPin: '4321',
     createdAt: new Date(Date.now() - 15 * 86400000).toISOString(),
   }
 };
