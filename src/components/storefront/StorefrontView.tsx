@@ -613,7 +613,11 @@ export default function StorefrontView({
                 className="inline-flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-700 font-medium"
               >
                 <Lock className="w-3 h-3 text-gray-400" />
-                <span>Acceso Dueño</span>
+                <span>
+                  {business.slug === 'panaderia-la-estrella' || business.slug === 'burger-station'
+                    ? 'Solicitar Acceso'
+                    : 'Acceso Dueño'}
+                </span>
               </Link>
             </div>
           </footer>

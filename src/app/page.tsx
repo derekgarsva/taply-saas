@@ -423,7 +423,8 @@ export default function LandingPage() {
             © 2026 Taply. El creador de catálogos multilink para WhatsApp sin comisiones.
           </p>
 
-          <div className="flex items-center gap-4 text-xs font-semibold text-gray-500">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold text-gray-500">
+            <Link href="/solicitar-acceso" className="hover:text-gray-900 text-[#00594C] font-bold">Solicitar Acceso</Link>
             <Link href="/login" className="hover:text-gray-900">Acceso Dueño</Link>
             <Link href="/onboarding" className="hover:text-gray-900">Crear Tienda</Link>
           </div>
