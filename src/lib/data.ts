@@ -290,14 +290,17 @@ export async function getAllBusinessesWithStats(): Promise<Array<Business & { pr
 
 export async function updateBusiness(id: string, updates: Partial<Business>): Promise<Business | null> {
   const store = getStore();
-  if (!store.businesses[id]) {
-    // If id not found, look up by slug or first business
-    const foundId = Object.keys(store.businesses)[0];
-    if (!foundId) return null;
-    id = foundId;
+  let key = id;
+  if (!store.businesses[key]) {
+    const foundEntry = Object.entries(store.businesses).find(([k, b]) => b.id === id || b.slug === id || k === id);
+    if (foundEntry) {
+      key = foundEntry[0];
+    } else {
+      return null;
+    }
   }
-  store.businesses[id] = { ...store.businesses[id], ...updates };
-  return { ...store.businesses[id] };
+  store.businesses[key] = { ...store.businesses[key], ...updates };
+  return { ...store.businesses[key] };
 }
 
 export async function toggleBusinessStatus(id: string): Promise<Business | null> {

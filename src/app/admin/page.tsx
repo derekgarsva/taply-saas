@@ -434,6 +434,30 @@ export default function SuperAdminPage() {
     }
   };
 
+  // Update business plan from admin table / selector
+  const handleUpdateBusinessPlan = async (bizId: string, newPlan: string) => {
+    try {
+      const res = await fetch('/api/admin/businesses', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: bizId, plan: newPlan }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Error al actualizar plan');
+      }
+
+      setBusinesses((prev) =>
+        prev.map((b) => (b.id === bizId ? { ...b, plan: newPlan } : b))
+      );
+      const bizName = businesses.find((b) => b.id === bizId)?.name || 'comercio';
+      triggerToast(`⭐ Plan de "${bizName}" actualizado a ${newPlan}. Límites aplicados en tiempo real.`);
+      fetchData();
+    } catch {
+      triggerToast('❌ Error al cambiar el plan del comercio');
+    }
+  };
+
   // Open payment sheet pre-selecting a business
   const handleOpenPaymentForBiz = (bizId: string) => {
     setSelectedBizId(bizId);
@@ -486,10 +510,19 @@ export default function SuperAdminPage() {
         throw new Error(data.error || 'Error al guardar');
       }
 
+      // If tied to a store, update its plan immediately in real time
+      if (selectedBizId && paymentPlan) {
+        await fetch('/api/admin/businesses', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: selectedBizId, plan: paymentPlan }),
+        }).catch(() => {});
+      }
+
       setIsPaymentSheetOpen(false);
       setPaymentReference('');
       setPaymentNotes('');
-      triggerToast('✅ Cobro asentado y balance actualizado.');
+      triggerToast('✅ Cobro asentado y plan del negocio sincronizado en tiempo real.');
       fetchData();
     } catch (err: any) {
       setPaymentError(err.message || 'Error al registrar el pago');
@@ -907,13 +940,33 @@ export default function SuperAdminPage() {
                           >
                             {biz.category} {biz.city ? `· ${biz.city}` : ''}
                           </p>
-                          <div className="flex items-center gap-2 mt-1">
+                          <div className="flex flex-wrap items-center gap-2 mt-1.5">
                             <span className="text-[10px] text-emerald-500 font-semibold">
                               ${biz.totalSales?.toFixed(2) || '0.00'} GMV
                             </span>
                             <span className={`text-[10px] ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                               • {biz.productCount} prods
                             </span>
+                            <select
+                              value={
+                                (biz.plan || '').toLowerCase().includes('big') || (biz.plan || '').toLowerCase().includes('34') || (biz.plan || '').toLowerCase().includes('37')
+                                  ? 'Big Taply ($34)'
+                                  : 'Plan Inicial ($12)'
+                              }
+                              onClick={(e) => e.stopPropagation()}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                handleUpdateBusinessPlan(biz.id, e.target.value);
+                              }}
+                              className={`text-[10px] font-bold rounded-lg px-2 py-0.5 border outline-none cursor-pointer ${
+                                (biz.plan || '').toLowerCase().includes('big') || (biz.plan || '').toLowerCase().includes('34') || (biz.plan || '').toLowerCase().includes('37')
+                                  ? 'bg-amber-500/15 border-amber-500/30 text-amber-400'
+                                  : 'bg-emerald-500/15 border-emerald-500/30 text-emerald-500'
+                              }`}
+                            >
+                              <option value="Plan Inicial ($12)">Inicial ($12)</option>
+                              <option value="Big Taply ($34)">Big Taply ($34)</option>
+                            </select>
                           </div>
                         </div>
                       </div>
@@ -1019,15 +1072,27 @@ export default function SuperAdminPage() {
 
                         {/* Plan */}
                         <td className="py-4">
-                          <span
-                            className={`px-2.5 py-1 rounded-xl border font-medium capitalize text-[11px] ${
-                              isDark
-                                ? 'bg-neutral-900 border-neutral-800 text-neutral-300'
-                                : 'bg-neutral-100 border-neutral-200 text-neutral-700'
+                          <select
+                            value={
+                              (biz.plan || '').toLowerCase().includes('big') || (biz.plan || '').toLowerCase().includes('34') || (biz.plan || '').toLowerCase().includes('37')
+                                ? 'Big Taply ($34)'
+                                : 'Plan Inicial ($12)'
+                            }
+                            onChange={(e) => handleUpdateBusinessPlan(biz.id, e.target.value)}
+                            className={`px-2.5 py-1.5 rounded-xl border font-bold text-[11px] outline-none cursor-pointer transition-colors ${
+                              (biz.plan || '').toLowerCase().includes('big') || (biz.plan || '').toLowerCase().includes('34') || (biz.plan || '').toLowerCase().includes('37')
+                                ? isDark
+                                  ? 'bg-amber-500/15 border-amber-500/30 text-amber-300 hover:border-amber-400'
+                                  : 'bg-amber-50 border-amber-300 text-amber-900 hover:border-amber-400'
+                                : isDark
+                                ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300 hover:border-emerald-400'
+                                : 'bg-emerald-50 border-emerald-300 text-emerald-800 hover:border-emerald-400'
                             }`}
+                            title="Cambiar plan y límite de productos en tiempo real"
                           >
-                            {biz.plan || 'Mensual ($19)'}
-                          </span>
+                            <option value="Plan Inicial ($12)">Plan Inicial ($12) • 100 prods</option>
+                            <option value="Big Taply ($34)">Big Taply ($34) • Ilimitado</option>
+                          </select>
                         </td>
 
                         {/* Products */}

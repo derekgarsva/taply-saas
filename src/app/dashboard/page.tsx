@@ -236,6 +236,12 @@ function DashboardContent() {
         });
         showToastMsg(productModal.mode === 'create' ? '¡Producto creado!' : '¡Producto actualizado!');
         setProductModal({ open: false, mode: 'create', product: {} });
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        showToastMsg(errData.error || 'Error al guardar producto');
+        if (errData.limitReached) {
+          setShowPlanModal(true);
+        }
       }
     } catch {
       showToastMsg('Error al guardar producto');
@@ -725,25 +731,59 @@ function DashboardContent() {
 
               <button
                 type="button"
-                onClick={() => setProductModal({
-                  open: true,
-                  mode: 'create',
-                  product: {
-                    name: '',
-                    category: categories[0]?.name || 'General',
-                    price: 1.0,
-                    available: true,
-                    image: '',
-                    description: '',
-                    featured: false,
-                  },
-                })}
+                onClick={() => {
+                  if (products.length >= 100 && !isBigPlan) {
+                    showToastMsg('Has alcanzado el límite de 100 productos del Plan Inicial ($12).');
+                    setShowPlanModal(true);
+                    return;
+                  }
+                  setProductModal({
+                    open: true,
+                    mode: 'create',
+                    product: {
+                      name: '',
+                      category: categories[0]?.name || 'General',
+                      price: 1.0,
+                      available: true,
+                      image: '',
+                      description: '',
+                      featured: false,
+                    },
+                  });
+                }}
                 className="h-10 px-4 rounded-xl bg-[#00594C] text-white text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 shadow-xs whitespace-nowrap"
               >
                 <Plus size={16} strokeWidth={2.5} />
                 <span>Nuevo Producto</span>
               </button>
             </div>
+
+            {/* Product Limit Warning Banner for Plan Inicial */}
+            {products.length >= 100 && !isBigPlan && (
+              <div className="p-4 bg-amber-50 border border-amber-200/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-950 shadow-2xs">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-amber-200/80 text-amber-900 flex items-center justify-center flex-shrink-0">
+                    <Crown className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-extrabold text-amber-950">
+                      Límite de 100 productos alcanzado (Plan Inicial)
+                    </h5>
+                    <p className="text-[11px] text-amber-800">
+                      Tienes {products.length}/100 productos. Para desbloquear catálogo ilimitado, solicita el plan Big Taply al fundador.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPlanModal(true)}
+                  className="px-3.5 py-2 rounded-xl bg-[#00594C] text-white text-xs font-bold whitespace-nowrap active:scale-95 transition-transform flex items-center justify-center gap-1.5 shadow-xs"
+                >
+                  <Crown className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Mejorar a Big Taply ($37)</span>
+                </button>
+              </div>
+            )}
 
             {/* Product Cards List */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

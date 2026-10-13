@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { getAllBusinessesWithStats, toggleBusinessStatus, setBusinessActive } from '@/lib/db';
+import { getAllBusinessesWithStats, toggleBusinessStatus, setBusinessActive, updateBusiness } from '@/lib/db';
 
 function checkAuth(): boolean {
   const cookieStore = cookies();
@@ -28,14 +28,16 @@ export async function PATCH(req: Request) {
 
   try {
     const body = await req.json();
-    const { id, active } = body;
+    const { id, active, plan } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'ID o slug requerido' }, { status: 400 });
     }
 
     let updated;
-    if (typeof active === 'boolean') {
+    if (plan !== undefined) {
+      updated = await updateBusiness(id, { plan });
+    } else if (typeof active === 'boolean') {
       updated = await setBusinessActive(id, active);
     } else {
       updated = await toggleBusinessStatus(id);

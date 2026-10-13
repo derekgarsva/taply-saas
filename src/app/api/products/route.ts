@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getProductsByBusinessId, saveProduct, deleteProduct } from '@/lib/db';
+import { getProductsByBusinessId, saveProduct, deleteProduct, getBusinessById, getBusinessBySlug } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -17,6 +17,36 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     if (!body.businessId || !body.name || body.price === undefined) {
       return NextResponse.json({ error: 'businessId, nombre y precio son requeridos' }, { status: 400 });
+    }
+
+    // Enforcement: Check plan product limits on creation (not when editing an existing product)
+    const isNewProduct = !body.id;
+    if (isNewProduct) {
+      const biz = (await getBusinessById(body.businessId)) || (await getBusinessBySlug(body.businessId));
+      if (biz) {
+        const plan = (biz.plan || 'Plan Inicial').toLowerCase();
+        const isUnlimited =
+          plan.includes('big') ||
+          plan.includes('34') ||
+          plan.includes('37') ||
+          plan.includes('anual') ||
+          plan.includes('ilimitado');
+
+        if (!isUnlimited) {
+          const currentProducts = await getProductsByBusinessId(biz.id);
+          if (currentProducts.length >= 100) {
+            return NextResponse.json(
+              {
+                error: 'Has alcanzado el límite máximo de 100 productos del Plan Inicial ($12/mes). Para desbloquear productos ilimitados, solicita el plan Big Taply con el fundador.',
+                limitReached: true,
+                maxAllowed: 100,
+                currentCount: currentProducts.length,
+              },
+              { status: 403 }
+            );
+          }
+        }
+      }
     }
 
     const saved = await saveProduct(body.businessId, body);
