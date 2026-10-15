@@ -24,6 +24,7 @@ import {
   InputOTPSlot,
   InputOTPSeparator,
 } from '@/components/ui/input-otp';
+import TextReveal from '@/components/ui/text-reveal';
 
 export default function LoginPage() {
   return (
@@ -234,9 +235,11 @@ function LoginFormContent() {
             Taply
           </span>
         </Link>
-        <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">
-          Acceso al Panel de Dueño
-        </h2>
+        <TextReveal
+          as="h2"
+          text="Acceso al Panel de Dueño"
+          className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight"
+        />
         <p className="mt-1 text-xs text-gray-500">
           Gestiona tus productos, categorías, precios y pedidos de WhatsApp
         </p>

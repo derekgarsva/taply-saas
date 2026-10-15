@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowRight, Check, Sparkles, Store, Phone, MapPin, AlertCircle } from 'lucide-react';
+import TextReveal from '@/components/ui/text-reveal';
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -76,9 +77,11 @@ export default function OnboardingPage() {
             Taply
           </span>
         </Link>
-        <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">
-          Crea tu Catálogo Multilink en 60 segundos
-        </h2>
+        <TextReveal
+          as="h2"
+          text="Crea tu Catálogo Multilink en 60 segundos"
+          className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight"
+        />
         <p className="mt-1 text-xs text-gray-500">
           Comienza gratis sin tarjeta ni configuraciones complicadas
         </p>

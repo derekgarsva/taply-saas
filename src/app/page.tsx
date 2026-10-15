@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import CardNav from '@/components/navigation/CardNav';
 import SiteFooter from '@/components/footer/SiteFooter';
+import TextReveal from '@/components/ui/text-reveal';
 
 export default function LandingPage() {
   return (
@@ -46,9 +47,11 @@ export default function LandingPage() {
           <span>La forma más rápida de vender por WhatsApp en 2026</span>
         </motion.div>
 
-        <h1 className="text-4xl sm:text-6xl font-extrabold text-gray-950 tracking-tight leading-tight sm:leading-none max-w-4xl mx-auto">
-          Convierte tu enlace en bio en una <span className="text-[#00594C] underline decoration-[#00594C]/30">máquina de pedidos</span> por WhatsApp
-        </h1>
+        <TextReveal
+          as="h1"
+          text="Convierte tu enlace en bio en una máquina de pedidos por WhatsApp"
+          className="text-4xl sm:text-6xl font-extrabold text-gray-950 tracking-tight leading-tight sm:leading-none max-w-4xl mx-auto"
+        />
 
         <motion.p
           initial={{ opacity: 0, y: 12 }}
@@ -189,9 +192,11 @@ export default function LandingPage() {
           <span className="text-xs font-extrabold text-[#00594C] uppercase tracking-widest">
             PRUÉBALO TÚ MISMO
           </span>
-          <h2 className="text-3xl font-extrabold text-gray-950 mt-1">
-            Catálogos de ejemplo listos para probar
-          </h2>
+          <TextReveal
+            as="h2"
+            text="Catálogos de ejemplo listos para probar"
+            className="text-3xl font-extrabold text-gray-950 mt-1"
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">

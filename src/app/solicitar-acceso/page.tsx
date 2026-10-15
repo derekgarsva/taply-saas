@@ -17,6 +17,7 @@ import {
   PhoneCall
 } from 'lucide-react';
 import SlideConfirmWhatsApp from '@/components/storefront/SlideConfirmWhatsApp';
+import TextReveal from '@/components/ui/text-reveal';
 
 export default function SolicitarAccesoPage() {
   const founderPhone = '584243087887';
@@ -73,9 +74,11 @@ export default function SolicitarAccesoPage() {
 
         {/* Title & Subtitle */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-950 tracking-tight leading-tight">
-            Solicita acceso al <span className="text-[#00594C]">Panel de Dueño</span> con el fundador de Taply
-          </h1>
+          <TextReveal
+            as="h1"
+            text="Solicita acceso al Panel de Dueño con el fundador de Taply"
+            className="text-2xl sm:text-3xl font-extrabold text-gray-950 tracking-tight leading-tight"
+          />
           <p className="mt-3 text-xs sm:text-sm text-gray-600 leading-relaxed max-w-md mx-auto">
             Por privacidad y seguridad de las tiendas de demostración, el acceso se gestiona de forma directa y personalizada. Habla con el fundador para recibir tu PIN de prueba.
           </p>

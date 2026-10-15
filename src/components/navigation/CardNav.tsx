@@ -205,22 +205,22 @@ export default function CardNav() {
             </ul>
           </nav>
 
-          {/* ── Desktop CTAs ── */}
-          <div className="hidden lg:flex items-center gap-2.5 flex-shrink-0">
+          {/* ── Desktop & Laptop CTAs (Luxurious, High-Contrast & Perfectly Sized) ── */}
+          <div className="hidden lg:flex items-center gap-2 xl:gap-3 flex-shrink-0 whitespace-nowrap">
             <Link
               href="/login"
-              className="text-xs font-bold text-gray-800 hover:text-gray-950 px-3.5 py-2 rounded-full hover:bg-gray-900/[0.06] transition-colors flex items-center gap-1.5"
+              className="text-xs xl:text-[13px] font-bold text-gray-700 hover:text-gray-950 px-3 py-2 rounded-full hover:bg-black/[0.05] transition-colors flex items-center gap-1.5"
             >
-              <Lock className="w-3.5 h-3.5 text-gray-500" />
+              <Lock className="w-3.5 h-3.5 text-gray-400" />
               <span>Acceso Dueño</span>
             </Link>
 
             <Link
               href="/onboarding"
-              className="h-10 px-4.5 rounded-full bg-[#00594C] hover:bg-[#00463C] text-white active:scale-95 text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-sm"
+              className="group relative h-10 px-5 rounded-full bg-gradient-to-r from-[#00594C] via-[#006859] to-[#004D41] hover:from-[#006859] hover:to-[#00594C] text-white active:scale-95 text-xs xl:text-[13px] font-extrabold tracking-tight flex items-center gap-2 transition-all duration-200 shadow-[0_2px_10px_rgba(0,89,76,0.25),inset_0_1px_1px_rgba(255,255,255,0.35)] hover:shadow-[0_4px_16px_rgba(0,89,76,0.38),inset_0_1px_1px_rgba(255,255,255,0.5)]"
             >
               <span>Crear Catálogo</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform duration-150" />
             </Link>
           </div>
 

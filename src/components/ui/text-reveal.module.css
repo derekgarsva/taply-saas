@@ -1,0 +1,61 @@
+.reveal {
+  --reveal-blur: 8px;
+  --reveal-duration: 0.58s;
+  --reveal-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  display: block;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.line {
+  display: inline;
+}
+
+.clip {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+.word {
+  display: inline-block;
+  will-change: transform, filter, opacity;
+  opacity: 0;
+  filter: blur(var(--reveal-blur));
+  transform: translateY(105%);
+  animation: word-reveal var(--reveal-duration) var(--reveal-ease) var(--reveal-delay, 0s) forwards;
+}
+
+@keyframes word-reveal {
+  from {
+    opacity: 0;
+    filter: blur(var(--reveal-blur));
+    transform: translateY(105%);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateY(0%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .word {
+    animation: none;
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}

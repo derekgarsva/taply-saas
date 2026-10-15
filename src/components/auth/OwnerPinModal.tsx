@@ -21,6 +21,7 @@ import {
   InputOTPSlot,
   InputOTPSeparator
 } from '@/components/ui/input-otp';
+import TextReveal from '@/components/ui/text-reveal';
 import { Business } from '@/types';
 
 interface OwnerPinModalProps {
@@ -188,9 +189,11 @@ export default function OwnerPinModal({
               <span>Panel de Control del Dueño</span>
             </div>
 
-            <h2 className="text-xl sm:text-2xl font-extrabold text-gray-950 tracking-tight">
-              {business.name}
-            </h2>
+            <TextReveal
+              as="h2"
+              text={business.name}
+              className="text-xl sm:text-2xl font-extrabold text-gray-950 tracking-tight"
+            />
             <p className="text-xs text-gray-500 mt-1 max-w-xs">
               Ingresa tu clave de 6 dígitos para administrar tu catálogo, productos y pedidos.
             </p>
