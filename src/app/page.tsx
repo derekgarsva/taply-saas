@@ -25,46 +25,14 @@ import {
   Sliders,
   DollarSign
 } from 'lucide-react';
+import CardNav from '@/components/navigation/CardNav';
+import SiteFooter from '@/components/footer/SiteFooter';
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#FDFDFD] text-gray-900 font-sans selection:bg-[#00594C] selection:text-white">
-      {/* ══ TOP NAVBAR ══ */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="w-9 h-9 rounded-2xl bg-[#00594C] text-white flex items-center justify-center font-extrabold text-base shadow-sm">
-              T
-            </span>
-            <span className="font-extrabold text-xl tracking-tight text-gray-900">
-              Taply
-            </span>
-          </Link>
-
-          <div className="hidden md:flex items-center gap-6 text-xs font-bold text-gray-600">
-            <a href="#features" className="hover:text-gray-900 transition-colors">Características</a>
-            <a href="#demos" className="hover:text-gray-900 transition-colors">Demos en Vivo</a>
-            <a href="#pricing" className="hover:text-gray-900 transition-colors">Precios</a>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="text-xs font-bold text-gray-700 hover:text-gray-900 px-3 py-2 rounded-xl transition-colors"
-            >
-              Iniciar Sesión
-            </Link>
-
-            <Link
-              href="/onboarding"
-              className="h-10 px-4 rounded-full bg-[#00594C] text-white hover:bg-[#00463C] active:scale-95 text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-sm"
-            >
-              <span>Crear Catálogo</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-        </div>
-      </nav>
+      {/* ══ FLOATING CARD NAVBAR WITH SLIDING PILL NAVIGATION MENU ══ */}
+      <CardNav />
 
       {/* ══ HERO SECTION ══ */}
       <section className="pt-12 pb-20 px-4 max-w-6xl mx-auto text-center">
@@ -409,27 +377,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ══ FOOTER ══ */}
-      <footer className="py-12 bg-white border-t border-gray-100 px-4 text-center">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="w-7 h-7 rounded-xl bg-[#00594C] text-white flex items-center justify-center font-extrabold text-xs">
-              T
-            </span>
-            <span className="font-extrabold text-base text-gray-900">Taply SaaS</span>
-          </div>
-
-          <p className="text-xs text-gray-400">
-            © 2026 Taply. El creador de catálogos multilink para WhatsApp sin comisiones.
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold text-gray-500">
-            <Link href="/solicitar-acceso" className="hover:text-gray-900 text-[#00594C] font-bold">Solicitar Acceso</Link>
-            <Link href="/login" className="hover:text-gray-900">Acceso Dueño</Link>
-            <Link href="/onboarding" className="hover:text-gray-900">Crear Tienda</Link>
-          </div>
-        </div>
-      </footer>
+      {/* ══ SITE FOOTER (UIARC LOGO VARIANT WITH NEWSLETTER & RISING BRAND MARK) ══ */}
+      <SiteFooter variant="logo" />
     </div>
   );
 }

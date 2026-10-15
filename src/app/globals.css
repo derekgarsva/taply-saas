@@ -488,3 +488,42 @@ body {
   }
 }
 
+/* ── Navigation Menu & Popover Tokens ── */
+:root {
+  --nav-hover: rgba(0, 0, 0, 0.05);
+  --tabs-duration: 250ms;
+  --tabs-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ring-duration: 150ms;
+}
+
+@keyframes popover-flip-in {
+  from {
+    transform: perspective(600px) rotateX(-10deg) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: perspective(600px) rotateX(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes popover-flip-out {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+}
+
+.popover-panel[data-open] {
+  animation: popover-flip-in 220ms cubic-bezier(0, 0, 0.2, 1) forwards;
+}
+
+.popover-panel[data-closed] {
+  animation: popover-flip-out 160ms cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+
