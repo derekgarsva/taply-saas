@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,6 +18,12 @@ import {
   MessageCircle,
   X
 } from 'lucide-react';
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+  InputOTPSeparator,
+} from '@/components/ui/input-otp';
 
 export default function LoginPage() {
   return (
@@ -42,6 +48,14 @@ function LoginFormContent() {
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const isSubmittingRef = useRef(false);
+
+  const isDemo =
+    identifier.trim().toLowerCase() === 'panaderia-la-estrella' ||
+    identifier.trim().toLowerCase() === 'burger-station' ||
+    identifier.trim().toLowerCase().includes('demo');
 
   // Set store from query param if available
   useEffect(() => {
@@ -78,11 +92,13 @@ function LoginFormContent() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmittingRef.current || isNavigating) return;
     if (!identifier.trim() || !pin.trim()) {
       setError('Por favor ingresa tu correo (o link de tienda) y tu PIN.');
       return;
     }
 
+    isSubmittingRef.current = true;
     setLoading(true);
     setError(null);
 
@@ -99,12 +115,18 @@ function LoginFormContent() {
         throw new Error(data.error || 'Credenciales inválidas.');
       }
 
-      // Success: redirect directly to this owner's dashboard
-      router.push(`/dashboard?store=${data.business.slug}`);
+      setIsSuccess(true);
+      setIsNavigating(true);
+
+      // Success: redirect directly to this owner's dashboard with smooth transition
+      setTimeout(() => {
+        router.push(`/dashboard?store=${data.business.slug}`);
+      }, 550);
     } catch (err: any) {
       setError(err.message || 'Error al iniciar sesión.');
-    } finally {
+      setIsSuccess(false);
       setLoading(false);
+      isSubmittingRef.current = false;
     }
   };
 
@@ -247,9 +269,9 @@ function LoginFormContent() {
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-between mb-2">
                 <label className="block text-xs font-semibold text-gray-700">
-                  PIN de Acceso
+                  PIN de Acceso de 6 Dígitos
                 </label>
                 <button
                   type="button"
@@ -264,26 +286,56 @@ function LoginFormContent() {
                   ¿Olvidaste tu PIN?
                 </button>
               </div>
-              <div className="relative">
-                <input
-                  type="password"
-                  placeholder="PIN de 4 dígitos"
+              <div className="py-2 flex justify-center">
+                <InputOTP
+                  maxLength={6}
                   value={pin}
-                  onChange={(e) => setPin(e.target.value)}
-                  className="w-full h-11 px-3.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-[#00594C] transition-colors"
-                  required
-                />
+                  onChange={(v) => {
+                    if (isNavigating) return;
+                    setPin(v);
+                    if (error) setError(null);
+                  }}
+                  disabled={loading || isNavigating}
+                  aria-invalid={!!error}
+                  success={isSuccess}
+                >
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                  </InputOTPGroup>
+                  <InputOTPSeparator />
+                  <InputOTPGroup>
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
               </div>
             </div>
 
             <div className="pt-2">
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full h-12 bg-[#00594C] text-white font-extrabold text-xs rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition-transform shadow-sm disabled:opacity-70"
+                disabled={loading || isNavigating || pin.length < 4}
+                className="w-full h-12 bg-[#00594C] hover:bg-[#00463C] text-white font-extrabold text-xs sm:text-sm rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition-all shadow-sm disabled:opacity-50 disabled:pointer-events-none"
               >
-                <span>{loading ? 'Verificando credenciales...' : 'Entrar al Panel de Control'}</span>
-                <ArrowRight className="w-4 h-4" />
+                {isSuccess ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                    <span>¡PIN verificado! Entrando al panel...</span>
+                  </>
+                ) : loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    <span>Verificando credenciales...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Entrar al Panel de Control</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </div>
           </form>

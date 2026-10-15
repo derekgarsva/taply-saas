@@ -13,6 +13,7 @@ import CartBottomSheet from './CartBottomSheet';
 import ProductDetailSheet from './ProductDetailSheet';
 import QRCodeModal from './QRCodeModal';
 import MultiLinkBar from './MultiLinkBar';
+import OwnerPinModal from '@/components/auth/OwnerPinModal';
 import { Share2, MapPin, Plus, Check, X, Sparkles, Info, Lock, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -32,7 +33,7 @@ export default function StorefrontView({
   const [cart, setCart] = useState<CartState>({});
   const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
   const [searchQuery, setSearchQuery] = useState('');
-  const [modal, setModal] = useState<'taply' | 'about' | 'qr' | null>(null);
+  const [modal, setModal] = useState<'taply' | 'about' | 'qr' | 'ownerPin' | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [directWhatsAppUrl, setDirectWhatsAppUrl] = useState<string | null>(null);
   const [categoriesDocked, setCategoriesDocked] = useState(false);
@@ -288,10 +289,7 @@ export default function StorefrontView({
     else if (action === 'about') setModal('about');
     else if (action === 'qr') setModal('qr');
     else if (action === 'copy') copyLink();
-    else if (action === 'admin') {
-      const isDemo = business.slug === 'panaderia-la-estrella' || business.slug === 'burger-station';
-      window.location.href = isDemo ? '/solicitar-acceso' : `/login?store=${business.slug}`;
-    }
+    else if (action === 'admin') setModal('ownerPin');
   };
 
   const currentStoreUrl = typeof window !== 'undefined' ? window.location.href : `https://taply.app/${business.slug}`;
@@ -604,21 +602,14 @@ export default function StorefrontView({
                 Ver Código QR
               </button>
               <span className="text-gray-300">•</span>
-              <Link
-                href={
-                  business.slug === 'panaderia-la-estrella' || business.slug === 'burger-station'
-                    ? '/solicitar-acceso'
-                    : `/login?store=${business.slug}`
-                }
-                className="inline-flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-700 font-medium"
+              <button
+                type="button"
+                onClick={() => setModal('ownerPin')}
+                className="inline-flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-700 font-medium transition-colors"
               >
                 <Lock className="w-3 h-3 text-gray-400" />
-                <span>
-                  {business.slug === 'panaderia-la-estrella' || business.slug === 'burger-station'
-                    ? 'Solicitar Acceso'
-                    : 'Acceso Dueño'}
-                </span>
-              </Link>
+                <span>Panel Dueño</span>
+              </button>
             </div>
           </footer>
         </main>
@@ -839,6 +830,13 @@ export default function StorefrontView({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ══ Owner 6-Digit PIN Modal with smooth animation and anti-spam ══ */}
+      <OwnerPinModal
+        business={business}
+        isOpen={modal === 'ownerPin'}
+        onClose={() => setModal(null)}
+      />
 
       {/* ══ Toast Notification ══ */}
       <AnimatePresence>

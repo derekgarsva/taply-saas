@@ -369,3 +369,122 @@ body {
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── 6-Digit OTP Keyframes & Variables ── */
+:root {
+  --radius-xl: 16px;
+  --radius-lg: 12px;
+  --otp-wave-duration: 1150ms;
+  --otp-wave-stagger: 70ms;
+  --otp-wave-dim: 0.28;
+  --otp-wave-ease: ease-in-out;
+  --otp-trail-duration: 400ms;
+  --otp-trail-stagger: 45ms;
+  --otp-trail-width: 3px;
+  --otp-trail-color: rgb(0 0 0 / 45%);
+  --otp-trail-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --otp-success-duration: 340ms;
+  --otp-success-stagger: 48ms;
+  --otp-success-width: 3px;
+  --otp-success-color: #00594C;
+  --otp-success-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --otp-bounce-duration: 420ms;
+  --otp-bounce-lift: 8px;
+}
+
+.dark {
+  --otp-trail-color: rgb(255 255 255 / 55%);
+  --otp-success-color: #008774;
+}
+
+.otp-processing {
+  animation: otp-processing var(--otp-wave-duration) var(--otp-wave-ease)
+    calc(var(--otp-wave-index) * var(--otp-wave-stagger)) infinite both;
+  will-change: opacity;
+}
+
+.otp-trail {
+  animation: otp-trail var(--otp-trail-duration) var(--otp-trail-ease)
+    calc(var(--otp-trail-index) * var(--otp-trail-stagger)) forwards;
+}
+
+@keyframes otp-trail {
+  from {
+    box-shadow: 0 0 0 var(--otp-trail-width) var(--otp-trail-color);
+  }
+  to {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.otp-trail-success {
+  animation: otp-trail-success var(--otp-success-duration) cubic-bezier(0.33, 0, 0.67, 1)
+    calc(var(--otp-trail-index) * var(--otp-success-stagger)) forwards;
+}
+
+@keyframes otp-trail-success {
+  0%,
+  24% {
+    box-shadow: 0 0 0 var(--otp-success-width) var(--otp-success-color);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.otp-bounce {
+  animation: otp-bounce var(--otp-bounce-duration) linear
+    calc(var(--otp-trail-index) * var(--otp-success-stagger)) forwards;
+  will-change: transform;
+}
+
+@keyframes otp-bounce {
+  0% {
+    transform: translateY(0);
+    animation-timing-function: var(--otp-trail-ease);
+  }
+  22% {
+    transform: translateY(calc(var(--otp-bounce-lift) * -1));
+    animation-timing-function: linear;
+  }
+  38% {
+    transform: translateY(calc(var(--otp-bounce-lift) * -1));
+    animation-timing-function: cubic-bezier(0.4, 0, 0.5, 1);
+  }
+  60% {
+    transform: translateY(calc(var(--otp-bounce-lift) * 0.3));
+    animation-timing-function: cubic-bezier(0.33, 0, 0.67, 1);
+  }
+  78% {
+    transform: translateY(calc(var(--otp-bounce-lift) * -0.15));
+    animation-timing-function: cubic-bezier(0.33, 0, 0.67, 1);
+  }
+  92% {
+    transform: translateY(calc(var(--otp-bounce-lift) * 0.06));
+    animation-timing-function: cubic-bezier(0.33, 0, 0.67, 1);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes otp-processing {
+  0%,
+  40%,
+  100% {
+    opacity: 1;
+  }
+  16% {
+    opacity: var(--otp-wave-dim);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .otp-processing,
+  .otp-trail,
+  .otp-trail-success,
+  .otp-bounce {
+    animation: none;
+  }
+}
+
