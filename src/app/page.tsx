@@ -199,7 +199,11 @@ export default function LandingPage() {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+        <AnimatedGroup
+          variant="blur-fade"
+          stagger={0.1}
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto"
+        >
           {/* Demo 1 */}
           <TiltCard maxTilt={5} scaleHover={1.02}>
             <Link
@@ -253,7 +257,7 @@ export default function LandingPage() {
               </div>
             </Link>
           </TiltCard>
-        </div>
+        </AnimatedGroup>
       </section>
 
       {/* ══ PRICING ══ */}
@@ -271,7 +275,11 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto items-stretch">
+          <AnimatedGroup
+            variant="blur-fade"
+            stagger={0.12}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto items-stretch"
+          >
             {/* Starter Plan $12 */}
             <div className="p-8 rounded-3xl bg-white border border-gray-200 shadow-2xs flex flex-col justify-between">
               <div>
@@ -377,7 +385,7 @@ export default function LandingPage() {
                 </div>
               </div>
             </TiltCard>
-          </div>
+          </AnimatedGroup>
 
         </div>
       </section>

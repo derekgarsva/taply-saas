@@ -70,9 +70,9 @@ const defaultColumns: SiteFooterColumn[] = [
 ];
 
 const defaultLegal: SiteFooterLink[] = [
-  { label: 'Privacidad', href: '#' },
-  { label: 'Términos', href: '#' },
-  { label: 'Seguridad', href: '#' },
+  { label: 'Privacidad', href: '/terminos#privacidad' },
+  { label: 'Términos y Condiciones', href: '/terminos' },
+  { label: 'Seguridad', href: '/terminos#seguridad' },
 ];
 
 const defaultSocials: SiteFooterLink[] = [

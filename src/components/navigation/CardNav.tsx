@@ -175,7 +175,7 @@ export default function CardNav() {
               {/* 2. Características */}
               <li>
                 <a
-                  href="#features"
+                  href="/#features"
                   className="px-3 py-1.5 rounded-full text-xs xl:text-sm font-bold text-gray-700 hover:text-gray-950 hover:bg-gray-900/[0.05] transition-colors"
                 >
                   Características
@@ -185,7 +185,7 @@ export default function CardNav() {
               {/* 3. Precios */}
               <li>
                 <a
-                  href="#pricing"
+                  href="/#pricing"
                   className="px-3 py-1.5 rounded-full text-xs xl:text-sm font-bold text-gray-700 hover:text-gray-950 hover:bg-gray-900/[0.05] transition-colors"
                 >
                   Planes & Precios
@@ -290,7 +290,7 @@ export default function CardNav() {
               {/* Navigation Links */}
               <div className="grid grid-cols-2 gap-2 pt-1 border-t border-gray-200/60">
                 <a
-                  href="#features"
+                  href="/#features"
                   onClick={() => setMobileOpen(false)}
                   className="p-2.5 rounded-xl text-xs font-bold text-gray-800 hover:bg-gray-100 flex items-center gap-2"
                 >
@@ -299,7 +299,7 @@ export default function CardNav() {
                 </a>
 
                 <a
-                  href="#pricing"
+                  href="/#pricing"
                   onClick={() => setMobileOpen(false)}
                   className="p-2.5 rounded-xl text-xs font-bold text-gray-800 hover:bg-gray-100 flex items-center gap-2"
                 >
