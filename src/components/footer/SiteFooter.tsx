@@ -385,36 +385,23 @@ export const SiteFooter = forwardRef<HTMLElement, SiteFooterProps>(function Site
         </div>
       </div>
 
-      {/* ══ LOGO VARIANT: GIANT ARC / TAPLY MARK RISING AT THE BOTTOM ══ */}
+      {/* ══ LOGO VARIANT: GIANT "taply" TYPOGRAPHIC WATERMARK RISING AT THE BOTTOM ══ */}
       {variant === 'logo' && (
         <motion.div
-          className="relative w-full max-w-4xl mx-auto mt-10 -mb-6 pointer-events-none select-none overflow-hidden flex justify-center opacity-70"
-          initial={reduced ? false : { opacity: 0, y: 35 }}
-          whileInView={{ opacity: 0.75, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: reduced ? 0 : 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="relative w-full max-w-6xl mx-auto mt-12 -mb-6 pointer-events-none select-none overflow-hidden flex justify-center text-center"
+          initial={reduced ? false : { opacity: 0, y: 25 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.15 }}
+          transition={{ duration: reduced ? 0 : 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
-          <svg
-            className="w-full h-24 sm:h-36 max-w-2xl"
-            viewBox="0 3.5 64 30"
-            fill="none"
-            strokeWidth="3.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            preserveAspectRatio="xMidYMin meet"
+          <span
+            className="text-[22vw] sm:text-[20vw] md:text-[18vw] lg:text-[210px] font-black tracking-tighter lowercase leading-none select-none text-transparent bg-gradient-to-b from-[#00594C]/25 via-[#00594C]/8 to-transparent bg-clip-text block"
+            style={{
+              WebkitTextStroke: '1.5px rgba(0, 89, 76, 0.25)',
+            }}
           >
-            <defs>
-              <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#00594C" />
-                <stop offset="100%" stopColor="#008774" />
-              </linearGradient>
-            </defs>
-            <g stroke={`url(#${gradientId})`}>
-              <path d="M9 48V29C9 15 19 7 32 7s23 8 23 22v19" />
-              <path d="M20 48V31c0-8 5-13 12-13s12 5 12 13v17" />
-              <path d="M32 38v10" />
-            </g>
-          </svg>
+            taply
+          </span>
         </motion.div>
       )}
     </footer>

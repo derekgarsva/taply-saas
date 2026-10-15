@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -10,26 +10,20 @@ import {
   X,
   Store,
   Flame,
-  ShieldCheck,
   Lock,
   ChevronDown,
   Layers,
   DollarSign,
-  Smartphone
+  CheckCircle2
 } from 'lucide-react';
-import {
-  NavigationMenu,
-  NavigationMenuList,
-  NavigationMenuItem,
-  NavigationMenuTrigger,
-  NavigationMenuContent,
-  NavigationMenuLink,
-} from './navigation-menu';
 
 export default function CardNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [demosOpen, setDemosOpen] = useState(false);
+  const demosTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Track scroll position for subtle elevation
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -38,10 +32,10 @@ export default function CardNav() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on resize to desktop
+  // Close mobile menu automatically if viewport expands to desktop
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 768) {
+      if (window.innerWidth >= 1024) {
         setMobileOpen(false);
       }
     };
@@ -49,115 +43,175 @@ export default function CardNav() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const handleDemosEnter = () => {
+    if (demosTimeoutRef.current) clearTimeout(demosTimeoutRef.current);
+    setDemosOpen(true);
+  };
+
+  const handleDemosLeave = () => {
+    demosTimeoutRef.current = setTimeout(() => {
+      setDemosOpen(false);
+    }, 150);
+  };
+
   return (
-    <header className="sticky top-3 sm:top-4 z-50 w-full px-3 sm:px-6 max-w-6xl mx-auto font-sans transition-all">
-      {/* ══ FLOATING CARD CONTAINER (REACTBITS CARD-NAV ARCHITECTURE) ══ */}
+    <header className="sticky top-3 sm:top-4 z-50 w-full px-3 sm:px-6 max-w-6xl mx-auto font-sans">
+      {/* ══ FLOATING TRANSLUCENT CARD CONTAINER (REACTBITS CARD-NAV) ══ */}
       <div
-        className={`relative w-full rounded-2xl sm:rounded-full bg-white/90 backdrop-blur-md border border-gray-200/80 transition-all duration-300 ${
-          scrolled ? 'shadow-md shadow-black/5 border-gray-300/80' : 'shadow-xs'
+        className={`relative w-full rounded-2xl lg:rounded-full bg-white/75 backdrop-blur-xl supports-[backdrop-filter]:bg-white/65 border border-gray-300/80 ring-1 ring-black/5 transition-all duration-200 ${
+          scrolled
+            ? 'shadow-[0_12px_36px_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.04)] border-gray-400/80 bg-white/85'
+            : 'shadow-[0_8px_28px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.03)]'
         }`}
       >
-        <div className="h-14 sm:h-16 px-3.5 sm:px-6 flex items-center justify-between gap-2">
-          {/* ── Brand Logo ── */}
+        <div className="h-14 lg:h-16 px-3.5 sm:px-6 flex items-center justify-between gap-3">
+          {/* ── Brand Logo (High Contrast) ── */}
           <Link
             href="/"
             onClick={() => setMobileOpen(false)}
-            className="flex items-center gap-2 flex-shrink-0 group"
+            className="flex items-center gap-2.5 flex-shrink-0 group"
           >
-            <span className="w-9 h-9 rounded-xl sm:rounded-2xl bg-[#00594C] text-white flex items-center justify-center font-extrabold text-base shadow-sm group-hover:scale-105 transition-transform">
+            <span className="w-9 h-9 rounded-xl lg:rounded-2xl bg-[#00594C] text-white flex items-center justify-center font-extrabold text-base shadow-sm group-hover:scale-105 transition-transform">
               T
             </span>
             <div className="flex flex-col">
-              <span className="font-extrabold text-lg sm:text-xl tracking-tight text-gray-950 leading-none">
+              <span className="font-extrabold text-lg lg:text-xl tracking-tight text-gray-950 leading-none">
                 Taply
               </span>
-              <span className="text-[9px] font-bold tracking-wider text-[#00594C] uppercase leading-none mt-0.5">
+              <span className="text-[9px] font-black tracking-widest text-[#00594C] uppercase leading-none mt-0.5">
                 SaaS
               </span>
             </div>
           </Link>
 
-          {/* ── Desktop Navigation Menu with Sliding Pill & Popover (Kobra / Base UI) ── */}
-          <nav className="hidden md:flex items-center justify-center flex-1 mx-4">
-            <NavigationMenu align="center">
-              <NavigationMenuList>
-                {/* 1. Demos Dropdown */}
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger>Demos en Vivo</NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="grid grid-cols-2 gap-2 p-2 w-[340px]">
-                      <NavigationMenuLink
-                        href="/panaderia-la-estrella"
-                        className="flex flex-col p-3 rounded-xl hover:bg-emerald-50/70 transition-colors group"
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="p-1.5 rounded-lg bg-emerald-100 text-[#00594C]">
+          {/* ── Desktop & Laptop Navigation Menu (Optimized for 1024px - 1440px) ── */}
+          <nav className="hidden lg:flex items-center justify-center flex-1 mx-2 xl:mx-6">
+            <ul className="flex items-center gap-1 xl:gap-2 list-none p-0 m-0">
+              {/* 1. Demos Dropdown with Stable Relative Positioning */}
+              <li
+                className="relative"
+                onMouseEnter={handleDemosEnter}
+                onMouseLeave={handleDemosLeave}
+              >
+                <button
+                  type="button"
+                  onClick={() => setDemosOpen(!demosOpen)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs xl:text-sm font-bold transition-all ${
+                    demosOpen
+                      ? 'bg-gray-900/10 text-gray-950 shadow-2xs'
+                      : 'text-gray-700 hover:text-gray-950 hover:bg-gray-900/[0.05]'
+                  }`}
+                >
+                  <span>Demos en Vivo</span>
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 text-gray-500 transition-transform duration-200 ${
+                      demosOpen ? 'rotate-180 text-gray-900' : ''
+                    }`}
+                  />
+                </button>
+
+                {/* Dropdown Menu Popover */}
+                <AnimatePresence>
+                  {demosOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 4, scale: 0.96 }}
+                      transition={{ duration: 0.16, ease: 'easeOut' }}
+                      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-80 p-2 bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200 ring-1 ring-black/5 z-50 transform-gpu will-change-transform"
+                    >
+                      <div className="space-y-1">
+                        <Link
+                          href="/panaderia-la-estrella"
+                          onClick={() => setDemosOpen(false)}
+                          className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-emerald-50/80 transition-colors group text-left"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-emerald-100 text-[#00594C] flex items-center justify-center flex-shrink-0 mt-0.5">
                             <Store className="w-4 h-4" />
-                          </span>
-                          <span className="font-bold text-xs text-gray-900 group-hover:text-[#00594C]">
-                            Panadería La Estrella
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-gray-500 line-clamp-2">
-                          Catálogo de repostería con pedidos rápidos por WhatsApp.
-                        </p>
-                      </NavigationMenuLink>
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold text-xs text-gray-900 group-hover:text-[#00594C]">
+                                Panadería La Estrella
+                              </span>
+                              <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-emerald-100 text-[#00594C]">
+                                Demo
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-gray-500 leading-tight mt-0.5">
+                              Repostería con slider de pedidos y métodos de pago directo.
+                            </p>
+                          </div>
+                        </Link>
 
-                      <NavigationMenuLink
-                        href="/burger-station"
-                        className="flex flex-col p-3 rounded-xl hover:bg-red-50/70 transition-colors group"
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="p-1.5 rounded-lg bg-red-100 text-red-600">
+                        <Link
+                          href="/burger-station"
+                          onClick={() => setDemosOpen(false)}
+                          className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-red-50/80 transition-colors group text-left"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0 mt-0.5">
                             <Flame className="w-4 h-4" />
-                          </span>
-                          <span className="font-bold text-xs text-gray-900 group-hover:text-red-700">
-                            Burger Station 🍔
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-gray-500 line-clamp-2">
-                          Smash burgers con pago móvil, Zelle y delivery directo.
-                        </p>
-                      </NavigationMenuLink>
-                    </div>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold text-xs text-gray-900 group-hover:text-red-700">
+                                Burger Station 🍔
+                              </span>
+                              <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-red-100 text-red-700">
+                                Demo
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-gray-500 leading-tight mt-0.5">
+                              Smash burgers con pago móvil, Zelle y delivery por WhatsApp.
+                            </p>
+                          </div>
+                        </Link>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </li>
 
-                {/* 2. Características */}
-                <NavigationMenuItem>
-                  <NavigationMenuLink href="#features">
-                    Características
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
+              {/* 2. Características */}
+              <li>
+                <a
+                  href="#features"
+                  className="px-3 py-1.5 rounded-full text-xs xl:text-sm font-bold text-gray-700 hover:text-gray-950 hover:bg-gray-900/[0.05] transition-colors"
+                >
+                  Características
+                </a>
+              </li>
 
-                {/* 3. Precios */}
-                <NavigationMenuItem>
-                  <NavigationMenuLink href="#pricing">
-                    Planes & Precios
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
+              {/* 3. Precios */}
+              <li>
+                <a
+                  href="#pricing"
+                  className="px-3 py-1.5 rounded-full text-xs xl:text-sm font-bold text-gray-700 hover:text-gray-950 hover:bg-gray-900/[0.05] transition-colors"
+                >
+                  Planes & Precios
+                </a>
+              </li>
 
-                {/* 4. Solicitar Acceso */}
-                <NavigationMenuItem>
-                  <NavigationMenuLink
-                    href="/solicitar-acceso"
-                    className="text-[#00594C] font-bold"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-[#00594C]" />
-                    <span>Solicitar Acceso</span>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
+              {/* 4. Solicitar Acceso */}
+              <li>
+                <Link
+                  href="/solicitar-acceso"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs xl:text-sm font-bold text-[#00594C] hover:bg-emerald-50 transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-[#00594C]" />
+                  <span>Solicitar Acceso</span>
+                </Link>
+              </li>
+            </ul>
           </nav>
 
           {/* ── Desktop CTAs ── */}
-          <div className="hidden md:flex items-center gap-2.5 flex-shrink-0">
+          <div className="hidden lg:flex items-center gap-2.5 flex-shrink-0">
             <Link
               href="/login"
-              className="text-xs font-bold text-gray-700 hover:text-gray-950 px-3.5 py-2 rounded-full hover:bg-gray-100 transition-colors flex items-center gap-1.5"
+              className="text-xs font-bold text-gray-800 hover:text-gray-950 px-3.5 py-2 rounded-full hover:bg-gray-900/[0.06] transition-colors flex items-center gap-1.5"
             >
-              <Lock className="w-3.5 h-3.5 text-gray-400" />
+              <Lock className="w-3.5 h-3.5 text-gray-500" />
               <span>Acceso Dueño</span>
             </Link>
 
@@ -170,11 +224,11 @@ export default function CardNav() {
             </Link>
           </div>
 
-          {/* ── Mobile Right Actions (Compact & Never Overflowing) ── */}
-          <div className="flex md:hidden items-center gap-2">
+          {/* ── Mobile & Tablet Right Controls ── */}
+          <div className="flex lg:hidden items-center gap-2">
             <Link
               href="/onboarding"
-              className="h-9 px-3.5 rounded-full bg-[#00594C] text-white active:scale-95 text-[11px] font-extrabold flex items-center gap-1 shadow-xs"
+              className="h-9 px-3 rounded-full bg-[#00594C] text-white active:scale-95 text-[11px] font-extrabold flex items-center gap-1 shadow-xs"
             >
               <span>Crear</span>
               <ArrowRight className="w-3 h-3" />
@@ -183,78 +237,78 @@ export default function CardNav() {
             <button
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label="Abrir menú de navegación"
-              className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 active:scale-95 text-gray-700 flex items-center justify-center transition-colors"
+              aria-label="Abrir menú"
+              className="w-9 h-9 rounded-full bg-gray-900/[0.06] hover:bg-gray-900/[0.1] active:scale-95 text-gray-900 flex items-center justify-center transition-transform"
             >
               {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
           </div>
         </div>
 
-        {/* ══ MOBILE EXPANDABLE CARD MENU (CLEAN, FLUID, RESPONSIVE) ══ */}
+        {/* ══ MOBILE EXPANDABLE MENU (INSTANT 60FPS OPENING, ZERO LAG) ══ */}
         <AnimatePresence>
           {mobileOpen && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.24, ease: 'easeInOut' }}
-              className="overflow-hidden md:hidden border-t border-gray-100 px-4 pt-3 pb-5 space-y-3"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.16, ease: 'easeOut' }}
+              className="lg:hidden border-t border-gray-200/80 px-4 pt-3 pb-5 space-y-3 transform-gpu will-change-transform"
             >
               {/* Demos Quick Cards */}
               <div className="space-y-1.5">
-                <span className="text-[10px] font-extrabold tracking-wider text-gray-400 uppercase block pl-1">
+                <span className="text-[10px] font-extrabold tracking-wider text-gray-500 uppercase block pl-1">
                   Demos en Vivo
                 </span>
                 <div className="grid grid-cols-2 gap-2">
                   <Link
                     href="/panaderia-la-estrella"
                     onClick={() => setMobileOpen(false)}
-                    className="p-2.5 rounded-xl bg-gray-50 hover:bg-emerald-50/60 border border-gray-100 text-left transition-colors"
+                    className="p-2.5 rounded-xl bg-white/90 hover:bg-emerald-50/80 border border-gray-200 text-left transition-colors shadow-2xs"
                   >
                     <div className="flex items-center gap-1.5 mb-0.5">
                       <Store className="w-3.5 h-3.5 text-[#00594C]" />
                       <span className="font-bold text-[11px] text-gray-900 truncate">Panadería</span>
                     </div>
-                    <span className="text-[10px] text-gray-500 block">La Estrella</span>
+                    <span className="text-[10px] text-gray-500 block truncate">La Estrella</span>
                   </Link>
 
                   <Link
                     href="/burger-station"
                     onClick={() => setMobileOpen(false)}
-                    className="p-2.5 rounded-xl bg-gray-50 hover:bg-red-50/60 border border-gray-100 text-left transition-colors"
+                    className="p-2.5 rounded-xl bg-white/90 hover:bg-red-50/80 border border-gray-200 text-left transition-colors shadow-2xs"
                   >
                     <div className="flex items-center gap-1.5 mb-0.5">
                       <Flame className="w-3.5 h-3.5 text-red-600" />
                       <span className="font-bold text-[11px] text-gray-900 truncate">Burger Station</span>
                     </div>
-                    <span className="text-[10px] text-gray-500 block">Hamburguesas</span>
+                    <span className="text-[10px] text-gray-500 block truncate">Hamburguesas</span>
                   </Link>
                 </div>
               </div>
 
               {/* Navigation Links */}
-              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-gray-100">
+              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-gray-200/60">
                 <a
                   href="#features"
                   onClick={() => setMobileOpen(false)}
-                  className="p-2.5 rounded-xl text-xs font-bold text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                  className="p-2.5 rounded-xl text-xs font-bold text-gray-800 hover:bg-gray-100 flex items-center gap-2"
                 >
-                  <Layers className="w-3.5 h-3.5 text-gray-400" />
+                  <Layers className="w-3.5 h-3.5 text-gray-500" />
                   <span>Características</span>
                 </a>
 
                 <a
                   href="#pricing"
                   onClick={() => setMobileOpen(false)}
-                  className="p-2.5 rounded-xl text-xs font-bold text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                  className="p-2.5 rounded-xl text-xs font-bold text-gray-800 hover:bg-gray-100 flex items-center gap-2"
                 >
-                  <DollarSign className="w-3.5 h-3.5 text-gray-400" />
+                  <DollarSign className="w-3.5 h-3.5 text-gray-500" />
                   <span>Planes</span>
                 </a>
               </div>
 
-              {/* Prominent Action Links */}
+              {/* Action Buttons */}
               <div className="space-y-2 pt-1">
                 <Link
                   href="/solicitar-acceso"
@@ -268,9 +322,9 @@ export default function CardNav() {
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="w-full h-10 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
+                  className="w-full h-10 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
                 >
-                  <Lock className="w-3.5 h-3.5 text-gray-500" />
+                  <Lock className="w-3.5 h-3.5 text-gray-600" />
                   <span>Panel de Dueño (Iniciar Sesión)</span>
                 </Link>
               </div>
