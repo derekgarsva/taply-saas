@@ -40,6 +40,7 @@ import SwipeActionRow from '@/components/admin/SwipeActionRow';
 import BottomSheet from '@/components/admin/BottomSheet';
 import Timeline, { TimelineItem } from '@/components/admin/Timeline';
 import CardNav from '@/components/navigation/CardNav';
+import AdminCardNav from '@/components/navigation/AdminCardNav';
 
 type BusinessWithStats = Business & {
   productCount: number;
@@ -676,105 +677,22 @@ export default function SuperAdminPage() {
         )}
       </AnimatePresence>
 
-      {/* ══ 1. FLOATING UNIFIED NAVBAR (SAME AS LANDING & DASHBOARD) ══ */}
-      <div className="pt-2">
-        <CardNav />
-      </div>
-
-      {/* Top Navbar */}
-      <header
-        className={`sticky top-0 z-40 px-4 sm:px-6 py-3.5 border-b backdrop-blur-2xl transition-colors mt-2 ${
-          isDark
-            ? 'bg-black/80 border-neutral-800/80'
-            : 'bg-white/85 border-neutral-200 shadow-sm'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
-          {/* Logo & Brand Pill */}
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-black font-black text-sm shadow-md shadow-emerald-500/20 flex-shrink-0">
-              T
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-sm tracking-tight">Taply SuperAdmin</span>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-semibold text-emerald-500 uppercase tracking-wider">
-                  Master
-                </span>
-              </div>
-              <p
-                className={`text-[11px] hidden sm:flex items-center gap-1.5 ${
-                  isDark ? 'text-neutral-400' : 'text-neutral-500'
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
-                SaaS Operations En Vivo
-              </p>
-            </div>
-          </div>
-
-          {/* Quick Actions & Theme Switch */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <ThemeToggle theme={theme} onToggle={handleToggleTheme} />
-
-            <button
-              onClick={fetchData}
-              disabled={loadingData}
-              className={`p-2 rounded-2xl border transition-all text-xs flex items-center gap-1.5 disabled:opacity-40 ${
-                isDark
-                  ? 'bg-neutral-900 border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
-                  : 'bg-white border-neutral-200 text-neutral-700 hover:text-black hover:border-neutral-300 shadow-sm'
-              }`}
-              title="Refrescar datos"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loadingData ? 'animate-spin' : ''}`} />
-              <span className="hidden md:inline">Actualizar</span>
-            </button>
-
-            <button
-              onClick={handleLogout}
-              className={`p-2 rounded-2xl border transition-all text-xs flex items-center gap-1.5 ${
-                isDark
-                  ? 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-red-400 hover:border-red-900/50'
-                  : 'bg-white border-neutral-200 text-neutral-600 hover:text-red-600 hover:border-red-200 shadow-sm'
-              }`}
-              title="Bloquear consola"
-            >
-              <Lock className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Bloquear</span>
-            </button>
-          </div>
-        </div>
-      </header>
+      {/* ══ 1. ADAPTED SUPERADMIN CARDNAV (REACTBITS FLOATING TRANSLUCENT CARD WITH MASTER MENUS) ══ */}
+      <AdminCardNav
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+        storesCount={businesses.length}
+        paymentsCount={payments.length}
+        onRefresh={fetchData}
+        loadingData={loadingData}
+        onOpenNewPayment={() => setIsPaymentSheetOpen(true)}
+        onLogout={handleLogout}
+      />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-3.5 sm:px-6 py-5 sm:py-8 space-y-6 sm:space-y-8 pb-24 sm:pb-12">
-        {/* Navigation Tabs using Arc UI MorphSelect */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <div className="overflow-x-auto max-w-full pb-1 -mb-1 scrollbar-none">
-            <MorphSelect
-              layoutId="admin-section-nav"
-              theme={theme}
-              value={activeSection}
-              onChange={(val) => setActiveSection(val as any)}
-              options={[
-                { id: 'all', label: 'Consola General', icon: <Layers className="w-3.5 h-3.5" /> },
-                { id: 'stores', label: 'Comercios', badge: businesses.length },
-                { id: 'payments', label: 'Suscripciones', badge: payments.length },
-                { id: 'timeline', label: 'Auditoría', icon: <Clock className="w-3.5 h-3.5" /> },
-              ]}
-            />
-          </div>
-
-          <button
-            onClick={() => setIsPaymentSheetOpen(true)}
-            className="flex items-center justify-center gap-1.5 px-4 py-2 sm:py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-black font-semibold text-xs transition-all shadow-md shadow-emerald-500/20"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>+ Registrar Pago</span>
-          </button>
-        </div>
-
+      <main className="max-w-7xl mx-auto px-3.5 sm:px-6 pt-4 sm:pt-6 space-y-6 sm:space-y-8 pb-24 sm:pb-12">
         {/* 1. Arc UI Metric Cards Grid with Sparklines */}
         {(activeSection === 'all' || activeSection === 'payments') && (
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -43,7 +43,7 @@ import {
   ArrowUpRight,
   BarChart3,
 } from 'lucide-react';
-import CardNav from '@/components/navigation/CardNav';
+import DashboardCardNav from '@/components/navigation/DashboardCardNav';
 import LineChart, { LineChartDatum, LineChartSeries } from '@/components/ui/line-chart';
 
 export default function DashboardPage() {
@@ -611,115 +611,23 @@ function DashboardContent() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-gray-900 font-sans pb-24">
-      {/* ══ 1. FLOATING UNIFIED NAVBAR (SAME AS LANDING & ADMIN) ══ */}
-      <CardNav />
-
-      {/* ══ 2. STORE CONTROL HEADER & SUB-BAR ══ */}
-      <header className="mt-2 sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-200/90 shadow-2xs">
-        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="w-8 h-8 rounded-xl bg-[#00594C] text-white flex items-center justify-center font-black text-sm shadow-xs">
-                T
-              </span>
-              <span className="font-extrabold text-sm sm:text-base tracking-tight text-gray-900 hidden sm:inline">
-                Taply <span className="text-[11px] font-bold text-[#00594C] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">Panel Dueño</span>
-              </span>
-            </Link>
-
-            <span className="text-gray-300 hidden sm:inline">|</span>
-
-            {/* Store title badge */}
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-extrabold text-xs sm:text-sm text-gray-900 truncate max-w-[140px] sm:max-w-[200px]">
-                {business.name}
-              </span>
-            </div>
-          </div>
-
-          {/* Quick Action Buttons */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={copyStoreUrl}
-              className="h-9 px-3 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 active:scale-95 text-xs font-semibold flex items-center gap-1.5 transition-all"
-            >
-              <Copy className="w-3.5 h-3.5 text-gray-500" />
-              <span className="hidden sm:inline">Copiar Link</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setShowQR(true)}
-              className="h-9 px-3 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 active:scale-95 text-xs font-semibold flex items-center gap-1.5 transition-all"
-            >
-              <QrCode className="w-3.5 h-3.5 text-gray-500" />
-              <span className="hidden sm:inline">Código QR</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setShowPlanModal(true)}
-              className="h-9 px-3 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 active:scale-95 text-xs font-bold flex items-center gap-1.5 transition-all"
-              title="Ver detalles o cambiar de plan"
-            >
-              <Crown className="w-3.5 h-3.5 text-amber-500" />
-              <span className="hidden sm:inline">{currentPlanLabel}</span>
-              <span className="sm:hidden">Plan</span>
-            </button>
-
-            <a
-              href={liveStoreUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="h-9 px-3.5 rounded-full bg-[#00594C] text-white hover:bg-[#00463C] active:scale-95 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs"
-            >
-              <Eye className="w-3.5 h-3.5" />
-              <span>Ver Catálogo</span>
-            </a>
-          </div>
-        </div>
-
-        {/* ══ NAVIGATION TABS CON SLIDING PILL ══ */}
-        <div className="max-w-5xl mx-auto px-4 flex items-center gap-2 overflow-x-auto no-scrollbar border-t border-gray-100 py-1.5">
-          {[
-            { id: 'overview', label: 'Resumen', icon: LayoutDashboard },
-            { id: 'products', label: `Productos (${products.length})`, icon: Package },
-            { id: 'categories', label: `Categorías (${categories.length})`, icon: FolderTree },
-            { id: 'orders', label: `Pedidos WhatsApp (${orders.length})`, icon: ShoppingBag },
-            { id: 'branding', label: 'Marca y Cobros', icon: Sliders },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`relative flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors duration-150 z-10 ${
-                  isActive
-                    ? 'text-white'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/70'
-                }`}
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="active-dashboard-tab-pill"
-                    className="absolute inset-0 bg-gray-900 rounded-xl shadow-xs -z-10"
-                    transition={{ type: 'spring', stiffness: 420, damping: 30 }}
-                  />
-                )}
-                <Icon className="w-3.5 h-3.5" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </header>
+      {/* ══ 1. ADAPTED DASHBOARD CARDNAV (REACTBITS FLOATING TRANSLUCENT CARD WITH STORE MENUS) ══ */}
+      <DashboardCardNav
+        business={business}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        productsCount={products.length}
+        categoriesCount={categories.length}
+        ordersCount={orders.length}
+        currentPlanLabel={currentPlanLabel}
+        onCopyLink={copyStoreUrl}
+        onOpenQR={() => setShowQR(true)}
+        onOpenPlan={() => setShowPlanModal(true)}
+        liveStoreUrl={liveStoreUrl}
+      />
 
       {/* ══ MAIN CONTAINER ══ */}
-      <main className="max-w-5xl mx-auto px-4 pt-6">
+      <main className="max-w-5xl mx-auto px-4 pt-4 sm:pt-6">
 
         {/* ════ TAB 1: OVERVIEW ════ */}
         {activeTab === 'overview' && (
