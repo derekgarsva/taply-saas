@@ -14,7 +14,7 @@ import ProductDetailSheet from './ProductDetailSheet';
 import QRCodeModal from './QRCodeModal';
 import MultiLinkBar from './MultiLinkBar';
 import OwnerPinModal from '@/components/auth/OwnerPinModal';
-import { Share2, MapPin, Plus, Check, X, Sparkles, Info, Lock, ShoppingBag } from 'lucide-react';
+import { Share2, MapPin, Plus, Check, X, Sparkles, Info, Lock, ShoppingBag, Images } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface StorefrontViewProps {
@@ -36,6 +36,7 @@ export default function StorefrontView({
   const [modal, setModal] = useState<'taply' | 'about' | 'qr' | 'ownerPin' | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [directWhatsAppUrl, setDirectWhatsAppUrl] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState(false);
   const [categoriesDocked, setCategoriesDocked] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
@@ -52,13 +53,18 @@ export default function StorefrontView({
     return () => clearTimeout(timer);
   }, []);
 
-  // Track scroll position to dock categories in top middle space
+  // Track scroll position to update header frosted style and dock categories in top middle space
   useEffect(() => {
     const handleScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 20);
+
       if (categoryBarRef.current) {
         const rect = categoryBarRef.current.getBoundingClientRect();
-        // Dock into top header when in-page category bar reaches 56px or is above viewport
-        setCategoriesDocked(rect.top <= 56);
+        // Dock into top header when in-page category bar reaches top header or scrolled past
+        setCategoriesDocked(rect.top <= 60 || y > 240);
+      } else {
+        setCategoriesDocked(y > 240);
       }
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -298,7 +304,13 @@ export default function StorefrontView({
     <div className="mx-auto max-w-md bg-white min-h-screen relative shadow-sm border-x border-gray-100 flex flex-col font-sans">
       {/* ══ Fixed Top Bar: Search on Left | Docked Category Pill in Middle | Share & 3 Dots on Right ══ */}
       {!loading && (
-        <header className="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto h-14 px-3 flex items-center justify-between pointer-events-none bg-transparent">
+        <header
+          className={`fixed top-0 left-0 right-0 z-40 max-w-md mx-auto h-14 px-3 flex items-center justify-between pointer-events-none transition-all duration-200 ${
+            scrolled
+              ? 'bg-white/92 backdrop-blur-md shadow-xs border-b border-gray-200/60'
+              : 'bg-transparent'
+          }`}
+        >
           <div className="pointer-events-auto flex-shrink-0">
             <SeekTop
               value={searchQuery}
@@ -494,6 +506,12 @@ export default function StorefrontView({
                           !prod.available ? 'grayscale-[25%]' : 'group-hover:scale-105'
                         }`}
                       />
+                      {prod.images && prod.images.length > 1 && (
+                        <div className="absolute bottom-1 right-1 bg-black/65 backdrop-blur-xs text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5 shadow-xs pointer-events-none">
+                          <Images className="w-2.5 h-2.5" />
+                          <span>{prod.images.length}</span>
+                        </div>
+                      )}
                       {prod.featured && (
                         <div className="absolute top-1 left-1 bg-amber-400 text-amber-950 text-[9px] font-extrabold px-1.5 py-0.5 rounded-md shadow-xs">
                           POPULAR
@@ -641,7 +659,7 @@ export default function StorefrontView({
               </motion.div>
 
               <AnimatePresence>
-                {uniqueProductCount >= 2 && (
+                {uniqueProductCount >= 1 && (
                   <motion.button
                     key="cart-trigger-btn"
                     initial={{ scale: 0, opacity: 0, width: 0 }}
@@ -666,7 +684,7 @@ export default function StorefrontView({
                       className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-bold text-white flex items-center justify-center shadow-xs"
                       style={{ backgroundColor: business.themeColor || '#00594C' }}
                     >
-                      {uniqueProductCount}
+                      {totalItemsCount}
                     </motion.span>
                   </motion.button>
                 )}
@@ -689,6 +707,9 @@ export default function StorefrontView({
         onClearCart={onClearCart}
         onOrderConfirm={(deliveryType, note) => {
           handleOrderWhatsApp(deliveryType, note);
+        }}
+        onSelectProduct={(prod) => {
+          setSelectedProduct(prod);
         }}
       />
 

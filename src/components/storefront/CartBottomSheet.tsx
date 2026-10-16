@@ -13,28 +13,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import SlideConfirmWhatsApp from './SlideConfirmWhatsApp';
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  compareAtPrice?: number;
-  image?: string;
-  category: string;
-  description?: string;
-  available: boolean;
-  featured?: boolean;
-}
-
-interface Business {
-  id: string;
-  name: string;
-  currency: string;
-  currencySymbol: string;
-  themeColor?: string;
-  paymentNotes?: string;
-  phone?: string;
-}
+import { Product, Business } from '@/types';
 
 interface CartBottomSheetProps {
   isOpen: boolean;
@@ -47,6 +26,7 @@ interface CartBottomSheetProps {
   onRemoveItem: (productId: string) => void;
   onClearCart: () => void;
   onOrderConfirm: (orderType?: 'delivery' | 'pickup', note?: string) => void;
+  onSelectProduct?: (product: Product) => void;
 }
 
 export default function CartBottomSheet({
@@ -60,6 +40,7 @@ export default function CartBottomSheet({
   onRemoveItem,
   onClearCart,
   onOrderConfirm,
+  onSelectProduct,
 }: CartBottomSheetProps) {
   const dragControls = useDragControls();
   const [orderType, setOrderType] = useState<'delivery' | 'pickup'>('delivery');
@@ -189,29 +170,49 @@ export default function CartBottomSheet({
                       key={id}
                       className="py-3.5 flex items-center gap-3.5"
                     >
-                      {/* Product Thumbnail */}
-                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-100 relative">
+                      {/* Clickable Product Thumbnail */}
+                      <button
+                        type="button"
+                        onClick={() => onSelectProduct?.(item)}
+                        className="w-14 h-14 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-100 relative group cursor-pointer text-left transition-transform active:scale-95"
+                        aria-label={`Ver detalles de ${item.name}`}
+                        title="Toca para ver fotos y descripción"
+                      >
                         {item.image ? (
                           <img
                             src={item.image}
                             alt={item.name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-300">
                             <ShoppingBag className="w-5 h-5" />
                           </div>
                         )}
-                      </div>
+                        {item.images && item.images.length > 1 && (
+                          <div className="absolute bottom-1 right-1 bg-black/70 backdrop-blur-xs text-[9px] text-white font-extrabold px-1 rounded-sm shadow-xs">
+                            {item.images.length} fotos
+                          </div>
+                        )}
+                      </button>
 
-                      {/* Product Details */}
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-gray-900 text-xs sm:text-sm truncate">
+                      {/* Clickable Product Details */}
+                      <div
+                        onClick={() => onSelectProduct?.(item)}
+                        className="flex-1 min-w-0 cursor-pointer group select-none"
+                        title="Toca para ver fotos y descripción"
+                      >
+                        <h4 className="font-bold text-gray-900 text-xs sm:text-sm truncate group-hover:text-emerald-700 transition-colors">
                           {item.name}
                         </h4>
-                        <p className="text-[11px] text-gray-500 font-medium">
-                          {business.currencySymbol}{item.price.toFixed(2)} c/u
-                        </p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <p className="text-[11px] text-gray-500 font-medium">
+                            {business.currencySymbol}{item.price.toFixed(2)} c/u
+                          </p>
+                          <span className="text-[10px] text-emerald-600 font-bold group-hover:underline">
+                            • Ver detalle
+                          </span>
+                        </div>
                         <span className="font-extrabold text-xs text-gray-900 sm:hidden">
                           {business.currencySymbol}{itemTotal.toFixed(2)}
                         </span>

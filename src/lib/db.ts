@@ -52,6 +52,36 @@ function mapDbBusiness(row: any): Business {
 
 // Map database row to Product type
 function mapDbProduct(row: any): Product {
+  let images: string[] = [];
+  if (Array.isArray(row.images)) {
+    images = row.images;
+  } else if (typeof row.images === 'string' && row.images) {
+    try {
+      images = JSON.parse(row.images);
+    } catch {
+      images = [row.images];
+    }
+  }
+
+  // Also check if description has hidden metadata: <!-- taply_images: [...] -->
+  let cleanDesc = row.description || '';
+  const match = cleanDesc.match(/<!--\s*taply_images:\s*(\[.*?\])\s*-->/);
+  if (match) {
+    try {
+      const parsed = JSON.parse(match[1]);
+      if (Array.isArray(parsed) && parsed.length > 0 && images.length === 0) {
+        images = parsed;
+      }
+      cleanDesc = cleanDesc.replace(/<!--\s*taply_images:\s*\[.*?\]\s*-->/, '').trim();
+    } catch {}
+  }
+
+  if (images.length === 0 && row.image) {
+    images = [row.image];
+  }
+
+  const primaryImage = images[0] || row.image || '';
+
   return {
     id: row.id,
     businessId: row.business_id,
@@ -61,8 +91,9 @@ function mapDbProduct(row: any): Product {
     compareAtPrice: row.compare_at_price ? Number(row.compare_at_price) : undefined,
     available: row.available !== false,
     featured: Boolean(row.featured),
-    image: row.image || '',
-    description: row.description || '',
+    image: primaryImage,
+    images: images,
+    description: cleanDesc,
   };
 }
 
@@ -359,7 +390,12 @@ export async function saveProduct(
   productData: Partial<Product> & { name: string; price: number }
 ): Promise<Product> {
   const supabase = getAdminClient();
-  if (!supabase) return saveMockProduct(businessId, productData);
+  const imagesList = Array.isArray(productData.images) && productData.images.length > 0
+    ? productData.images
+    : (productData.image ? [productData.image] : []);
+  const primaryImage = imagesList[0] || productData.image || '';
+
+  if (!supabase) return saveMockProduct(businessId, { ...productData, image: primaryImage, images: imagesList });
 
   const payload: any = {
     business_id: businessId,
@@ -369,7 +405,7 @@ export async function saveProduct(
     compare_at_price: productData.compareAtPrice ? Number(productData.compareAtPrice) : 0,
     available: productData.available !== false,
     featured: Boolean(productData.featured),
-    image: productData.image || '',
+    image: primaryImage,
     description: productData.description || '',
     updated_at: new Date().toISOString(),
   };
@@ -378,13 +414,34 @@ export async function saveProduct(
     payload.id = productData.id;
   }
 
-  const { data, error } = await supabase
+  // 1. First attempt: save with native images column
+  const payloadWithImages = {
+    ...payload,
+    images: imagesList,
+  };
+
+  let { data, error } = await supabase
     .from('products')
-    .upsert(payload)
+    .upsert(payloadWithImages)
     .select()
     .single();
 
-  if (error || !data) return saveMockProduct(businessId, productData);
+  // 2. Fallback if column 'images' does not exist yet (PostgreSQL error 42703)
+  if (error && error.code === '42703') {
+    const encodedDesc = (productData.description || '') + (imagesList.length > 0 ? `\n<!-- taply_images: ${JSON.stringify(imagesList)} -->` : '');
+    payload.description = encodedDesc;
+
+    const retry = await supabase
+      .from('products')
+      .upsert(payload)
+      .select()
+      .single();
+
+    data = retry.data;
+    error = retry.error;
+  }
+
+  if (error || !data) return saveMockProduct(businessId, { ...productData, image: primaryImage, images: imagesList });
   return mapDbProduct(data);
 }
 

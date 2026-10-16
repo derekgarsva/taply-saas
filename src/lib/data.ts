@@ -136,6 +136,11 @@ const initialProducts: Record<string, Product[]> = {
       featured: true,
       description: 'Elaborado con masa dulce fermentada, jamón ahumado premium, tocineta, pasas maceradas y aceitunas rellenas.',
       image: 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?auto=format&fit=crop&w=600&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1586444248902-2f64eddc13df?auto=format&fit=crop&w=600&q=80',
+      ],
     },
     {
       id: 'p2',
@@ -146,6 +151,10 @@ const initialProducts: Record<string, Product[]> = {
       available: true,
       description: 'Pan dulce aromatizado con canela, anís chiquito y papelón rallado. Ideal con café con leche.',
       image: 'https://images.unsplash.com/photo-1586444248902-2f64eddc13df?auto=format&fit=crop&w=600&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1586444248902-2f64eddc13df?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80',
+      ],
     },
     {
       id: 'p3',
@@ -156,6 +165,9 @@ const initialProducts: Record<string, Product[]> = {
       available: true,
       description: 'Corteza dorada y crujiente con miga aireada y suave. Horneado cada 2 horas.',
       image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80',
+      ],
     },
     {
       id: 'p4',
@@ -167,6 +179,10 @@ const initialProducts: Record<string, Product[]> = {
       featured: true,
       description: 'Espiral de masa dulce bañado en melao de papelón caliente con generoso queso blanco rallado.',
       image: 'https://images.unsplash.com/photo-1509722747041-616f39b57569?auto=format&fit=crop&w=600&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1509722747041-616f39b57569?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1621236378699-8597fee6a1ce?auto=format&fit=crop&w=600&q=80',
+      ],
     },
     {
       id: 'p5',
@@ -177,6 +193,82 @@ const initialProducts: Record<string, Product[]> = {
       available: false, // Agotado para demostrar el efecto de notificación
       description: 'Clásico desayuno venezolano con masa tierna de mantequilla y abundante jamón picado.',
       image: 'https://images.unsplash.com/photo-1621236378699-8597fee6a1ce?auto=format&fit=crop&w=600&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1621236378699-8597fee6a1ce?auto=format&fit=crop&w=600&q=80',
+      ],
+    },
+    {
+      id: 'p6',
+      businessId: 'biz_estrella_1',
+      name: 'Queso de Mano Artesanal Extra Fresco',
+      category: 'Salados',
+      price: 5.50,
+      available: true,
+      featured: true,
+      description: 'Rueda de queso de mano artesanal llanero, jugoso, suave y con la salinidad perfecta para acompañar cachapas, arepas y golfeados.',
+      image: 'https://images.unsplash.com/photo-1552767059-ce182ead6c1b?auto=format&fit=crop&w=600&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1552767059-ce182ead6c1b?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&w=600&q=80',
+      ],
+    },
+    {
+      id: 'p7',
+      businessId: 'biz_estrella_1',
+      name: 'Hogaza Campesina de Masa Madre',
+      category: 'Panes',
+      price: 4.50,
+      available: true,
+      description: 'Fermentación lenta de 24 horas con masa madre viva. Corteza rústica caramelizada y miga alveolada con toque sutil de acidez natural.',
+      image: 'https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?auto=format&fit=crop&w=600&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?auto=format&fit=crop&w=600&q=80',
+      ],
+    },
+    {
+      id: 'p8',
+      businessId: 'biz_estrella_1',
+      name: 'Tarta Vasca Cremosa de Queso',
+      category: 'Dulces',
+      price: 6.00,
+      available: true,
+      description: 'Tarta de queso horneada a alta temperatura con superficie tostada y corazón ultra cremoso que se derrite al corte.',
+      image: 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=600&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=600&q=80',
+      ],
+    },
+    {
+      id: 'p9',
+      businessId: 'biz_estrella_1',
+      name: 'Croissant Almendrado de Mantequilla',
+      category: 'Dulces',
+      price: 3.80,
+      available: true,
+      description: 'Hojaldre 100% mantequilla europea relleno de crema frangipane de almendras tostadas y cubierto de almendras laminadas y azúcar glas.',
+      image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=600&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1530610476181-d83430b64dcd?auto=format&fit=crop&w=600&q=80',
+      ],
+    },
+    {
+      id: 'p10',
+      businessId: 'biz_estrella_1',
+      name: 'Palmeritas Crujientes Caramelizadas',
+      category: 'Dulces',
+      price: 2.00,
+      available: true,
+      description: 'Clásicas palmeras de hojaldre crujiente con borde de azúcar morena caramelizada al horno. Paquete de 4 unidades.',
+      image: 'https://images.unsplash.com/photo-1509722747041-616f39b57569?auto=format&fit=crop&w=600&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1509722747041-616f39b57569?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=600&q=80',
+      ],
     },
   ],
   biz_burger_2: [
@@ -190,6 +282,10 @@ const initialProducts: Record<string, Product[]> = {
       featured: true,
       description: 'Dos carnes de 90g con costra caramelizada, doble queso cheddar, tocineta crujiente y salsa secreta.',
       image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80',
+      ],
     },
     {
       id: 'pb2',
@@ -200,6 +296,10 @@ const initialProducts: Record<string, Product[]> = {
       available: true,
       description: 'Carne smashed, champiñones salteados en mantequilla de hierbas, queso suizo y mayonesa trufada.',
       image: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80',
+      ],
     },
     {
       id: 'pb3',
@@ -210,7 +310,83 @@ const initialProducts: Record<string, Product[]> = {
       available: true,
       description: 'Corte natural sazonadas con paprika ahumada y salsa de queso cheddar casera.',
       image: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=600&q=80',
-    }
+      images: [
+        'https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80',
+      ],
+    },
+    {
+      id: 'pb4',
+      businessId: 'biz_burger_2',
+      name: 'BBQ Crispy Chicken Burger',
+      category: 'Smash Burgers',
+      price: 8.00,
+      available: true,
+      featured: true,
+      description: 'Pechuga de pollo crujiente empanizada al estilo Nashville, salsa barbacoa ahumada, pepinillos encurtidos y ensalada coleslaw fresca.',
+      image: 'https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1606755962773-d324e0a13086?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80',
+      ],
+    },
+    {
+      id: 'pb5',
+      businessId: 'biz_burger_2',
+      name: 'Oklahoma Fried Onion Smash',
+      category: 'Smash Burgers',
+      price: 9.00,
+      available: true,
+      description: 'Doble smash prensado sobre fina cebolla dulce que se carameliza en la plancha caliente, queso americano derretido y salsa mostaza dulce.',
+      image: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80',
+      ],
+    },
+    {
+      id: 'pb6',
+      businessId: 'biz_burger_2',
+      name: 'Papas Trufadas al Parmesano',
+      category: 'Acompañantes',
+      price: 4.50,
+      available: true,
+      description: 'Papas fritas corte fino salteadas con aceite de trufa blanca, lluvia abundante de queso parmesano reggiano recién rallado y perejil fresco.',
+      image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=600&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=600&q=80',
+      ],
+    },
+    {
+      id: 'pb7',
+      businessId: 'biz_burger_2',
+      name: 'Aros de Cebolla Crocantes con Dip Ranch',
+      category: 'Acompañantes',
+      price: 3.80,
+      available: true,
+      description: 'Aros de cebolla morada rebozados en panko crujiente de cerveza artesanal, acompañados de salsa ranch casera con hierbas.',
+      image: 'https://images.unsplash.com/photo-1639024471287-035186f55280?auto=format&fit=crop&w=600&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1639024471287-035186f55280?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=600&q=80',
+      ],
+    },
+    {
+      id: 'pb8',
+      businessId: 'biz_burger_2',
+      name: 'Malteada Cremosa de Vainilla & Caramelo',
+      category: 'Bebidas',
+      price: 5.00,
+      available: true,
+      description: 'Helado artesanal batido con leche entera cremosa, remolino de caramelo salado, crema chantilly fresca y trozos de galleta.',
+      image: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=600&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=600&q=80',
+        'https://images.unsplash.com/photo-1579954115545-a95591f28bfc?auto=format&fit=crop&w=600&q=80',
+      ],
+    },
   ]
 };
 
@@ -443,7 +619,8 @@ export async function saveProduct(businessId: string, productData: Partial<Produ
     price: Number(productData.price) || 0,
     compareAtPrice: productData.compareAtPrice ? Number(productData.compareAtPrice) : undefined,
     available: productData.available !== false,
-    image: productData.image || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80',
+    image: productData.image || (productData.images && productData.images[0]) || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80',
+    images: productData.images && productData.images.length > 0 ? productData.images : (productData.image ? [productData.image] : ['https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80']),
     description: productData.description || '',
     featured: Boolean(productData.featured),
   };

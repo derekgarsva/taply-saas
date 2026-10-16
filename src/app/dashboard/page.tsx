@@ -37,6 +37,8 @@ import {
   Zap,
   CreditCard,
   ShieldCheck,
+  Star,
+  Images,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -146,6 +148,109 @@ function DashboardContent() {
     }
   };
 
+  const handleMultipleFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    folder: string = 'products'
+  ) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setUploadingImage(true);
+    try {
+      const uploadedUrls: string[] = [];
+
+      for (const file of files) {
+        if (file.size > 5 * 1024 * 1024) continue;
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('folder', folder);
+
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.url) {
+              uploadedUrls.push(data.url);
+              continue;
+            }
+          }
+
+          // Fallback to local DataURL
+          const reader = new FileReader();
+          const dataUrl = await new Promise<string>((resolve) => {
+            reader.onload = (uploadEvent) => resolve(uploadEvent.target?.result as string);
+            reader.readAsDataURL(file);
+          });
+          uploadedUrls.push(dataUrl);
+        } catch {
+          const reader = new FileReader();
+          const dataUrl = await new Promise<string>((resolve) => {
+            reader.onload = (uploadEvent) => resolve(uploadEvent.target?.result as string);
+            reader.readAsDataURL(file);
+          });
+          uploadedUrls.push(dataUrl);
+        }
+      }
+
+      if (uploadedUrls.length > 0) {
+        setProductModal((prev) => {
+          const current = prev.product.images || (prev.product.image ? [prev.product.image] : []);
+          const merged = [...current, ...uploadedUrls];
+          return {
+            ...prev,
+            product: {
+              ...prev.product,
+              images: merged,
+              image: merged[0] || '',
+            },
+          };
+        });
+        showToastMsg(`¡${uploadedUrls.length} imagen(es) añadida(s)!`);
+      }
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveProductImage = (indexToRemove: number) => {
+    setProductModal((prev) => {
+      const current = prev.product.images || (prev.product.image ? [prev.product.image] : []);
+      const filtered = current.filter((_, idx) => idx !== indexToRemove);
+      return {
+        ...prev,
+        product: {
+          ...prev.product,
+          images: filtered,
+          image: filtered[0] || '',
+        },
+      };
+    });
+  };
+
+  const handleSetPrimaryImage = (indexToPrimary: number) => {
+    setProductModal((prev) => {
+      const current = prev.product.images || (prev.product.image ? [prev.product.image] : []);
+      if (indexToPrimary === 0 || !current[indexToPrimary]) return prev;
+      const item = current[indexToPrimary];
+      const rest = current.filter((_, idx) => idx !== indexToPrimary);
+      const reordered = [item, ...rest];
+      return {
+        ...prev,
+        product: {
+          ...prev.product,
+          images: reordered,
+          image: reordered[0],
+        },
+      };
+    });
+    showToastMsg('Foto principal actualizada');
+  };
+
   // Load initial data
   useEffect(() => {
     async function loadData() {
@@ -210,11 +315,14 @@ function DashboardContent() {
     }
 
     try {
+      const imagesArr = productModal.product.images || (productModal.product.image ? [productModal.product.image] : []);
       const payload = {
         ...productModal.product,
         businessId: business.id,
         price: Number(productModal.product.price) || 0,
         compareAtPrice: productModal.product.compareAtPrice ? Number(productModal.product.compareAtPrice) : undefined,
+        images: imagesArr,
+        image: imagesArr[0] || productModal.product.image || '',
       };
 
       const res = await fetch('/api/products', {
@@ -746,6 +854,7 @@ function DashboardContent() {
                       price: 1.0,
                       available: true,
                       image: '',
+                      images: [],
                       description: '',
                       featured: false,
                     },
@@ -799,14 +908,22 @@ function DashboardContent() {
                     className="p-3.5 bg-white border border-gray-200 rounded-2xl flex items-center justify-between gap-3 shadow-2xs hover:border-gray-300 transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-14 h-14 object-cover rounded-xl border border-gray-100 flex-shrink-0 bg-gray-100"
-                        onError={(e) => {
-                          e.currentTarget.src = 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=200&q=80';
-                        }}
-                      />
+                      <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-gray-100 flex-shrink-0 bg-gray-100">
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=200&q=80';
+                          }}
+                        />
+                        {product.images && product.images.length > 1 && (
+                          <div className="absolute bottom-1 right-1 bg-black/65 backdrop-blur-xs text-white text-[8px] font-bold px-1 py-0.5 rounded flex items-center gap-0.5 shadow-2xs">
+                            <Images className="w-2.5 h-2.5" />
+                            <span>{product.images.length}</span>
+                          </div>
+                        )}
+                      </div>
                       <div className="truncate">
                         <div className="flex items-center gap-1.5">
                           <h4 className="font-bold text-sm text-gray-900 truncate">{product.name}</h4>
@@ -844,11 +961,20 @@ function DashboardContent() {
                       {/* Edit */}
                       <button
                         type="button"
-                        onClick={() => setProductModal({
-                          open: true,
-                          mode: 'edit',
-                          product: { ...product },
-                        })}
+                        onClick={() => {
+                          const prodImages = Array.isArray(product.images) && product.images.length > 0
+                            ? product.images
+                            : (product.image ? [product.image] : []);
+                          setProductModal({
+                            open: true,
+                            mode: 'edit',
+                            product: {
+                              ...product,
+                              images: prodImages,
+                              image: prodImages[0] || product.image || '',
+                            },
+                          });
+                        }}
                         className="w-8 h-8 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center justify-center"
                       >
                         <Pencil className="w-3.5 h-3.5" />
@@ -1239,50 +1365,116 @@ function DashboardContent() {
               </div>
 
               <form onSubmit={handleSaveProduct} className="mt-4 space-y-3.5">
+                {/* Multi-Image Manager for Product */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">Foto del Producto</label>
-                  <div className="flex items-center gap-3">
-                    <div className="w-16 h-16 rounded-xl overflow-hidden border border-gray-200 bg-gray-50 flex-shrink-0 shadow-2xs relative">
-                      {productModal.product.image ? (
-                        <img
-                          src={productModal.product.image}
-                          alt="Previa"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-300">
-                          <ImageIcon className="w-6 h-6" />
-                        </div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold text-gray-700">
+                      Fotos del Producto{' '}
+                      {(productModal.product.images || (productModal.product.image ? [productModal.product.image] : [])).length > 0 && (
+                        <span className="text-[#00594C] font-extrabold">
+                          ({(productModal.product.images || (productModal.product.image ? [productModal.product.image] : [])).length})
+                        </span>
                       )}
-                    </div>
+                    </label>
+                    <span className="text-[10px] text-gray-400">
+                      Sube una o varias fotos
+                    </span>
+                  </div>
 
-                    <div className="flex-1 space-y-1">
-                      <label className="inline-flex items-center gap-2 px-3.5 py-2 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-xl cursor-pointer shadow-xs active:scale-98 transition-all">
-                        <Upload className={`w-3.5 h-3.5 ${uploadingImage ? 'animate-spin' : ''}`} />
-                        <span>{uploadingImage ? 'Subiendo...' : productModal.product.image ? 'Cambiar Foto' : 'Adjuntar Foto'}</span>
+                  {(() => {
+                    const currentImages = productModal.product.images || (productModal.product.image ? [productModal.product.image] : []);
+                    return currentImages.length > 0 ? (
+                      <div className="space-y-2 mb-2">
+                        <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                          {currentImages.map((imgUrl, imgIdx) => (
+                            <div
+                              key={imgIdx}
+                              className={`group relative aspect-square rounded-xl overflow-hidden border bg-gray-50 shadow-2xs ${
+                                imgIdx === 0
+                                  ? 'border-[#00594C] ring-2 ring-[#00594C]/25'
+                                  : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                            >
+                              <img
+                                src={imgUrl}
+                                alt={`Foto ${imgIdx + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+
+                              {/* Primary Badge or Make Primary */}
+                              {imgIdx === 0 ? (
+                                <div className="absolute top-1 left-1 bg-[#00594C] text-white text-[8px] font-extrabold px-1.5 py-0.5 rounded shadow-xs flex items-center gap-0.5 pointer-events-none">
+                                  <Star className="w-2.5 h-2.5 fill-current" />
+                                  <span>1ª</span>
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleSetPrimaryImage(imgIdx)}
+                                  className="absolute top-1 left-1 bg-black/65 hover:bg-[#00594C] text-white text-[8px] font-bold px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                                  title="Marcar como foto principal"
+                                >
+                                  1ª
+                                </button>
+                              )}
+
+                              {/* Delete Button */}
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveProductImage(imgIdx)}
+                                className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 active:scale-90 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-xs text-xs font-bold"
+                                title="Eliminar foto"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+
+                          {/* Add More Photos Card */}
+                          <label className="aspect-square rounded-xl border-2 border-dashed border-gray-300 hover:border-[#00594C] bg-gray-50/50 hover:bg-emerald-50/30 flex flex-col items-center justify-center gap-0.5 cursor-pointer transition-colors text-gray-500 hover:text-[#00594C]">
+                            <Plus className="w-4 h-4" />
+                            <span className="text-[10px] font-extrabold">Sumar</span>
+                            <input
+                              type="file"
+                              multiple
+                              accept="image/*"
+                              className="hidden"
+                              disabled={uploadingImage}
+                              onChange={(e) => handleMultipleFileUpload(e, 'products')}
+                            />
+                          </label>
+                        </div>
+
+                        {uploadingImage && (
+                          <p className="text-[10px] text-emerald-700 font-semibold flex items-center gap-1 animate-pulse">
+                            <Upload className="w-3 h-3 animate-spin" />
+                            <span>Subiendo fotos a tu catálogo...</span>
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      /* Zero images initial uploader */
+                      <label className="flex flex-col items-center justify-center p-5 border-2 border-dashed border-gray-300 hover:border-[#00594C] rounded-2xl bg-gray-50/50 hover:bg-emerald-50/30 cursor-pointer transition-all mb-2 text-center group">
+                        <div className="w-10 h-10 rounded-xl bg-gray-100 group-hover:bg-emerald-100 text-gray-400 group-hover:text-[#00594C] flex items-center justify-center mb-1.5 transition-colors">
+                          <Upload className={`w-5 h-5 ${uploadingImage ? 'animate-spin' : ''}`} />
+                        </div>
+                        <span className="text-xs font-bold text-gray-800">
+                          {uploadingImage ? 'Subiendo fotos...' : 'Subir fotos del producto'}
+                        </span>
+                        <span className="text-[10px] text-gray-400 mt-0.5">
+                          Puedes seleccionar varias fotos a la vez (JPG, PNG, WebP)
+                        </span>
                         <input
                           type="file"
+                          multiple
                           accept="image/*"
                           className="hidden"
                           disabled={uploadingImage}
-                          onChange={(e) =>
-                            handleFileUpload(
-                              e,
-                              (url) =>
-                                setProductModal({
-                                  ...productModal,
-                                  product: { ...productModal.product, image: url },
-                                }),
-                              'products'
-                            )
-                          }
+                          onChange={(e) => handleMultipleFileUpload(e, 'products')}
                         />
                       </label>
-                      <p className="text-[10px] text-gray-400">
-                        Sube una foto desde tu galería o archivos.
-                      </p>
-                    </div>
-                  </div>
+                    );
+                  })()}
                 </div>
 
                 <div>

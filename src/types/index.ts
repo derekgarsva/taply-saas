@@ -70,6 +70,7 @@ export interface Product {
   compareAtPrice?: number;
   available: boolean;
   image: string;
+  images?: string[];
   description?: string;
   featured?: boolean;
 }
