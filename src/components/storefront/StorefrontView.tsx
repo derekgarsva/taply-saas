@@ -710,6 +710,17 @@ export default function StorefrontView({
         currency={business.currency}
         themeColor={business.themeColor}
         quantity={selectedProduct ? cart[selectedProduct.id] || 0 : 0}
+        totalCartPrice={totalPrice}
+        totalItemsCount={totalItemsCount}
+        uniqueProductCount={uniqueProductCount}
+        onConfirmWhatsApp={() => {
+          setSelectedProduct(null);
+          handleOrderWhatsApp();
+        }}
+        onOpenCart={() => {
+          setSelectedProduct(null);
+          setCartDrawerOpen(true);
+        }}
         onUpdateQty={(delta) => {
           if (selectedProduct) updateQty(selectedProduct.id, delta);
         }}

@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { X, Plus, Minus, Check, Sparkles, AlertCircle, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
+import { X, Plus, Minus, Check, Sparkles, AlertCircle, ChevronLeft, ChevronRight, Image as ImageIcon, ShoppingBag } from 'lucide-react';
 import { Product } from '@/types';
 import NotifySoldOut from './NotifySoldOut';
+import SlideConfirmWhatsApp from './SlideConfirmWhatsApp';
 
 interface ProductDetailSheetProps {
   product: Product | null;
@@ -16,6 +17,11 @@ interface ProductDetailSheetProps {
   quantity: number;
   onUpdateQty: (delta: number) => void;
   onSetQty: (count: number) => void;
+  totalCartPrice?: number;
+  totalItemsCount?: number;
+  uniqueProductCount?: number;
+  onConfirmWhatsApp?: () => void;
+  onOpenCart?: () => void;
 }
 
 export default function ProductDetailSheet({
@@ -28,6 +34,11 @@ export default function ProductDetailSheet({
   quantity,
   onUpdateQty,
   onSetQty,
+  totalCartPrice = 0,
+  totalItemsCount = 0,
+  uniqueProductCount = 0,
+  onConfirmWhatsApp,
+  onOpenCart,
 }: ProductDetailSheetProps) {
   const dragControls = useDragControls();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -299,7 +310,7 @@ export default function ProductDetailSheet({
             </div>
 
             {/* Bottom Action Footer */}
-            <div className="p-4 pt-3 border-t border-gray-100 bg-white">
+            <div className="p-4 pt-3 border-t border-gray-100 bg-white space-y-2.5">
               {product.available ? (
                 quantity === 0 ? (
                   <button
@@ -360,6 +371,42 @@ export default function ProductDetailSheet({
                 )
               ) : (
                 <NotifySoldOut accentColor={themeColor} productName={product.name} />
+              )}
+
+              {/* Continuar con WhatsApp & Carrito (disponible al tener productos agregados) */}
+              {totalCartPrice > 0 && onConfirmWhatsApp && (
+                <div className="flex items-center gap-2.5 pt-1">
+                  <div className="flex-1 min-w-0">
+                    <SlideConfirmWhatsApp
+                      total={totalCartPrice}
+                      currencySymbol={currencySymbol}
+                      onConfirm={onConfirmWhatsApp}
+                      disabled={totalCartPrice === 0}
+                      accentColor={themeColor}
+                      label={`Continuar con WhatsApp · ${currencySymbol}${totalCartPrice.toFixed(2)}`}
+                    />
+                  </div>
+
+                  {onOpenCart && (
+                    <motion.button
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      whileTap={{ scale: 0.92 }}
+                      type="button"
+                      onClick={onOpenCart}
+                      className="relative flex-shrink-0 h-14 w-14 rounded-full bg-white text-gray-900 border border-gray-200/90 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.12)] flex items-center justify-center cursor-pointer hover:border-gray-300 transition-colors"
+                      aria-label="Ver desglose del carrito"
+                    >
+                      <ShoppingBag className="w-5 h-5 text-gray-800" />
+                      <span
+                        className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-bold text-white flex items-center justify-center shadow-xs"
+                        style={{ backgroundColor: themeColor }}
+                      >
+                        {totalItemsCount}
+                      </span>
+                    </motion.button>
+                  )}
+                </div>
               )}
             </div>
           </motion.div>
