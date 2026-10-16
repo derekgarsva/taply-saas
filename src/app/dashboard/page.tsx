@@ -39,7 +39,12 @@ import {
   ShieldCheck,
   Star,
   Images,
+  Calendar,
+  ArrowUpRight,
+  BarChart3,
 } from 'lucide-react';
+import CardNav from '@/components/navigation/CardNav';
+import LineChart, { LineChartDatum, LineChartSeries } from '@/components/ui/line-chart';
 
 export default function DashboardPage() {
   return (
@@ -294,6 +299,103 @@ function DashboardContent() {
     return Math.min(100, ((orders.length / business.pageViews) * 100)).toFixed(1);
   }, [business, orders]);
 
+  // ── Time range filter for Owner Dashboard ──
+  const [timeRange, setTimeRange] = useState<'7d' | '14d' | '30d'>('7d');
+
+  const numDays = useMemo(() => {
+    if (timeRange === '7d') return 7;
+    if (timeRange === '14d') return 14;
+    return 30;
+  }, [timeRange]);
+
+  // Aggregated metrics & chart data for selected time range
+  const { periodOrders, periodRevenue, periodAvgTicket, chartData } = useMemo(() => {
+    const now = new Date();
+    const cutoffDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (numDays - 1), 0, 0, 0);
+
+    const filteredOrders = orders.filter((ord) => {
+      if (ord.status === 'cancelado') return false;
+      const orderDate = new Date(ord.createdAt);
+      return !isNaN(orderDate.getTime()) && orderDate >= cutoffDate;
+    });
+
+    const rev = filteredOrders.reduce((sum, ord) => sum + ord.total, 0);
+    const avgTicket = filteredOrders.length > 0 ? rev / filteredOrders.length : 0;
+
+    const daysArr: LineChartDatum[] = [];
+    const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const daysOfWeek = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+    for (let i = numDays - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const dateKey = `${yyyy}-${mm}-${dd}`;
+
+      const dayOrders = filteredOrders.filter((ord) => {
+        const od = new Date(ord.createdAt);
+        const oKey = `${od.getFullYear()}-${String(od.getMonth() + 1).padStart(2, '0')}-${String(od.getDate()).padStart(2, '0')}`;
+        return oKey === dateKey;
+      });
+
+      const daySales = dayOrders.reduce((sum, ord) => sum + ord.total, 0);
+      const dayCount = dayOrders.length;
+
+      const isToday = i === 0;
+      const dayName = daysOfWeek[d.getDay()];
+      const dayNum = d.getDate();
+      const monthName = months[d.getMonth()];
+
+      let axisLabel = `${dayNum} ${monthName}`;
+      if (numDays === 7) {
+        axisLabel = isToday ? 'Hoy' : dayName;
+      } else if (numDays === 14) {
+        axisLabel = i % 2 === 0 ? (isToday ? 'Hoy' : `${dayNum} ${monthName}`) : '';
+      } else {
+        axisLabel = i % 5 === 0 ? (isToday ? 'Hoy' : `${dayNum} ${monthName}`) : '';
+      }
+
+      daysArr.push({
+        key: dateKey,
+        label: `${dayName} ${dayNum} de ${monthName}`,
+        axisLabel,
+        values: {
+          ventas: daySales,
+          pedidos: dayCount,
+        },
+      });
+    }
+
+    return {
+      periodOrders: filteredOrders,
+      periodRevenue: rev,
+      periodAvgTicket: avgTicket,
+      chartData: daysArr,
+    };
+  }, [orders, numDays]);
+
+  const periodConversionRate = useMemo(() => {
+    if (!business?.pageViews || business.pageViews === 0) return '0.0';
+    const viewsInWindow = Math.max(1, Math.round((business.pageViews * numDays) / 30));
+    return Math.min(100, (periodOrders.length / viewsInWindow) * 100).toFixed(1);
+  }, [business?.pageViews, numDays, periodOrders.length]);
+
+  const chartSeries: LineChartSeries[] = useMemo(() => [
+    {
+      key: 'ventas',
+      label: `Ventas (${business?.currencySymbol || '$'})`,
+      color: '#00594C',
+      area: true,
+    },
+    {
+      key: 'pedidos',
+      label: 'Pedidos WhatsApp',
+      color: '#0284c7',
+      dashed: true,
+    },
+  ], [business?.currencySymbol]);
+
   const currentPlanLabel = useMemo(() => {
     if (!business?.plan) return 'Plan Inicial ($12)';
     const p = business.plan.toLowerCase();
@@ -509,16 +611,19 @@ function DashboardContent() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-gray-900 font-sans pb-24">
-      {/* ══ TOP BAR / HEADER ══ */}
-      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-200">
+      {/* ══ 1. FLOATING UNIFIED NAVBAR (SAME AS LANDING & ADMIN) ══ */}
+      <CardNav />
+
+      {/* ══ 2. STORE CONTROL HEADER & SUB-BAR ══ */}
+      <header className="mt-2 sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-200/90 shadow-2xs">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2">
-              <span className="w-8 h-8 rounded-xl bg-[#00594C] text-white flex items-center justify-center font-extrabold text-sm shadow-sm">
+              <span className="w-8 h-8 rounded-xl bg-[#00594C] text-white flex items-center justify-center font-black text-sm shadow-xs">
                 T
               </span>
-              <span className="font-extrabold text-base tracking-tight text-gray-900 hidden sm:inline">
-                Taply <span className="text-xs font-bold text-[#00594C] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">Panel</span>
+              <span className="font-extrabold text-sm sm:text-base tracking-tight text-gray-900 hidden sm:inline">
+                Taply <span className="text-[11px] font-bold text-[#00594C] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">Panel Dueño</span>
               </span>
             </Link>
 
@@ -527,7 +632,7 @@ function DashboardContent() {
             {/* Store title badge */}
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-bold text-xs sm:text-sm text-gray-800 truncate max-w-[140px] sm:max-w-[200px]">
+              <span className="font-extrabold text-xs sm:text-sm text-gray-900 truncate max-w-[140px] sm:max-w-[200px]">
                 {business.name}
               </span>
             </div>
@@ -652,6 +757,162 @@ function DashboardContent() {
               </div>
             </div>
 
+            {/* ══ COMMERCIAL INTELLIGENCE & TIME RANGE SELECTOR (7d | 14d | 30d) ══ */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+              <div>
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-[#00594C]" />
+                  <h3 className="text-lg font-black tracking-tight text-gray-950">Inteligencia Comercial</h3>
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    En Vivo
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Métricas registradas automáticamente mediante pedidos por WhatsApp y tráfico a tu catálogo
+                </p>
+              </div>
+
+              {/* Time Range Selector: 7d | 14d | 30d */}
+              <div className="flex items-center p-1 bg-gray-200/60 border border-gray-200 rounded-2xl self-start sm:self-auto shadow-2xs">
+                {(['7d', '14d', '30d'] as const).map((range) => {
+                  const isSelected = timeRange === range;
+                  const label = range === '7d' ? '7 días' : range === '14d' ? '14 días' : '30 días';
+                  return (
+                    <button
+                      key={range}
+                      type="button"
+                      onClick={() => setTimeRange(range)}
+                      className={`relative px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                        isSelected ? 'text-gray-950 shadow-xs' : 'text-gray-500 hover:text-gray-900'
+                      }`}
+                    >
+                      {isSelected && (
+                        <motion.div
+                          layoutId="active-time-range-pill"
+                          className="absolute inset-0 bg-white rounded-xl border border-black/5"
+                          transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                        />
+                      )}
+                      <span className="relative z-10">{label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ══ PERIOD KPI METRIC CARDS ══ */}
+            <AnimatedGroup
+              variant="fade-up"
+              stagger={0.05}
+              className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
+            >
+              {/* Ventas del Período */}
+              <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-200/90 shadow-2xs hover:shadow-xs transition-shadow">
+                <div className="flex items-center justify-between text-gray-500 mb-2.5">
+                  <span className="text-xs font-bold text-gray-600">Ventas ({timeRange === '7d' ? '7d' : timeRange === '14d' ? '14d' : '30d'})</span>
+                  <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#00594C] flex items-center justify-center font-bold">
+                    <DollarSign className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="text-2xl sm:text-3xl font-black text-gray-950 tracking-tight">
+                  {business.currencySymbol}{periodRevenue.toFixed(2)}
+                </div>
+                <span className="text-[11px] text-gray-500 font-medium mt-1.5 block">
+                  En {periodOrders.length} {periodOrders.length === 1 ? 'pedido confirmado' : 'pedidos confirmados'}
+                </span>
+              </div>
+
+              {/* Pedidos Recibidos */}
+              <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-200/90 shadow-2xs hover:shadow-xs transition-shadow">
+                <div className="flex items-center justify-between text-gray-500 mb-2.5">
+                  <span className="text-xs font-bold text-gray-600">Pedidos WhatsApp</span>
+                  <div className="w-8 h-8 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center">
+                    <ShoppingBag className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="text-2xl sm:text-3xl font-black text-gray-950 tracking-tight">
+                  {periodOrders.length}
+                </div>
+                <span className="text-[11px] text-emerald-700 font-semibold mt-1.5 block">
+                  Checkout con 1 deslizamiento
+                </span>
+              </div>
+
+              {/* Ticket Promedio */}
+              <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-200/90 shadow-2xs hover:shadow-xs transition-shadow">
+                <div className="flex items-center justify-between text-gray-500 mb-2.5">
+                  <span className="text-xs font-bold text-gray-600">Ticket Promedio</span>
+                  <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="text-2xl sm:text-3xl font-black text-gray-950 tracking-tight">
+                  {business.currencySymbol}{periodAvgTicket.toFixed(2)}
+                </div>
+                <span className="text-[11px] text-gray-500 font-medium mt-1.5 block">
+                  Promedio por orden de compra
+                </span>
+              </div>
+
+              {/* Tasa de Conversión */}
+              <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-200/90 shadow-2xs hover:shadow-xs transition-shadow">
+                <div className="flex items-center justify-between text-gray-500 mb-2.5">
+                  <span className="text-xs font-bold text-gray-600">Conversión</span>
+                  <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center">
+                    <Users className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="text-2xl sm:text-3xl font-black text-gray-950 tracking-tight">
+                  {periodConversionRate}%
+                </div>
+                <span className="text-[11px] text-gray-500 font-medium mt-1.5 block">
+                  Visitas que iniciaron pedido
+                </span>
+              </div>
+            </AnimatedGroup>
+
+            {/* ══ ARC UI LINE CHART CARD ══ */}
+            <div className="bg-white p-5 sm:p-6 rounded-3xl border border-gray-200 shadow-2xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                <div>
+                  <h4 className="font-extrabold text-gray-950 text-base flex items-center gap-2">
+                    Evolución de Ventas y Pedidos
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                      Últimos {numDays} días
+                    </span>
+                  </h4>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Gráfico interactivo con cubic-spline, crosshair dinámico y desglose diario
+                  </p>
+                </div>
+                <div className="text-xs font-bold text-gray-500 flex items-center gap-3">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#00594C]" />
+                    Ventas ({business.currencySymbol})
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#0284c7]" />
+                    Pedidos WhatsApp
+                  </span>
+                </div>
+              </div>
+
+              <div className="w-full pt-2">
+                <LineChart
+                  data={chartData}
+                  series={chartSeries}
+                  label="Ventas y Pedidos Diarios"
+                  unit={business.currencySymbol}
+                  height={240}
+                  formatValue={(val, s) =>
+                    s.key === 'ventas'
+                      ? `${business.currencySymbol}${val.toFixed(2)}`
+                      : `${Math.round(val)} pedidos`
+                  }
+                />
+              </div>
+            </div>
+
             {/* Subscription & Current Plan Card */}
             <div className="p-5 rounded-3xl bg-white border border-gray-200 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-start sm:items-center gap-3.5">
@@ -689,73 +950,6 @@ function DashboardContent() {
                 </button>
               </div>
             </div>
-
-            {/* KPI Cards con AnimatedGroup */}
-            <AnimatedGroup
-              variant="fade-up"
-              stagger={0.06}
-              className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
-            >
-              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-2xs hover:shadow-xs transition-shadow">
-                <div className="flex items-center justify-between text-gray-500 mb-2">
-                  <span className="text-xs font-semibold">Ventas Estimadas</span>
-                  <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
-                    <DollarSign className="w-4 h-4" />
-                  </div>
-                </div>
-                <div className="text-2xl font-extrabold text-gray-900">
-                  {business.currencySymbol}{totalRevenue.toFixed(2)}
-                </div>
-                <span className="text-[11px] text-gray-400 mt-1 block">
-                  En pedidos por WhatsApp
-                </span>
-              </div>
-
-              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-2xs hover:shadow-xs transition-shadow">
-                <div className="flex items-center justify-between text-gray-500 mb-2">
-                  <span className="text-xs font-semibold">Pedidos Recibidos</span>
-                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
-                    <ShoppingBag className="w-4 h-4" />
-                  </div>
-                </div>
-                <div className="text-2xl font-extrabold text-gray-900">
-                  {orders.length}
-                </div>
-                <span className="text-[11px] text-emerald-600 font-semibold mt-1 block">
-                  Checkout instantáneo
-                </span>
-              </div>
-
-              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-2xs hover:shadow-xs transition-shadow">
-                <div className="flex items-center justify-between text-gray-500 mb-2">
-                  <span className="text-xs font-semibold">Visitas al Catálogo</span>
-                  <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center">
-                    <Users className="w-4 h-4" />
-                  </div>
-                </div>
-                <div className="text-2xl font-extrabold text-gray-900">
-                  {business.pageViews}
-                </div>
-                <span className="text-[11px] text-gray-400 mt-1 block">
-                  Clientes que abrieron el link
-                </span>
-              </div>
-
-              <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-2xs hover:shadow-xs transition-shadow">
-                <div className="flex items-center justify-between text-gray-500 mb-2">
-                  <span className="text-xs font-semibold">Conversión a WhatsApp</span>
-                  <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4" />
-                  </div>
-                </div>
-                <div className="text-2xl font-extrabold text-gray-900">
-                  {conversionRate}%
-                </div>
-                <span className="text-[11px] text-gray-400 mt-1 block">
-                  Ratio visitas / pedidos
-                </span>
-              </div>
-            </AnimatedGroup>
 
             {/* Recent Orders Preview */}
             <div className="bg-white p-5 rounded-3xl border border-gray-200 shadow-2xs">

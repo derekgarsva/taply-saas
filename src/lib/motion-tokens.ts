@@ -22,10 +22,12 @@ export const motionTokens = {
   ease: {
     enter: [0.16, 1, 0.3, 1] as const, // Smooth luxury decel
     exit: [0.4, 0, 0.6, 1] as const,
+    standard: [0.2, 0, 0, 1] as const,
+    inOut: [0.4, 0, 0.2, 1] as const,
   },
   spring: {
-    smooth: { type: 'spring', stiffness: 280, damping: 28 },
-    snappy: { type: 'spring', stiffness: 420, damping: 32 },
+    smooth: { type: 'spring', stiffness: 280, damping: 28, visualDuration: 0.35, bounce: 0.15 },
+    snappy: { type: 'spring', stiffness: 420, damping: 32, visualDuration: 0.2, bounce: 0.05 },
   },
 };
 

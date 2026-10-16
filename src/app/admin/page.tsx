@@ -39,6 +39,7 @@ import LineChart, { DataPoint } from '@/components/admin/LineChart';
 import SwipeActionRow from '@/components/admin/SwipeActionRow';
 import BottomSheet from '@/components/admin/BottomSheet';
 import Timeline, { TimelineItem } from '@/components/admin/Timeline';
+import CardNav from '@/components/navigation/CardNav';
 
 type BusinessWithStats = Business & {
   productCount: number;
@@ -140,9 +141,9 @@ function PasscodeGateway({
         isDark ? 'bg-black text-white' : 'bg-[#F8F9FB] text-neutral-900'
       }`}
     >
-      {/* Top right theme toggle */}
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20">
-        <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+      {/* Unified Navbar */}
+      <div className="absolute top-2 left-0 right-0 z-30 px-3">
+        <CardNav />
       </div>
 
       {/* Ambient background glows */}
@@ -675,9 +676,14 @@ export default function SuperAdminPage() {
         )}
       </AnimatePresence>
 
+      {/* ══ 1. FLOATING UNIFIED NAVBAR (SAME AS LANDING & DASHBOARD) ══ */}
+      <div className="pt-2">
+        <CardNav />
+      </div>
+
       {/* Top Navbar */}
       <header
-        className={`sticky top-0 z-40 px-4 sm:px-6 py-3.5 border-b backdrop-blur-2xl transition-colors ${
+        className={`sticky top-0 z-40 px-4 sm:px-6 py-3.5 border-b backdrop-blur-2xl transition-colors mt-2 ${
           isDark
             ? 'bg-black/80 border-neutral-800/80'
             : 'bg-white/85 border-neutral-200 shadow-sm'
