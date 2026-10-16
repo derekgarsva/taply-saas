@@ -340,6 +340,7 @@ export default function CartBottomSheet({
                   onConfirm={handleConfirmOrder}
                   disabled={totalPrice === 0}
                   accentColor={business.themeColor}
+                  label="Pedir por WhatsApp"
                 />
               </div>
             </div>

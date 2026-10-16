@@ -171,7 +171,7 @@ export default function SlideConfirmWhatsApp({
         >
           <WhatsAppIcon className="w-5 h-5 flex-shrink-0" />
           <span>
-            {label ? label : `Pedir por WhatsApp · ${currencySymbol}${total.toFixed(2)}`}
+            {label ? label : 'Pedir por WhatsApp'}
           </span>
         </motion.span>
 

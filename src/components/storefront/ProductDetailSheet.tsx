@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { X, Plus, Minus, Check, Sparkles, AlertCircle, ChevronLeft, ChevronRight, Image as ImageIcon, ShoppingBag, Trash2 } from 'lucide-react';
+import { X, Plus, Minus, Sparkles, ChevronLeft, ChevronRight, ShoppingBag, Trash2 } from 'lucide-react';
 import { Product } from '@/types';
 import NotifySoldOut from './NotifySoldOut';
 import SlideConfirmWhatsApp from './SlideConfirmWhatsApp';
@@ -42,28 +42,32 @@ export default function ProductDetailSheet({
 }: ProductDetailSheetProps) {
   const dragControls = useDragControls();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [selectedQty, setSelectedQty] = useState(1);
-  const [addedFeedback, setAddedFeedback] = useState(false);
 
-  // Sync selectedQty whenever product or external cart quantity changes
+  // Cache the product so that when parent sets product to null on close,
+  // the sheet doesn't disappear abruptly and instead completes its exit animation
+  const [cachedProduct, setCachedProduct] = useState<Product | null>(product);
+
   useEffect(() => {
-    setSelectedQty(quantity > 0 ? quantity : 1);
-    setAddedFeedback(false);
-  }, [product?.id, quantity]);
+    if (product) {
+      setCachedProduct(product);
+    }
+  }, [product]);
+
+  const activeProduct = product || cachedProduct;
 
   // Compute normalized list of images
   const imageList = useMemo(() => {
-    if (!product) return [];
-    if (Array.isArray(product.images) && product.images.length > 0) {
-      return product.images.filter(Boolean);
+    if (!activeProduct) return [];
+    if (Array.isArray(activeProduct.images) && activeProduct.images.length > 0) {
+      return activeProduct.images.filter(Boolean);
     }
-    return product.image ? [product.image] : [];
-  }, [product]);
+    return activeProduct.image ? [activeProduct.image] : [];
+  }, [activeProduct]);
 
-  // Reset index whenever product changes
+  // Reset image index whenever product changes
   useEffect(() => {
     setCurrentImageIndex(0);
-  }, [product?.id]);
+  }, [activeProduct?.id]);
 
   const handleNextImage = () => {
     if (imageList.length <= 1) return;
@@ -75,53 +79,32 @@ export default function ProductDetailSheet({
     setCurrentImageIndex((prev) => (prev - 1 + imageList.length) % imageList.length);
   };
 
-  const handleIncrement = () => {
-    setSelectedQty((prev) => prev + 1);
-  };
-
-  const handleDecrement = () => {
-    setSelectedQty((prev) => Math.max(1, prev - 1));
-  };
-
-  const handleAddOrUpdate = () => {
-    let targetQty = selectedQty;
-    // If the product is already in the cart and the user hasn't touched the stepper,
-    // tapping the button naturally adds 1 more item.
-    if (quantity > 0 && selectedQty === quantity) {
-      targetQty = quantity + 1;
-      setSelectedQty(targetQty);
-    }
-    onSetQty(targetQty);
-    setAddedFeedback(true);
-    setTimeout(() => {
-      setAddedFeedback(false);
-    }, 1400);
-  };
-
-  const handleRemoveFromCart = () => {
-    onSetQty(0);
-    setSelectedQty(1);
-    setAddedFeedback(false);
-  };
-
-  if (!product) return null;
+  if (!activeProduct) return null;
 
   return (
-    <AnimatePresence>
+    <AnimatePresence
+      onExitComplete={() => {
+        if (!isOpen) {
+          setCachedProduct(null);
+        }
+      }}
+    >
       {isOpen && (
         <div className="fixed inset-0 z-[70] flex items-end justify-center pointer-events-none">
-          {/* Transparent Backdrop (No screen darkening, closes only when clicking outside modal) */}
+          {/* Transparent Backdrop (Smooth fade out on exit, closes on click outside) */}
           <motion.div
+            key="sheet-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
             onClick={onClose}
             className="fixed inset-0 bg-transparent pointer-events-auto z-10"
           />
 
-          {/* Bottom Sheet Modal */}
+          {/* Bottom Sheet Modal with Matching Fluid Spring Physics on Enter and Exit */}
           <motion.div
+            key="sheet-modal"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -142,7 +125,7 @@ export default function ProductDetailSheet({
               }
             }}
             onClick={(e) => e.stopPropagation()}
-            className="relative z-20 pointer-events-auto w-full max-w-md bg-white rounded-t-[32px] shadow-[0_-16px_48px_rgba(0,0,0,0.18)] flex flex-col max-h-[90vh] overflow-hidden border-t border-gray-100"
+            className="relative z-20 pointer-events-auto w-full max-w-md bg-white rounded-t-[32px] shadow-[0_-16px_48px_rgba(0,0,0,0.18)] flex flex-col max-h-[90vh] overflow-hidden border-t border-gray-100 will-change-transform"
           >
             {/* Draggable Handle Bar */}
             <div
@@ -155,12 +138,12 @@ export default function ProductDetailSheet({
             {/* Top Close Button (floating right) */}
             <div className="px-5 pt-1 pb-2 flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
-                {product.category}
+                {activeProduct.category}
               </span>
               <button
                 type="button"
                 onClick={onClose}
-                className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:text-gray-900 hover:bg-gray-200 flex items-center justify-center transition-colors active:scale-95"
+                className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:text-gray-900 hover:bg-gray-200 flex items-center justify-center transition-colors active:scale-95 cursor-pointer"
                 aria-label="Cerrar detalle"
               >
                 <X className="w-4 h-4" />
@@ -192,7 +175,7 @@ export default function ProductDetailSheet({
                     >
                       <img
                         src={imageList[currentImageIndex]}
-                        alt={`${product.name} foto ${currentImageIndex + 1}`}
+                        alt={`${activeProduct.name} foto ${currentImageIndex + 1}`}
                         className="w-full h-full object-cover select-none pointer-events-none"
                       />
                     </motion.div>
@@ -211,7 +194,7 @@ export default function ProductDetailSheet({
                           e.stopPropagation();
                           handlePrevImage();
                         }}
-                        className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 active:scale-90 text-white flex items-center justify-center backdrop-blur-xs transition-all z-10"
+                        className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 active:scale-90 text-white flex items-center justify-center backdrop-blur-xs transition-all z-10 cursor-pointer"
                         aria-label="Foto anterior"
                       >
                         <ChevronLeft className="w-4 h-4" />
@@ -223,7 +206,7 @@ export default function ProductDetailSheet({
                           e.stopPropagation();
                           handleNextImage();
                         }}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 active:scale-90 text-white flex items-center justify-center backdrop-blur-xs transition-all z-10"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 active:scale-90 text-white flex items-center justify-center backdrop-blur-xs transition-all z-10 cursor-pointer"
                         aria-label="Foto siguiente"
                       >
                         <ChevronRight className="w-4 h-4" />
@@ -244,7 +227,7 @@ export default function ProductDetailSheet({
                               e.stopPropagation();
                               setCurrentImageIndex(idx);
                             }}
-                            className={`h-1.5 rounded-full transition-all duration-200 ${
+                            className={`h-1.5 rounded-full transition-all duration-200 cursor-pointer ${
                               idx === currentImageIndex
                                 ? 'w-4 bg-white shadow-xs'
                                 : 'w-1.5 bg-white/50 hover:bg-white/80'
@@ -256,13 +239,13 @@ export default function ProductDetailSheet({
                     </>
                   )}
 
-                  {product.featured && (
+                  {activeProduct.featured && (
                     <div className="absolute top-2.5 left-2.5 bg-amber-400 text-amber-950 text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow-xs z-10">
                       POPULAR
                     </div>
                   )}
 
-                  {!product.available && (
+                  {!activeProduct.available && (
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-20">
                       <span className="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
                         Agotado Temporalmente
@@ -279,7 +262,7 @@ export default function ProductDetailSheet({
                         key={idx}
                         type="button"
                         onClick={() => setCurrentImageIndex(idx)}
-                        className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 flex-shrink-0 transition-all ${
+                        className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 flex-shrink-0 transition-all cursor-pointer ${
                           idx === currentImageIndex
                             ? 'border-[#00594C] scale-105 shadow-xs ring-2 ring-[#00594C]/20'
                             : 'border-gray-200 opacity-60 hover:opacity-100'
@@ -300,15 +283,15 @@ export default function ProductDetailSheet({
               <div>
                 <div className="flex items-baseline justify-between gap-3">
                   <h2 className="font-extrabold text-gray-900 text-xl leading-tight">
-                    {product.name}
+                    {activeProduct.name}
                   </h2>
                   <div className="text-right flex-shrink-0">
                     <span className="font-extrabold text-gray-900 text-lg">
-                      {currencySymbol}{product.price.toFixed(2)}
+                      {currencySymbol}{activeProduct.price.toFixed(2)}
                     </span>
-                    {product.compareAtPrice && product.compareAtPrice > product.price && (
+                    {activeProduct.compareAtPrice && activeProduct.compareAtPrice > activeProduct.price && (
                       <span className="block text-xs text-gray-400 line-through">
-                        {currencySymbol}{product.compareAtPrice.toFixed(2)}
+                        {currencySymbol}{activeProduct.compareAtPrice.toFixed(2)}
                       </span>
                     )}
                   </div>
@@ -317,15 +300,15 @@ export default function ProductDetailSheet({
                 <div className="mt-1 flex items-center gap-2">
                   <span
                     className={`inline-flex items-center gap-1 text-[11px] font-semibold ${
-                      product.available ? 'text-emerald-600' : 'text-gray-400'
+                      activeProduct.available ? 'text-emerald-600' : 'text-gray-400'
                     }`}
                   >
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${
-                        product.available ? 'bg-emerald-500' : 'bg-gray-400'
+                        activeProduct.available ? 'bg-emerald-500' : 'bg-gray-400'
                       }`}
                     />
-                    {product.available ? 'Disponible para ordenar' : 'No disponible'}
+                    {activeProduct.available ? 'Disponible para ordenar' : 'No disponible'}
                   </span>
                 </div>
               </div>
@@ -335,9 +318,9 @@ export default function ProductDetailSheet({
                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
                   Descripción
                 </h3>
-                {product.description ? (
+                {activeProduct.description ? (
                   <p className="text-xs sm:text-sm text-gray-600 leading-relaxed whitespace-pre-line font-normal">
-                    {product.description}
+                    {activeProduct.description}
                   </p>
                 ) : (
                   <p className="text-xs text-gray-400 italic">
@@ -349,106 +332,80 @@ export default function ProductDetailSheet({
 
             {/* Bottom Action Footer */}
             <div className="p-4 pt-3 border-t border-gray-100 bg-white space-y-2.5">
-              {product.available ? (
-                <div className="space-y-2.5">
-                  {/* Stepper + Subtotal / Quitar row */}
-                  <div className="flex items-center justify-between gap-3 bg-gray-50/90 px-3 py-2 rounded-2xl border border-gray-100">
-                    <div className="flex items-center bg-white rounded-xl p-1 border border-gray-200/80 shadow-2xs">
-                      <button
+              {activeProduct.available ? (
+                <div className="w-full">
+                  <AnimatePresence mode="wait" initial={false}>
+                    {quantity === 0 ? (
+                      /* ── 1. BOTÓN "Añadir al pedido" (Cuando aún no está en el carrito) ── */
+                      <motion.button
+                        key="add-button"
+                        initial={{ opacity: 0, scale: 0.97 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.97 }}
+                        transition={{ duration: 0.16 }}
                         type="button"
-                        onClick={handleDecrement}
-                        disabled={selectedQty <= 1}
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors active:scale-90 ${
-                          selectedQty <= 1
-                            ? 'text-gray-300 cursor-not-allowed bg-gray-50'
-                            : 'text-gray-700 bg-gray-100 hover:bg-gray-200 cursor-pointer'
-                        }`}
-                        aria-label="Reducir cantidad"
+                        onClick={() => onUpdateQty(1)}
+                        className="w-full h-12 rounded-2xl text-white font-bold text-sm shadow-md flex items-center justify-between px-5 active:scale-98 transition-transform cursor-pointer"
+                        style={{ backgroundColor: themeColor }}
                       >
-                        <Minus className="w-4 h-4" />
-                      </button>
-
-                      <span className="w-10 text-center text-sm font-extrabold text-gray-900 tabular-nums select-none">
-                        {selectedQty}
-                      </span>
-
-                      <button
-                        type="button"
-                        onClick={handleIncrement}
-                        className="w-8 h-8 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center justify-center transition-colors active:scale-90 cursor-pointer"
-                        aria-label="Aumentar cantidad"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    <div className="flex items-center gap-2.5">
-                      {quantity > 0 && (
-                        <button
-                          type="button"
-                          onClick={handleRemoveFromCart}
-                          className="text-xs text-rose-500 hover:text-rose-600 font-semibold transition-colors flex items-center gap-1 px-2.5 py-1.5 rounded-xl hover:bg-rose-50 active:scale-95 cursor-pointer"
-                          title="Eliminar este producto del pedido"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          <span>Quitar</span>
-                        </button>
-                      )}
-
-                      <div className="text-right pr-1">
-                        <span className="text-[10px] text-gray-400 block font-semibold leading-tight">
-                          {quantity > 0 && selectedQty === quantity ? 'En pedido' : 'Subtotal'}
-                        </span>
-                        <span className="text-sm font-extrabold text-gray-900 tabular-nums">
-                          {currencySymbol}{(product.price * selectedQty).toFixed(2)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Primary CTA Button */}
-                  <button
-                    type="button"
-                    onClick={handleAddOrUpdate}
-                    className="w-full h-12 rounded-2xl text-white font-bold text-sm shadow-md flex items-center justify-between px-5 active:scale-98 transition-all duration-200 cursor-pointer"
-                    style={{ backgroundColor: addedFeedback ? '#16a34a' : themeColor }}
-                  >
-                    {addedFeedback ? (
-                      <span className="w-full flex items-center justify-center gap-2 text-white font-bold">
-                        <Check className="w-5 h-5 stroke-[2.5]" />
-                        <span>
-                          {quantity > 0 && selectedQty === quantity
-                            ? '¡Pedido actualizado!'
-                            : '¡Añadido al pedido!'}
-                        </span>
-                      </span>
-                    ) : (
-                      <>
                         <span className="flex items-center gap-2">
                           <Plus className="w-4 h-4 stroke-[2.5]" />
-                          <span>
-                            {quantity === 0
-                              ? 'Añadir al pedido'
-                              : selectedQty !== quantity
-                              ? `Actualizar pedido (${selectedQty})`
-                              : `Añadir 1 más (+1)`}
-                          </span>
+                          <span>Añadir al pedido</span>
                         </span>
                         <span className="tabular-nums font-extrabold">
-                          {currencySymbol}
-                          {(
-                            product.price *
-                            (quantity > 0 && selectedQty === quantity
-                              ? 1
-                              : selectedQty)
-                          ).toFixed(2)}
+                          {currencySymbol}{activeProduct.price.toFixed(2)}
                         </span>
-                      </>
+                      </motion.button>
+                    ) : (
+                      /* ── 2. COMPONENTE CONVERTIDO EN SUMAR / RESTAR (Cuando ya está en el carrito) ── */
+                      <motion.div
+                        key="stepper-converted"
+                        initial={{ opacity: 0, scale: 0.97 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.97 }}
+                        transition={{ duration: 0.16 }}
+                        className="w-full h-12 rounded-2xl bg-gray-50 border border-gray-200/90 shadow-2xs px-2 flex items-center justify-between"
+                      >
+                        {/* Botón Restar (o basura si es 1 para quitar del pedido) */}
+                        <button
+                          type="button"
+                          onClick={() => onUpdateQty(-1)}
+                          className="w-9 h-9 rounded-xl bg-white text-gray-700 hover:text-gray-950 border border-gray-200/80 shadow-2xs flex items-center justify-center transition-all active:scale-90 hover:bg-gray-50 cursor-pointer"
+                          aria-label={quantity === 1 ? 'Quitar del pedido' : 'Restar uno'}
+                          title={quantity === 1 ? 'Quitar del pedido' : 'Restar uno'}
+                        >
+                          {quantity === 1 ? (
+                            <Trash2 className="w-4 h-4 text-rose-500" />
+                          ) : (
+                            <Minus className="w-4 h-4 stroke-[2.5]" />
+                          )}
+                        </button>
+
+                        {/* Cantidad y Subtotal al Centro */}
+                        <div className="flex flex-col items-center justify-center select-none text-center">
+                          <span className="text-sm font-black text-gray-950 tabular-nums leading-tight">
+                            {quantity} {quantity === 1 ? 'unidad' : 'unidades'}
+                          </span>
+                          <span className="text-[10px] text-gray-500 font-semibold leading-none mt-0.5">
+                            Subtotal: {currencySymbol}{(activeProduct.price * quantity).toFixed(2)}
+                          </span>
+                        </div>
+
+                        {/* Botón Sumar */}
+                        <button
+                          type="button"
+                          onClick={() => onUpdateQty(1)}
+                          className="w-9 h-9 rounded-xl bg-white text-gray-700 hover:text-gray-950 border border-gray-200/80 shadow-2xs flex items-center justify-center transition-all active:scale-90 hover:bg-gray-50 cursor-pointer"
+                          aria-label="Aumentar cantidad"
+                        >
+                          <Plus className="w-4 h-4 stroke-[2.5]" />
+                        </button>
+                      </motion.div>
                     )}
-                  </button>
+                  </AnimatePresence>
                 </div>
               ) : (
-                <NotifySoldOut accentColor={themeColor} productName={product.name} />
+                <NotifySoldOut accentColor={themeColor} productName={activeProduct.name} />
               )}
 
               {/* Continuar con WhatsApp & Carrito (disponible al tener productos agregados) */}
@@ -461,7 +418,7 @@ export default function ProductDetailSheet({
                       onConfirm={onConfirmWhatsApp}
                       disabled={totalCartPrice === 0}
                       accentColor={themeColor}
-                      label={`Continuar con WhatsApp · ${currencySymbol}${totalCartPrice.toFixed(2)}`}
+                      label="Pedir por WhatsApp"
                     />
                   </div>
 

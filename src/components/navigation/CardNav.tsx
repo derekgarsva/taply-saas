@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -18,6 +18,28 @@ import {
 export default function CardNav() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const navRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside or pressing Escape
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false);
+    };
+
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [menuOpen]);
 
   // Track scroll position for subtle elevation
   useEffect(() => {
@@ -32,9 +54,14 @@ export default function CardNav() {
     <header className="sticky top-3 sm:top-4 z-50 w-full px-3 sm:px-6 max-w-6xl mx-auto font-sans">
       {/* ══ FLOATING TRANSLUCENT CARD CONTAINER (REACTBITS CARD-NAV) ══ */}
       <div
-        className={`relative w-full rounded-2xl lg:rounded-full bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/70 border border-gray-300/80 ring-1 ring-black/5 transition-all duration-200 ${
+        ref={navRef}
+        className={`relative w-full bg-white/85 backdrop-blur-xl supports-[backdrop-filter]:bg-white/75 border border-gray-300/80 ring-1 ring-black/5 transition-all duration-300 ease-out overflow-hidden ${
+          menuOpen
+            ? 'rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.16)] border-gray-400/80 bg-white/95'
+            : 'rounded-full'
+        } ${
           scrolled
-            ? 'shadow-[0_12px_36px_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.04)] border-gray-400/80 bg-white/90'
+            ? 'shadow-[0_12px_36px_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.04)] bg-white/90'
             : 'shadow-[0_8px_28px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.03)]'
         }`}
       >

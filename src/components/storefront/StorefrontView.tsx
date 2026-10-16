@@ -644,6 +644,7 @@ export default function StorefrontView({
                   onConfirm={() => handleOrderWhatsApp()}
                   disabled={totalPrice === 0}
                   accentColor={business.themeColor}
+                  label="Pedir por WhatsApp"
                 />
               </motion.div>
 
