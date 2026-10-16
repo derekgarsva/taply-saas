@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { X, Plus, Minus, Check, Sparkles, AlertCircle, ChevronLeft, ChevronRight, Image as ImageIcon, ShoppingBag } from 'lucide-react';
+import { X, Plus, Minus, Check, Sparkles, AlertCircle, ChevronLeft, ChevronRight, Image as ImageIcon, ShoppingBag, Trash2 } from 'lucide-react';
 import { Product } from '@/types';
 import NotifySoldOut from './NotifySoldOut';
 import SlideConfirmWhatsApp from './SlideConfirmWhatsApp';
@@ -42,6 +42,14 @@ export default function ProductDetailSheet({
 }: ProductDetailSheetProps) {
   const dragControls = useDragControls();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [selectedQty, setSelectedQty] = useState(1);
+  const [addedFeedback, setAddedFeedback] = useState(false);
+
+  // Sync selectedQty whenever product or external cart quantity changes
+  useEffect(() => {
+    setSelectedQty(quantity > 0 ? quantity : 1);
+    setAddedFeedback(false);
+  }, [product?.id, quantity]);
 
   // Compute normalized list of images
   const imageList = useMemo(() => {
@@ -67,20 +75,49 @@ export default function ProductDetailSheet({
     setCurrentImageIndex((prev) => (prev - 1 + imageList.length) % imageList.length);
   };
 
+  const handleIncrement = () => {
+    setSelectedQty((prev) => prev + 1);
+  };
+
+  const handleDecrement = () => {
+    setSelectedQty((prev) => Math.max(1, prev - 1));
+  };
+
+  const handleAddOrUpdate = () => {
+    let targetQty = selectedQty;
+    // If the product is already in the cart and the user hasn't touched the stepper,
+    // tapping the button naturally adds 1 more item.
+    if (quantity > 0 && selectedQty === quantity) {
+      targetQty = quantity + 1;
+      setSelectedQty(targetQty);
+    }
+    onSetQty(targetQty);
+    setAddedFeedback(true);
+    setTimeout(() => {
+      setAddedFeedback(false);
+    }, 1400);
+  };
+
+  const handleRemoveFromCart = () => {
+    onSetQty(0);
+    setSelectedQty(1);
+    setAddedFeedback(false);
+  };
+
   if (!product) return null;
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[60] flex items-end justify-center">
-          {/* Transparent Backdrop (No screen darkening, still closes on outside click) */}
+        <div className="fixed inset-0 z-[70] flex items-end justify-center pointer-events-none">
+          {/* Transparent Backdrop (No screen darkening, closes only when clicking outside modal) */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
             onClick={onClose}
-            className="fixed inset-0 bg-transparent z-[55]"
+            className="fixed inset-0 bg-transparent pointer-events-auto z-10"
           />
 
           {/* Bottom Sheet Modal */}
@@ -104,7 +141,8 @@ export default function ProductDetailSheet({
                 onClose();
               }
             }}
-            className="relative z-50 w-full max-w-md bg-white rounded-t-[32px] shadow-[0_-16px_48px_rgba(0,0,0,0.18)] flex flex-col max-h-[90vh] overflow-hidden border-t border-gray-100"
+            onClick={(e) => e.stopPropagation()}
+            className="relative z-20 pointer-events-auto w-full max-w-md bg-white rounded-t-[32px] shadow-[0_-16px_48px_rgba(0,0,0,0.18)] flex flex-col max-h-[90vh] overflow-hidden border-t border-gray-100"
           >
             {/* Draggable Handle Bar */}
             <div
@@ -312,63 +350,103 @@ export default function ProductDetailSheet({
             {/* Bottom Action Footer */}
             <div className="p-4 pt-3 border-t border-gray-100 bg-white space-y-2.5">
               {product.available ? (
-                quantity === 0 ? (
-                  <button
-                    type="button"
-                    onClick={() => onUpdateQty(1)}
-                    className="w-full h-12 rounded-2xl text-white font-bold text-sm shadow-md flex items-center justify-between px-5 active:scale-98 transition-transform"
-                    style={{ backgroundColor: themeColor }}
-                  >
-                    <span className="flex items-center gap-2">
-                      <Plus className="w-4 h-4" />
-                      <span>Añadir al pedido</span>
-                    </span>
-                    <span className="tabular-nums">
-                      {currencySymbol}{product.price.toFixed(2)}
-                    </span>
-                  </button>
-                ) : (
-                  <div className="flex items-center justify-between gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-100">
+                <div className="space-y-2.5">
+                  {/* Stepper + Subtotal / Quitar row */}
+                  <div className="flex items-center justify-between gap-3 bg-gray-50/90 px-3 py-2 rounded-2xl border border-gray-100">
                     <div className="flex items-center bg-white rounded-xl p-1 border border-gray-200/80 shadow-2xs">
                       <button
                         type="button"
-                        onClick={() => onUpdateQty(-1)}
-                        className="w-8 h-8 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center justify-center transition-colors active:scale-90"
+                        onClick={handleDecrement}
+                        disabled={selectedQty <= 1}
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors active:scale-90 ${
+                          selectedQty <= 1
+                            ? 'text-gray-300 cursor-not-allowed bg-gray-50'
+                            : 'text-gray-700 bg-gray-100 hover:bg-gray-200 cursor-pointer'
+                        }`}
                         aria-label="Reducir cantidad"
                       >
                         <Minus className="w-4 h-4" />
                       </button>
 
-                      <span className="w-10 text-center text-sm font-extrabold text-gray-900 tabular-nums">
-                        {quantity}
+                      <span className="w-10 text-center text-sm font-extrabold text-gray-900 tabular-nums select-none">
+                        {selectedQty}
                       </span>
 
                       <button
                         type="button"
-                        onClick={() => onUpdateQty(1)}
-                        className="w-8 h-8 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center justify-center transition-colors active:scale-90"
+                        onClick={handleIncrement}
+                        className="w-8 h-8 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center justify-center transition-colors active:scale-90 cursor-pointer"
                         aria-label="Aumentar cantidad"
                       >
                         <Plus className="w-4 h-4" />
                       </button>
                     </div>
 
-                    <div className="text-right pr-2">
-                      <span className="text-[10px] text-gray-400 block font-semibold">Subtotal</span>
-                      <span className="text-sm font-extrabold text-gray-900 tabular-nums">
-                        {currencySymbol}{(product.price * quantity).toFixed(2)}
-                      </span>
-                    </div>
+                    <div className="flex items-center gap-2.5">
+                      {quantity > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleRemoveFromCart}
+                          className="text-xs text-rose-500 hover:text-rose-600 font-semibold transition-colors flex items-center gap-1 px-2.5 py-1.5 rounded-xl hover:bg-rose-50 active:scale-95 cursor-pointer"
+                          title="Eliminar este producto del pedido"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Quitar</span>
+                        </button>
+                      )}
 
-                    <button
-                      type="button"
-                      onClick={onClose}
-                      className="px-4 py-2 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-black transition-colors active:scale-95"
-                    >
-                      Listo
-                    </button>
+                      <div className="text-right pr-1">
+                        <span className="text-[10px] text-gray-400 block font-semibold leading-tight">
+                          {quantity > 0 && selectedQty === quantity ? 'En pedido' : 'Subtotal'}
+                        </span>
+                        <span className="text-sm font-extrabold text-gray-900 tabular-nums">
+                          {currencySymbol}{(product.price * selectedQty).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                )
+
+                  {/* Primary CTA Button */}
+                  <button
+                    type="button"
+                    onClick={handleAddOrUpdate}
+                    className="w-full h-12 rounded-2xl text-white font-bold text-sm shadow-md flex items-center justify-between px-5 active:scale-98 transition-all duration-200 cursor-pointer"
+                    style={{ backgroundColor: addedFeedback ? '#16a34a' : themeColor }}
+                  >
+                    {addedFeedback ? (
+                      <span className="w-full flex items-center justify-center gap-2 text-white font-bold">
+                        <Check className="w-5 h-5 stroke-[2.5]" />
+                        <span>
+                          {quantity > 0 && selectedQty === quantity
+                            ? '¡Pedido actualizado!'
+                            : '¡Añadido al pedido!'}
+                        </span>
+                      </span>
+                    ) : (
+                      <>
+                        <span className="flex items-center gap-2">
+                          <Plus className="w-4 h-4 stroke-[2.5]" />
+                          <span>
+                            {quantity === 0
+                              ? 'Añadir al pedido'
+                              : selectedQty !== quantity
+                              ? `Actualizar pedido (${selectedQty})`
+                              : `Añadir 1 más (+1)`}
+                          </span>
+                        </span>
+                        <span className="tabular-nums font-extrabold">
+                          {currencySymbol}
+                          {(
+                            product.price *
+                            (quantity > 0 && selectedQty === quantity
+                              ? 1
+                              : selectedQty)
+                          ).toFixed(2)}
+                        </span>
+                      </>
+                    )}
+                  </button>
+                </div>
               ) : (
                 <NotifySoldOut accentColor={themeColor} productName={product.name} />
               )}
