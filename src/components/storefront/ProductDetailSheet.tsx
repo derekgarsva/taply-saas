@@ -73,14 +73,14 @@ export default function ProductDetailSheet({
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[60] flex items-end justify-center">
-          {/* Backdrop Blur */}
+          {/* Transparent Backdrop (No screen darkening, still closes on outside click) */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/55 backdrop-blur-xs z-[55]"
+            className="fixed inset-0 bg-transparent z-[55]"
           />
 
           {/* Bottom Sheet Modal */}
