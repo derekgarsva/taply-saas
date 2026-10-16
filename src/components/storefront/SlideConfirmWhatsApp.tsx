@@ -122,9 +122,9 @@ export default function SlideConfirmWhatsApp({
 
   if (disabled) {
     return (
-      <div className="w-full h-[56px] rounded-[28px] bg-gray-200 text-gray-400 font-semibold flex items-center justify-center gap-2 text-xs sm:text-sm shadow-2xs select-none">
-        <WhatsAppIcon className="w-4 h-4 text-gray-400" />
-        <span>Agrega productos para ordenar</span>
+      <div className="w-full h-[56px] rounded-[28px] bg-white/95 backdrop-blur-md border border-gray-200/90 text-gray-500 font-bold flex items-center justify-center gap-2 text-xs sm:text-sm shadow-sm select-none">
+        <WhatsAppIcon className="w-4 h-4 text-emerald-600" />
+        <span>Agrega productos para pedir por WhatsApp</span>
       </div>
     );
   }

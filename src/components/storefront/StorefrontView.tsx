@@ -36,7 +36,6 @@ export default function StorefrontView({
   const [modal, setModal] = useState<'taply' | 'about' | 'qr' | 'ownerPin' | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [directWhatsAppUrl, setDirectWhatsAppUrl] = useState<string | null>(null);
-  const [scrolled, setScrolled] = useState(false);
   const [categoriesDocked, setCategoriesDocked] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
@@ -53,11 +52,10 @@ export default function StorefrontView({
     return () => clearTimeout(timer);
   }, []);
 
-  // Track scroll position to update header frosted style and dock categories in top middle space
+  // Track scroll position to dock categories in top middle space
   useEffect(() => {
     const handleScroll = () => {
       const y = window.scrollY;
-      setScrolled(y > 20);
 
       if (categoryBarRef.current) {
         const rect = categoryBarRef.current.getBoundingClientRect();
@@ -302,88 +300,80 @@ export default function StorefrontView({
 
   return (
     <div className="mx-auto max-w-md bg-white min-h-screen relative shadow-sm border-x border-gray-100 flex flex-col font-sans">
-      {/* ══ Fixed Top Bar: Search on Left | Docked Category Pill in Middle | Share & 3 Dots on Right ══ */}
-      {!loading && (
-        <header
-          className={`fixed top-0 left-0 right-0 z-40 max-w-md mx-auto h-14 px-3 flex items-center justify-between pointer-events-none transition-all duration-200 ${
-            scrolled
-              ? 'bg-white/92 backdrop-blur-md shadow-xs border-b border-gray-200/60'
-              : 'bg-transparent'
-          }`}
-        >
-          <div className="pointer-events-auto flex-shrink-0">
-            <SeekTop
-              value={searchQuery}
-              onChange={setSearchQuery}
-              accentColor={business.themeColor}
-              onOpenChange={setSearchOpen}
-            />
-          </div>
+      {/* ══ Fixed Top Bar: Search on Left | Docked Category Pill in Middle | Share & 3 Dots on Right (Transparent background bar, buttons float freely) ══ */}
+      <header className="fixed top-0 left-0 right-0 z-40 max-w-md mx-auto h-14 px-3 flex items-center justify-between pointer-events-none bg-transparent">
+        <div className="pointer-events-auto flex-shrink-0">
+          <SeekTop
+            value={searchQuery}
+            onChange={setSearchQuery}
+            accentColor={business.themeColor}
+            onOpenChange={setSearchOpen}
+          />
+        </div>
 
-          {/* ══ Middle Space: Morphing Category Pill Slider ══ */}
-          <div className="flex-1 min-w-0 mx-1.5 pointer-events-auto flex items-center justify-center">
-            <AnimatePresence>
-              {categoriesDocked && !searchOpen && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9, y: -4 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, y: -4 }}
-                  transition={{ type: 'spring', stiffness: 450, damping: 30 }}
-                  className="w-full h-[38px] rounded-full bg-white/95 backdrop-blur-md border border-black/8 shadow-2xs overflow-hidden flex items-center px-1"
-                >
-                  <div className="w-full h-full overflow-x-auto no-scrollbar flex items-center gap-1">
-                    {categoriesList.map((cat) => {
-                      const isActive = selectedCategory === cat;
-                      return (
-                        <button
-                          key={cat}
-                          type="button"
-                          onClick={(e) => handleCategorySelect(cat, e, true)}
-                          className={`relative whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors duration-150 outline-none select-none z-10 flex-shrink-0 ${
-                            isActive
-                              ? 'text-white'
-                              : 'text-gray-600 hover:text-gray-900 active:scale-95'
-                          }`}
-                        >
-                          {isActive && (
-                            <motion.div
-                              layoutId="docked-active-pill"
-                              className="absolute inset-0 rounded-full shadow-xs -z-10"
-                              style={{ backgroundColor: business.themeColor || '#18181B' }}
-                              transition={{
-                                type: 'spring',
-                                stiffness: 420,
-                                damping: 30,
-                              }}
-                            />
-                          )}
-                          <span className="relative z-10">{cat}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+        {/* ══ Middle Space: Morphing Category Pill Slider ══ */}
+        <div className="flex-1 min-w-0 mx-1.5 pointer-events-auto flex items-center justify-center">
+          <AnimatePresence>
+            {categoriesDocked && !searchOpen && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: -4 }}
+                transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                className="w-full h-[38px] rounded-full bg-white/95 backdrop-blur-md border border-black/8 shadow-2xs overflow-hidden flex items-center px-1"
+              >
+                <div className="w-full h-full overflow-x-auto no-scrollbar flex items-center gap-1">
+                  {categoriesList.map((cat) => {
+                    const isActive = selectedCategory === cat;
+                    return (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={(e) => handleCategorySelect(cat, e, true)}
+                        className={`relative whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors duration-150 outline-none select-none z-10 flex-shrink-0 ${
+                          isActive
+                            ? 'text-white'
+                            : 'text-gray-600 hover:text-gray-900 active:scale-95'
+                        }`}
+                      >
+                        {isActive && (
+                          <motion.div
+                            layoutId="docked-active-pill"
+                            className="absolute inset-0 rounded-full shadow-xs -z-10"
+                            style={{ backgroundColor: business.themeColor || '#18181B' }}
+                            transition={{
+                              type: 'spring',
+                              stiffness: 420,
+                              damping: 30,
+                            }}
+                          />
+                        )}
+                        <span className="relative z-10">{cat}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-          <div className="pointer-events-auto flex items-center space-x-1.5 flex-shrink-0">
-            <button
-              type="button"
-              onClick={handleShare}
-              aria-label="Compartir"
-              className="w-[38px] h-[38px] rounded-full bg-white/95 backdrop-blur-md shadow-sm border border-black/5 flex items-center justify-center text-gray-800 active:scale-95 transition-transform"
-            >
-              <Share2 className="w-4 h-4 text-gray-800" />
-            </button>
+        <div className="pointer-events-auto flex items-center space-x-1.5 flex-shrink-0">
+          <button
+            type="button"
+            onClick={handleShare}
+            aria-label="Compartir"
+            className="w-[38px] h-[38px] rounded-full bg-white/95 backdrop-blur-md shadow-sm border border-black/5 flex items-center justify-center text-gray-800 active:scale-95 transition-transform"
+          >
+            <Share2 className="w-4 h-4 text-gray-800" />
+          </button>
 
-            <TopMenu
-              onSelect={handleMenuAction}
-              accentColor={business.themeColor}
-            />
-          </div>
-        </header>
-      )}
+          <TopMenu
+            onSelect={handleMenuAction}
+            accentColor={business.themeColor}
+          />
+        </div>
+      </header>
 
       {/* ══ Skeleton Shimmer or Storefront Content ══ */}
       {loading ? (
@@ -634,12 +624,11 @@ export default function StorefrontView({
       )}
 
       {/* ══ Fixed Bottom Action Bar: Always Pinned to Viewport Bottom ══ */}
-      {!loading && (
-        <aside
-          className={`fixed bottom-0 left-0 right-0 z-40 pointer-events-none pb-[env(safe-area-inset-bottom,0px)] transition-all duration-300 ${
-            cartDrawerOpen || !!selectedProduct ? 'opacity-0 translate-y-6 pointer-events-none' : 'opacity-100 translate-y-0'
-          }`}
-        >
+      <aside
+        className={`fixed bottom-0 left-0 right-0 z-40 pointer-events-none pb-[env(safe-area-inset-bottom,0px)] transition-all duration-300 ${
+          cartDrawerOpen || !!selectedProduct ? 'opacity-0 translate-y-6 pointer-events-none' : 'opacity-100 translate-y-0'
+        }`}
+      >
           <div
             className="max-w-md mx-auto px-4 pb-4 pt-12"
             style={{
@@ -692,7 +681,6 @@ export default function StorefrontView({
             </div>
           </div>
         </aside>
-      )}
 
       {/* ══ Cart Bottom Sheet (Arc UI Style) ══ */}
       <CartBottomSheet

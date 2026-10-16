@@ -12,18 +12,14 @@ export default function Template({ children }: { children: React.ReactNode }) {
 
   return (
     <motion.div
-      initial={
-        reduced
-          ? { opacity: 0 }
-          : { opacity: 0, y: 8, scale: 0.996, filter: 'blur(3px)' }
-      }
-      animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-      exit={{ opacity: 0, y: -6, filter: 'blur(2px)' }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       transition={{
-        duration: 0.36,
+        duration: reduced ? 0 : 0.22,
         ease: [0.16, 1, 0.3, 1],
       }}
-      className="w-full will-change-[transform,opacity,filter]"
+      className="w-full"
     >
       {children}
     </motion.div>
