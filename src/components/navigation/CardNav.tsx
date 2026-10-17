@@ -55,13 +55,13 @@ export default function CardNav() {
       {/* ══ FLOATING TRANSLUCENT CARD CONTAINER (REACTBITS CARD-NAV) ══ */}
       <div
         ref={navRef}
-        className={`relative w-full bg-white/85 backdrop-blur-xl supports-[backdrop-filter]:bg-white/75 border border-gray-300/80 ring-1 ring-black/5 transition-all duration-300 ease-out overflow-hidden ${
+        className={`relative w-full bg-white/90 backdrop-blur-xl supports-[backdrop-filter]:bg-white/80 border border-gray-300/80 ring-1 ring-black/5 transition-[border-radius,box-shadow,border-color] duration-250 ease-out overflow-hidden ${
           menuOpen
-            ? 'rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.16)] border-gray-400/80 bg-white/95'
+            ? 'rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.14)] border-gray-400/80 bg-white/95'
             : 'rounded-full'
         } ${
           scrolled
-            ? 'shadow-[0_12px_36px_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.04)] bg-white/90'
+            ? 'shadow-[0_12px_36px_rgba(0,0,0,0.12),0_2px_4px_rgba(0,0,0,0.04)]'
             : 'shadow-[0_8px_28px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.03)]'
         }`}
       >
@@ -118,15 +118,30 @@ export default function CardNav() {
         </div>
 
         {/* ══ HAMBURGER EXPANDABLE DRAWER (CONTAINS DEMOS, CARACTERÍSTICAS, PLANES, SOLICITAR ACCESO) ══ */}
-        <AnimatePresence>
+        <AnimatePresence initial={false}>
           {menuOpen && (
             <motion.div
-              initial={{ opacity: 0, y: -6, scale: 0.99 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -6, scale: 0.99 }}
-              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-              className="border-t border-gray-200/80 px-4 sm:px-6 pt-4 pb-5 space-y-4 transform-gpu will-change-transform"
+              key="landing-drawer"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{
+                height: 'auto',
+                opacity: 1,
+                transition: {
+                  height: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
+                  opacity: { duration: 0.22, ease: 'easeOut' },
+                },
+              }}
+              exit={{
+                height: 0,
+                opacity: 0,
+                transition: {
+                  height: { duration: 0.22, ease: [0.16, 1, 0.3, 1] },
+                  opacity: { duration: 0.15, ease: 'easeIn' },
+                },
+              }}
+              className="overflow-hidden"
             >
+              <div className="border-t border-gray-200/80 px-4 sm:px-6 pt-4 pb-5 space-y-4">
               {/* 1. Demos en Vivo Cards */}
               <div>
                 <div className="flex items-center justify-between mb-2 px-1">
@@ -247,7 +262,8 @@ export default function CardNav() {
                   Taply • Catálogos multilink para vender por WhatsApp
                 </p>
               </div>
-            </motion.div>
+            </div>
+          </motion.div>
           )}
         </AnimatePresence>
       </div>

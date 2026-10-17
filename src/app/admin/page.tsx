@@ -692,7 +692,83 @@ export default function SuperAdminPage() {
       />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-3.5 sm:px-6 pt-4 sm:pt-6 space-y-6 sm:space-y-8 pb-24 sm:pb-12">
+      <main className="max-w-7xl mx-auto px-3.5 sm:px-6 pt-3 sm:pt-4 space-y-6 sm:space-y-8 pb-24 sm:pb-12">
+        {/* ══ BESPOKE HORIZONTAL SEGMENTED SECTIONS (FAST IN-PAGE NAVIGATION) ══ */}
+        <div className="overflow-x-auto no-scrollbar py-1">
+          <nav
+            className={`inline-flex items-center gap-1.5 p-1.5 rounded-2xl sm:rounded-full border backdrop-blur-md shadow-2xs min-w-full sm:min-w-0 ${
+              isDark
+                ? 'bg-neutral-900/80 border-neutral-800'
+                : 'bg-white/80 border-gray-200/90'
+            }`}
+          >
+            {[
+              { id: 'all' as const, label: 'Consola General', icon: Layers, count: null },
+              { id: 'stores' as const, label: 'Comercios', icon: Store, count: businesses.length },
+              { id: 'payments' as const, label: 'Suscripciones y Cobros', icon: CreditCard, count: payments.length },
+              { id: 'timeline' as const, label: 'Auditoría en Vivo', icon: Activity, count: null },
+            ].map((sec) => {
+              const Icon = sec.icon;
+              const isActive = activeSection === sec.id;
+              return (
+                <button
+                  key={sec.id}
+                  type="button"
+                  onClick={() => setActiveSection(sec.id)}
+                  className={`relative flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl sm:rounded-full text-xs font-bold transition-all whitespace-nowrap select-none flex-shrink-0 ${
+                    isActive
+                      ? isDark
+                        ? 'text-white shadow-xs'
+                        : 'text-neutral-950 shadow-xs'
+                      : isDark
+                      ? 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/60'
+                      : 'text-neutral-500 hover:text-neutral-900 hover:bg-gray-100/60'
+                  }`}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="admin-main-section-pill"
+                      className={`absolute inset-0 rounded-xl sm:rounded-full border shadow-2xs ${
+                        isDark
+                          ? 'bg-neutral-800 border-neutral-700'
+                          : 'bg-white border-black/5'
+                      }`}
+                      transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-1.5">
+                    <Icon
+                      className={`w-3.5 h-3.5 ${
+                        isActive
+                          ? 'text-emerald-500'
+                          : isDark
+                          ? 'text-neutral-500'
+                          : 'text-neutral-400'
+                      }`}
+                    />
+                    <span>{sec.label}</span>
+                    {sec.count !== null && (
+                      <span
+                        className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                          isActive
+                            ? isDark
+                              ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/60'
+                              : 'bg-emerald-50 text-emerald-800 border border-emerald-200/80'
+                            : isDark
+                            ? 'bg-neutral-800 text-neutral-400'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {sec.count}
+                      </span>
+                    )}
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
         {/* 1. Arc UI Metric Cards Grid with Sparklines */}
         {(activeSection === 'all' || activeSection === 'payments') && (
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

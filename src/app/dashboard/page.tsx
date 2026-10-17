@@ -627,7 +627,58 @@ function DashboardContent() {
       />
 
       {/* ══ MAIN CONTAINER ══ */}
-      <main className="max-w-5xl mx-auto px-4 pt-4 sm:pt-6">
+      <main className="max-w-5xl mx-auto px-4 pt-3 sm:pt-4">
+
+        {/* ══ BESPOKE HORIZONTAL SEGMENTED TABS (FAST IN-PAGE NAVIGATION) ══ */}
+        <div className="mb-6 overflow-x-auto no-scrollbar py-1">
+          <nav className="inline-flex items-center gap-1.5 p-1.5 bg-white/80 backdrop-blur-md border border-gray-200/90 rounded-2xl sm:rounded-full shadow-2xs min-w-full sm:min-w-0">
+            {[
+              { id: 'overview' as const, label: 'Resumen', icon: LayoutDashboard, count: null },
+              { id: 'products' as const, label: 'Productos', icon: Package, count: products.length },
+              { id: 'categories' as const, label: 'Categorías', icon: FolderTree, count: categories.length },
+              { id: 'orders' as const, label: 'Pedidos WhatsApp', icon: ShoppingBag, count: orders.length },
+              { id: 'branding' as const, label: 'Marca y Cobros', icon: Sliders, count: null },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`relative flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl sm:rounded-full text-xs font-bold transition-all whitespace-nowrap select-none flex-shrink-0 ${
+                    isActive
+                      ? 'text-gray-950 shadow-xs'
+                      : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100/60'
+                  }`}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="dashboard-main-tab-pill"
+                      className="absolute inset-0 bg-white rounded-xl sm:rounded-full border border-black/5 shadow-2xs"
+                      transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-1.5">
+                    <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#00594C]' : 'text-gray-400'}`} />
+                    <span>{tab.label}</span>
+                    {tab.count !== null && (
+                      <span
+                        className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                          isActive
+                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/80'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {tab.count}
+                      </span>
+                    )}
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
 
         {/* ════ TAB 1: OVERVIEW ════ */}
         {activeTab === 'overview' && (
