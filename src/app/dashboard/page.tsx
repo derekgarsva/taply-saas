@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Business, Product, Category, Order, MultiLinkItem } from '@/types';
@@ -42,6 +42,7 @@ import {
   Calendar,
   ArrowUpRight,
   BarChart3,
+  RotateCcw,
 } from 'lucide-react';
 import DashboardCardNav from '@/components/navigation/DashboardCardNav';
 import LineChart, { LineChartDatum, LineChartSeries } from '@/components/ui/line-chart';
@@ -256,39 +257,70 @@ function DashboardContent() {
     showToastMsg('Foto principal actualizada');
   };
 
+  // Demo detection and restore state
+  const [restoringDemo, setRestoringDemo] = useState(false);
+  const isDemo = useMemo(() => {
+    if (!storeSlug) return false;
+    const s = storeSlug.toLowerCase();
+    return s === 'burger-station' || s === 'panaderia-la-estrella' || s.includes('demo');
+  }, [storeSlug]);
+
   // Load initial data
-  useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/public/${storeSlug}?_t=${Date.now()}`, {
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/public/${storeSlug}?_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setBusiness(data.business);
+        setProducts(data.products || []);
+        setCategories(data.categories || []);
+
+        // Fetch orders with cache-busting
+        const ordersRes = await fetch(`/api/orders?businessId=${data.business.id}&_t=${Date.now()}`, {
           cache: 'no-store',
           headers: { 'Cache-Control': 'no-cache' },
         });
-        if (res.ok) {
-          const data = await res.json();
-          setBusiness(data.business);
-          setProducts(data.products || []);
-          setCategories(data.categories || []);
-
-          // Fetch orders with cache-busting
-          const ordersRes = await fetch(`/api/orders?businessId=${data.business.id}&_t=${Date.now()}`, {
-            cache: 'no-store',
-            headers: { 'Cache-Control': 'no-cache' },
-          });
-          if (ordersRes.ok) {
-            const ordersData = await ordersRes.json();
-            setOrders(ordersData);
-          }
+        if (ordersRes.ok) {
+          const ordersData = await ordersRes.json();
+          setOrders(ordersData);
         }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
       }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-    loadData();
   }, [storeSlug]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const handleRestoreDemo = async () => {
+    if (!business?.slug) return;
+    setRestoringDemo(true);
+    try {
+      const res = await fetch('/api/business/restore-demo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: business.slug, id: business.id }),
+      });
+      if (res.ok) {
+        showToastMsg('✨ Catálogo demo restaurado con sus platos y fotos originales.');
+        await loadData();
+      } else {
+        showToastMsg('Error al restaurar catálogo demo.');
+      }
+    } catch {
+      showToastMsg('Error al restaurar catálogo demo.');
+    } finally {
+      setRestoringDemo(false);
+    }
+  };
 
   const showToastMsg = (msg: string) => {
     setToast(msg);
@@ -755,6 +787,42 @@ function DashboardContent() {
                 </button>
               </div>
             </div>
+
+            {/* Interactive Demo Safe Mode Banner */}
+            {isDemo && (
+              <div className="p-4 rounded-3xl bg-amber-50 border border-amber-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-950">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-2xl bg-amber-100 text-amber-900 border border-amber-200 flex items-center justify-center flex-shrink-0 font-black text-sm">
+                    ✨
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-xs font-black text-amber-950 tracking-tight">
+                        Catálogo de Muestra Activo
+                      </h4>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200/60 font-mono">
+                        PIN: 543543
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-amber-800/90 mt-0.5">
+                      Prueba crear productos y editar precios con total libertad. Si alguien modifica el menú, puedes restablecerlo en 1 clic.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleRestoreDemo}
+                  disabled={restoringDemo}
+                  className="h-9 px-4 rounded-full bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs disabled:opacity-50 whitespace-nowrap self-start sm:self-auto"
+                  title="Restaura todos los platos, categorías y fotos originales de la muestra"
+                >
+                  <RotateCcw className={`w-3.5 h-3.5 ${restoringDemo ? 'animate-spin' : ''}`} />
+                  <span>{restoringDemo ? 'Restaurando...' : 'Restaurar Menú Original'}</span>
+                </button>
+              </div>
+            )}
+
 
             {/* ══ COMMERCIAL INTELLIGENCE & TIME RANGE SELECTOR (7d | 14d | 30d) ══ */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">

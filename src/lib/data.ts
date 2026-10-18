@@ -36,7 +36,7 @@ const initialBusinesses: Record<string, Business> = {
     active: true,
     plan: 'Plan Inicial ($12)',
     ownerEmail: 'dueno@laestrella.com',
-    ownerPin: '4321',
+    ownerPin: '543543',
     createdAt: new Date(Date.now() - 30 * 86400000).toISOString(),
   },
   'burger-station': {
@@ -62,7 +62,7 @@ const initialBusinesses: Record<string, Business> = {
     active: true,
     plan: 'Big Taply ($34)',
     ownerEmail: 'dueno@burgerstation.com',
-    ownerPin: '4321',
+    ownerPin: '543543',
     createdAt: new Date(Date.now() - 15 * 86400000).toISOString(),
   }
 };
@@ -728,4 +728,31 @@ export async function updateOrderStatus(businessId: string, orderId: string, sta
   if (!order) return null;
   order.status = status;
   return { ...order };
+}
+
+export async function restoreMockDemoStore(slugOrId: string): Promise<boolean> {
+  const store = getStore();
+  const clean = slugOrId.toLowerCase().trim();
+  const biz = Object.values(store.businesses).find(
+    b => b.slug.toLowerCase() === clean || b.id === clean
+  );
+  if (!biz) return false;
+
+  const bizId = biz.id;
+  if (initialCategories[bizId]) {
+    store.categories[bizId] = JSON.parse(JSON.stringify(initialCategories[bizId]));
+  }
+  if (initialProducts[bizId]) {
+    store.products[bizId] = JSON.parse(JSON.stringify(initialProducts[bizId]));
+  }
+
+  // Restore core business parameters (protecting slug, PIN 543543, active state)
+  if (initialBusinesses[biz.slug]) {
+    store.businesses[biz.slug] = {
+      ...initialBusinesses[biz.slug],
+      ownerPin: '543543',
+      active: true,
+    };
+  }
+  return true;
 }

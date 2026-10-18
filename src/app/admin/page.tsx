@@ -51,7 +51,7 @@ type BusinessWithStats = Business & {
 };
 
 // ─────────────────────────────────────────────────────────────
-// 1. Passcode Gateway Component (PIN 548282 server verified)
+// 1. Passcode Gateway Component (PIN 543543 server verified)
 // ─────────────────────────────────────────────────────────────
 function PasscodeGateway({
   onAuthenticated,

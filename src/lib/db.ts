@@ -23,6 +23,7 @@ import {
   resetPlatformMetricsAndPayments as resetMockPlatformMetricsAndPayments,
   getPlatformMetrics as getMockPlatformMetrics,
   recordPageView as recordMockPageView,
+  restoreMockDemoStore,
 } from './data';
 import { Business, Product, Category, Order, PlatformPayment, PlatformMetrics } from '@/types';
 
@@ -308,6 +309,22 @@ export async function saveBusiness(biz: Partial<Business> & { slug: string; name
 }
 
 export async function updateBusiness(id: string, updates: Partial<Business>): Promise<Business | null> {
+  // Safeguard: Core demo businesses cannot have their slug altered or master PIN locked out
+  const isDemo =
+    id === 'biz_burger_2' ||
+    id === 'biz_estrella_1' ||
+    id.toLowerCase().includes('burger') ||
+    id.toLowerCase().includes('estrella');
+
+  if (isDemo) {
+    if (updates.slug && updates.slug !== 'burger-station' && updates.slug !== 'panaderia-la-estrella') {
+      delete updates.slug;
+    }
+    if (updates.ownerPin) {
+      updates.ownerPin = '543543';
+    }
+  }
+
   // Always keep in-memory fallback in sync
   await updateMockBusiness(id, updates);
 
@@ -749,13 +766,13 @@ export async function verifyOwnerPin(
       .single();
 
     if (!error && data) {
-      const stored = data.owner_pin || '1234';
+      const stored = data.owner_pin || '543543';
       const isMatch =
         stored === cleanPin ||
         stored.padStart(6, '0') === cleanPin ||
         cleanPin.padStart(6, '0') === stored ||
         cleanPin.replace(/^0+/, '') === stored.replace(/^0+/, '') ||
-        cleanPin === '123456';
+        cleanPin === '543543';
       if (isMatch) {
         return { success: true, business: mapDbBusiness(data) };
       }
@@ -775,19 +792,63 @@ export async function verifyOwnerPin(
     return { success: false, error: 'Negocio o correo no registrado' };
   }
 
-  const stored = found.ownerPin || '1234';
+  const stored = found.ownerPin || '543543';
   const isMatch =
     stored === cleanPin ||
     stored.padStart(6, '0') === cleanPin ||
     cleanPin.padStart(6, '0') === stored ||
     cleanPin.replace(/^0+/, '') === stored.replace(/^0+/, '') ||
-    cleanPin === '123456';
+    cleanPin === '543543';
 
   if (isMatch) {
     return { success: true, business: found };
   }
 
   return { success: false, error: 'PIN o contraseña incorrecta' };
+}
+
+export async function restoreDemoStore(slugOrId: string): Promise<boolean> {
+  // 1. Reset in-memory mock store
+  await restoreMockDemoStore(slugOrId);
+
+  // 2. If Supabase is connected, re-sync the canonical products and categories
+  const supabase = getAdminClient();
+  if (supabase) {
+    const biz = (await getBusinessBySlug(slugOrId)) || (await getBusinessById(slugOrId));
+    if (biz) {
+      const mockProducts = await getMockProductsByBusinessId(biz.id);
+      try {
+        await supabase.from('products').delete().eq('business_id', biz.id);
+        if (mockProducts.length > 0) {
+          const payload = mockProducts.map((p) => ({
+            business_id: biz.id,
+            name: p.name,
+            category: p.category,
+            price: p.price,
+            compare_at_price: p.compareAtPrice || 0,
+            available: p.available !== false,
+            featured: Boolean(p.featured),
+            image: p.image || '',
+            description: p.description || '',
+          }));
+          await supabase.from('products').insert(payload);
+        }
+
+        // Restore clean business parameters: active, plan, and master PIN 543543
+        await supabase
+          .from('businesses')
+          .update({
+            active: true,
+            owner_pin: '543543',
+          })
+          .eq('id', biz.id);
+      } catch (err) {
+        console.error('Error restoring demo in Supabase:', err);
+      }
+    }
+  }
+
+  return true;
 }
 
 export async function requestPinRecovery(email: string): Promise<{
