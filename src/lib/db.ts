@@ -19,6 +19,8 @@ import {
   updateOrderStatus as updateMockOrderStatus,
   getPlatformPayments as getMockPlatformPayments,
   addPlatformPayment as addMockPlatformPayment,
+  deletePlatformPayment as deleteMockPlatformPayment,
+  resetPlatformMetricsAndPayments as resetMockPlatformMetricsAndPayments,
   getPlatformMetrics as getMockPlatformMetrics,
   recordPageView as recordMockPageView,
 } from './data';
@@ -306,6 +308,9 @@ export async function saveBusiness(biz: Partial<Business> & { slug: string; name
 }
 
 export async function updateBusiness(id: string, updates: Partial<Business>): Promise<Business | null> {
+  // Always keep in-memory fallback in sync
+  await updateMockBusiness(id, updates);
+
   const supabase = getAdminClient();
   if (!supabase) return updateMockBusiness(id, updates);
 
@@ -338,7 +343,10 @@ export async function updateBusiness(id: string, updates: Partial<Business>): Pr
     .select()
     .single();
 
-  if (error || !data) return updateMockBusiness(id, updates);
+  if (error || !data) {
+    console.error('Supabase updateBusiness error:', error);
+    return updateMockBusiness(id, updates);
+  }
   return mapDbBusiness(data);
 }
 
@@ -648,30 +656,73 @@ export async function getPlatformMetrics(): Promise<PlatformMetrics> {
   if (bizRes.error || !bizRes.data) return getMockPlatformMetrics();
 
   const totalBusinesses = bizRes.data.length;
-  const activeBusinesses = bizRes.data.filter((b) => b.active !== false).length;
+  const activeBusinesses = bizRes.data.filter((b) => b.active !== false);
 
   const payments = payRes.data || [];
   const completedPayments = payments.filter((p) => p.status === 'completado');
   const totalRevenue = completedPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
 
-  const mrr = completedPayments
-    .filter((p) => p.plan && p.plan.toLowerCase().includes('mensual'))
-    .reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
-    + completedPayments
-    .filter((p) => p.plan && p.plan.toLowerCase().includes('anual'))
-    .reduce((sum, p) => sum + Math.round((Number(p.amount) || 0) / 12), 0);
+  // Real-time MRR calculated from active businesses' assigned subscription plans
+  const mrr = activeBusinesses.reduce((sum, b) => {
+    const plan = (b.plan || '').toLowerCase();
+    if (plan.includes('big') || plan.includes('34') || plan.includes('37')) return sum + 34;
+    if (plan.includes('anual')) return sum + Math.round(190 / 12);
+    if (plan.includes('inicial') || plan.includes('12')) return sum + 12;
+    return sum + 12; // default active base plan
+  }, 0);
 
   const orders = ordRes.data || [];
   const totalGmv = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
 
   return {
-    mrr: mrr || 38,
-    totalRevenue: totalRevenue || 228,
+    mrr,
+    totalRevenue,
     totalGmv,
     totalOrders: orders.length,
-    activeStores: activeBusinesses,
+    activeStores: activeBusinesses.length,
     totalStores: totalBusinesses,
   };
+}
+
+export async function deletePlatformPayment(paymentId: string): Promise<boolean> {
+  const supabase = getAdminClient();
+  if (supabase) {
+    const { error } = await supabase
+      .from('platform_payments')
+      .delete()
+      .eq('id', paymentId);
+    if (error) console.error('Error deleting payment in supabase:', error);
+  }
+  await deleteMockPlatformPayment(paymentId);
+  return true;
+}
+
+export async function resetPlatformMetricsAndPayments(): Promise<boolean> {
+  const supabase = getAdminClient();
+  if (supabase) {
+    // 1. Delete all rows from platform_payments
+    const { error: payErr } = await supabase
+      .from('platform_payments')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000');
+    if (payErr) console.error('Error clearing platform_payments:', payErr);
+
+    // 2. Clear orders test data
+    const { error: ordErr } = await supabase
+      .from('orders')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000');
+    if (ordErr) console.error('Error clearing orders:', ordErr);
+
+    // 3. Reset page_views to 0 without touching businesses/products
+    await supabase
+      .from('businesses')
+      .update({ page_views: 0 })
+      .neq('id', '00000000-0000-0000-0000-000000000000');
+  }
+
+  await resetMockPlatformMetricsAndPayments();
+  return true;
 }
 
 // ─────────────────────────────────────────────────────────────

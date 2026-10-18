@@ -16,7 +16,7 @@ export default function ThemeToggle({ theme, onToggle }: ThemeToggleProps) {
     <button
       onClick={onToggle}
       type="button"
-      className={`relative flex items-center justify-center p-2 rounded-2xl transition-all duration-300 border ${
+      className={`relative h-9 sm:h-10 px-2.5 sm:px-3 rounded-full flex items-center justify-center transition-all duration-300 border ${
         isDark
           ? 'bg-neutral-900/90 text-neutral-300 hover:text-white border-neutral-800 hover:border-neutral-700 shadow-inner'
           : 'bg-white text-neutral-700 hover:text-black border-neutral-200 hover:border-neutral-300 shadow-sm'

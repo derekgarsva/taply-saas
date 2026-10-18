@@ -242,7 +242,7 @@ export default function AdminCardNav({
                 type="button"
                 onClick={onRefresh}
                 disabled={loadingData}
-                className={`hidden sm:flex p-2 rounded-full border transition-all text-xs items-center gap-1.5 disabled:opacity-40 active:scale-95 ${
+                className={`hidden sm:flex h-9 sm:h-10 px-3 rounded-full border transition-all text-xs items-center justify-center gap-1.5 disabled:opacity-40 active:scale-95 ${
                   isDark
                     ? 'bg-neutral-800/80 border-neutral-700 text-neutral-300 hover:text-white hover:border-neutral-600'
                     : 'bg-gray-100 border-gray-200 text-neutral-700 hover:text-black hover:border-gray-300 shadow-2xs'
@@ -257,11 +257,11 @@ export default function AdminCardNav({
               <button
                 type="button"
                 onClick={onOpenNewPayment}
-                className="h-8.5 sm:h-9.5 px-3 sm:px-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black active:scale-95 text-xs font-black tracking-tight flex items-center gap-1.5 transition-all shadow-[0_2px_12px_rgba(16,185,129,0.3)] hover:shadow-[0_4px_18px_rgba(16,185,129,0.4)]"
+                className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black active:scale-95 text-xs font-black tracking-tight flex items-center justify-center gap-1.5 transition-all shadow-[0_2px_12px_rgba(16,185,129,0.3)] hover:shadow-[0_4px_18px_rgba(16,185,129,0.4)]"
               >
                 <Plus className="w-3.5 h-3.5 stroke-[3]" />
                 <span className="hidden sm:inline">Registrar Pago</span>
-                <span className="sm:hidden">Pago</span>
+                <span className="sm:hidden font-extrabold">Pago</span>
               </button>
 
               {/* Bloquear / Salir */}

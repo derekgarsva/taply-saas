@@ -261,15 +261,21 @@ function DashboardContent() {
     async function loadData() {
       setLoading(true);
       try {
-        const res = await fetch(`/api/public/${storeSlug}`);
+        const res = await fetch(`/api/public/${storeSlug}?_t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' },
+        });
         if (res.ok) {
           const data = await res.json();
           setBusiness(data.business);
           setProducts(data.products || []);
           setCategories(data.categories || []);
 
-          // Fetch orders
-          const ordersRes = await fetch(`/api/orders?businessId=${data.business.id}`);
+          // Fetch orders with cache-busting
+          const ordersRes = await fetch(`/api/orders?businessId=${data.business.id}&_t=${Date.now()}`, {
+            cache: 'no-store',
+            headers: { 'Cache-Control': 'no-cache' },
+          });
           if (ordersRes.ok) {
             const ordersData = await ordersRes.json();
             setOrders(ordersData);
@@ -628,6 +634,40 @@ function DashboardContent() {
 
       {/* ══ MAIN CONTAINER ══ */}
       <main className="max-w-5xl mx-auto px-4 pt-3 sm:pt-4">
+
+        {/* ══ PAUSED STORE NOTICE BANNER (WHEN ADMIN PAUSED STORE) ══ */}
+        {business.active === false && (
+          <div className="mb-6 p-4 sm:p-5 rounded-3xl bg-amber-500/10 border border-amber-500/30 text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs backdrop-blur-md">
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-700 flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-xs sm:text-sm font-black uppercase tracking-wider text-amber-950">
+                    Catálogo Pausado Temporalmente
+                  </h4>
+                  <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-200/90 text-amber-900 border border-amber-300">
+                    En Pausa
+                  </span>
+                </div>
+                <p className="text-xs text-amber-800/90 mt-0.5 leading-relaxed">
+                  Tu catálogo público no está recibiendo pedidos por WhatsApp en este momento. Los visitantes ven tu tarjeta en pausa con tus enlaces oficiales de contacto.
+                </p>
+              </div>
+            </div>
+            <a
+              href={`https://wa.me/584243087887?text=${encodeURIComponent(
+                `Hola Derek, soy el dueño de *${business.name}* (taply.app/${business.slug}). Mi catálogo aparece en estado Pausado. Deseo reactivarlo para recibir pedidos.`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2.5 rounded-full bg-amber-950 hover:bg-black text-white text-xs font-bold whitespace-nowrap active:scale-95 transition-all text-center flex-shrink-0 shadow-sm"
+            >
+              Contactar Soporte
+            </a>
+          </div>
+        )}
 
         {/* ══ BESPOKE HORIZONTAL SEGMENTED TABS (FAST IN-PAGE NAVIGATION) ══ */}
         <div className="mb-6 overflow-x-auto no-scrollbar py-1">

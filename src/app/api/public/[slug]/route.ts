@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getBusinessBySlug, getProductsByBusinessId, getCategoriesByBusinessId, recordPageView } from '@/lib/db';
 
@@ -19,11 +22,18 @@ export async function GET(
       getCategoriesByBusinessId(business.id),
     ]);
 
-    return NextResponse.json({
-      business,
-      products,
-      categories,
-    });
+    return NextResponse.json(
+      {
+        business,
+        products,
+        categories,
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        },
+      }
+    );
   } catch (error) {
     return NextResponse.json({ error: 'Error del servidor' }, { status: 500 });
   }

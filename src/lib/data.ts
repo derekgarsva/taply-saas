@@ -546,19 +546,24 @@ export async function createBusiness(data: Omit<Business, 'id' | 'pageViews' | '
 export async function getPlatformMetrics(): Promise<PlatformMetrics> {
   const store = getStore();
   const allStores = Object.values(store.businesses);
-  const activeStores = allStores.filter(b => b.active !== false).length;
+  const activeStores = allStores.filter(b => b.active !== false);
   const allOrders = Object.values(store.orders).flat();
   const totalGmv = allOrders.reduce((sum, ord) => sum + (ord.total || 0), 0);
   const totalRevenue = (store.payments || []).reduce((sum, p) => sum + (p.status === 'completado' ? p.amount : 0), 0);
-  const mrr = (store.payments || []).filter(p => p.plan.includes('Mensual') && p.status === 'completado').reduce((sum, p) => sum + p.amount, 0)
-    + (store.payments || []).filter(p => p.plan.includes('Anual') && p.status === 'completado').reduce((sum, p) => sum + Math.round(p.amount / 12), 0);
+  const mrr = activeStores.reduce((sum, b) => {
+    const plan = (b.plan || '').toLowerCase();
+    if (plan.includes('big') || plan.includes('34') || plan.includes('37')) return sum + 34;
+    if (plan.includes('anual')) return sum + Math.round(190 / 12);
+    if (plan.includes('inicial') || plan.includes('12')) return sum + 12;
+    return sum + 12;
+  }, 0);
 
   return {
-    mrr: mrr || 38,
-    totalRevenue: totalRevenue || 228,
+    mrr,
+    totalRevenue,
     totalGmv,
     totalOrders: allOrders.length,
-    activeStores,
+    activeStores: activeStores.length,
     totalStores: allStores.length,
   };
 }
@@ -578,6 +583,23 @@ export async function addPlatformPayment(data: Omit<PlatformPayment, 'id' | 'cre
   };
   store.payments.unshift(newPayment);
   return newPayment;
+}
+
+export async function deletePlatformPayment(paymentId: string): Promise<boolean> {
+  const store = getStore();
+  if (!store.payments) return false;
+  store.payments = store.payments.filter(p => p.id !== paymentId);
+  return true;
+}
+
+export async function resetPlatformMetricsAndPayments(): Promise<boolean> {
+  const store = getStore();
+  store.payments = [];
+  store.orders = {};
+  Object.values(store.businesses).forEach(b => {
+    b.pageViews = 0;
+  });
+  return true;
 }
 
 export async function recordPageView(businessId: string): Promise<void> {

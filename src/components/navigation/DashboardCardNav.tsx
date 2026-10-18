@@ -191,11 +191,11 @@ export default function DashboardCardNav({
                 <span className="text-xs font-extrabold hidden sm:inline">Menú</span>
               </button>
 
-              {/* Store title badge with live pulse (visible on sm upwards to avoid mobile title collisions) */}
+              {/* Store title badge with live pulse */}
               <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full bg-gray-100/80 border border-gray-200/70 max-w-[180px] md:max-w-[240px]">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
+                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${business.active !== false ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
                 <span className="font-extrabold text-xs text-gray-900 truncate">
-                  {business.name}
+                  {business.name} {business.active === false ? '(Pausado)' : ''}
                 </span>
               </div>
             </div>
@@ -220,7 +220,7 @@ export default function DashboardCardNav({
               <button
                 type="button"
                 onClick={onOpenPlan}
-                className="h-8.5 sm:h-9.5 px-3 rounded-full bg-amber-50/80 text-amber-900 border border-amber-200/80 hover:bg-amber-100/80 active:scale-95 text-xs font-bold hidden lg:inline-flex items-center gap-1.5 transition-all"
+                className="h-9 sm:h-10 px-3.5 rounded-full bg-amber-50/80 text-amber-900 border border-amber-200/80 hover:bg-amber-100/80 active:scale-95 text-xs font-bold hidden lg:inline-flex items-center gap-1.5 transition-all"
                 title="Ver estado de tu suscripción"
               >
                 <Crown className="w-3.5 h-3.5 text-amber-600" />
@@ -232,11 +232,11 @@ export default function DashboardCardNav({
                 href={liveStoreUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group h-8.5 sm:h-9.5 px-3.5 sm:px-4 rounded-full bg-gradient-to-r from-[#00594C] via-[#006859] to-[#004D41] hover:from-[#006859] hover:to-[#00594C] text-white active:scale-95 text-xs font-extrabold tracking-tight flex items-center gap-1.5 transition-all duration-200 shadow-[0_2px_10px_rgba(0,89,76,0.25),inset_0_1px_1px_rgba(255,255,255,0.35)] hover:shadow-[0_4px_16px_rgba(0,89,76,0.38)]"
+                className="group h-9 sm:h-10 px-3.5 sm:px-4 rounded-full bg-gradient-to-r from-[#00594C] via-[#006859] to-[#004D41] hover:from-[#006859] hover:to-[#00594C] text-white active:scale-95 text-xs font-extrabold tracking-tight flex items-center gap-1.5 transition-all duration-200 shadow-[0_2px_10px_rgba(0,89,76,0.25),inset_0_1px_1px_rgba(255,255,255,0.35)] hover:shadow-[0_4px_16px_rgba(0,89,76,0.38)]"
               >
                 <Eye className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Ver Catálogo</span>
-                <span className="sm:hidden">Tienda</span>
+                <span className="sm:hidden font-extrabold">Tienda</span>
                 <ExternalLink className="w-3 h-3 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 transition-transform" />
               </a>
             </div>
@@ -405,15 +405,6 @@ export default function DashboardCardNav({
                     >
                       <Home className="w-3.5 h-3.5" />
                       <span>Inicio Taply</span>
-                    </Link>
-
-                    <Link
-                      href="/admin"
-                      onClick={() => setMenuOpen(false)}
-                      className="hover:text-gray-900 flex items-center gap-1.5 font-semibold transition-colors"
-                    >
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>SuperAdmin</span>
                     </Link>
                   </div>
 
