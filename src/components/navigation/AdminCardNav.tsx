@@ -93,49 +93,45 @@ export default function AdminCardNav({
     setMenuOpen(false);
   };
 
-  // GPU Spring Physics Variants for Dropdown
+  // Ultra-fluid, soft Apple-grade animation variants
+  const EASE_APPLE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
   const dropdownVariants = {
     hidden: {
       opacity: 0,
-      y: -12,
-      scale: 0.97,
-      filter: 'blur(8px)',
+      y: -8,
+      scale: 0.985,
     },
     visible: {
       opacity: 1,
       y: 0,
       scale: 1,
-      filter: 'blur(0px)',
       transition: {
-        type: 'spring',
-        stiffness: 420,
-        damping: 30,
-        mass: 0.8,
-        staggerChildren: 0.04,
+        duration: 0.38,
+        ease: EASE_APPLE,
+        staggerChildren: 0.035,
         delayChildren: 0.02,
       },
     },
     exit: {
       opacity: 0,
-      y: -10,
-      scale: 0.98,
-      filter: 'blur(4px)',
+      y: -6,
+      scale: 0.99,
       transition: {
-        duration: 0.18,
-        ease: [0.16, 1, 0.3, 1],
+        duration: 0.22,
+        ease: EASE_APPLE,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
+    hidden: { opacity: 0, y: 6 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        type: 'spring',
-        stiffness: 450,
-        damping: 32,
+        duration: 0.35,
+        ease: EASE_APPLE,
       },
     },
   };

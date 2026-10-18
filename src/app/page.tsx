@@ -28,6 +28,7 @@ import {
 import CardNav from '@/components/navigation/CardNav';
 import SiteFooter from '@/components/footer/SiteFooter';
 import TextReveal from '@/components/ui/text-reveal';
+import AppleFeatureCarousel from '@/components/home/AppleFeatureCarousel';
 
 export default function LandingPage() {
   return (
@@ -106,83 +107,24 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ══ FEATURES GRID ══ */}
-      <section id="features" className="py-20 bg-gray-50 border-y border-gray-100 px-4">
+      {/* ══ FEATURES APPLE-STYLE INTERACTIVE CAROUSEL ══ */}
+      <section id="caracteristicas" className="py-20 sm:py-24 bg-gray-50/70 border-y border-gray-200/80 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-14">
-            <span className="text-xs font-extrabold text-[#00594C] uppercase tracking-widest">
+          <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
+            <span className="text-xs font-black text-[#00594C] uppercase tracking-widest px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 inline-block mb-3">
               DISEÑADO PARA VENDER MÁS
             </span>
-            <h2 className="text-3xl font-extrabold text-gray-950 mt-1">
-              Todo lo que necesitas para tu negocio en un solo lugar
-            </h2>
+            <TextReveal
+              as="h2"
+              text="Todo lo que necesitas para tu negocio en un solo lugar"
+              className="text-3xl sm:text-4xl font-black text-gray-950 mt-1 tracking-tight"
+            />
+            <p className="text-xs sm:text-sm text-gray-500 mt-3 max-w-lg mx-auto">
+              Diseñado con la filosofía de 3 toques para convertir visitantes casuales en pedidos confirmados por WhatsApp.
+            </p>
           </div>
 
-          <AnimatedGroup
-            variant="blur-fade"
-            stagger={0.07}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6"
-          >
-            <div className="bg-white p-7 rounded-3xl border border-gray-200/80 shadow-2xs hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#00594C] flex items-center justify-center mb-5">
-                <Zap className="w-6 h-6" />
-              </div>
-              <h3 className="font-extrabold text-lg text-gray-900 mb-2">Filosofía de 3 Toques</h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Olvídate de formularios eternos y carritos complicados que hacen perder clientes. El usuario abre el link, toca lo que quiere y desliza para confirmar.
-              </p>
-            </div>
-
-            <div className="bg-white p-7 rounded-3xl border border-gray-200/80 shadow-2xs hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center mb-5">
-                <Smartphone className="w-6 h-6" />
-              </div>
-              <h3 className="font-extrabold text-lg text-gray-900 mb-2">Multilink en Bio Integrado</h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Combina tu catálogo con enlaces directos a tu Instagram, TikTok, botón de llamada telefónica y ubicación exacta en Google Maps.
-              </p>
-            </div>
-
-            <div className="bg-white p-7 rounded-3xl border border-gray-200/80 shadow-2xs hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-700 flex items-center justify-center mb-5">
-                <QrCode className="w-6 h-6" />
-              </div>
-              <h3 className="font-extrabold text-lg text-gray-900 mb-2">Códigos QR Instantáneos</h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Genera y descarga en alta calidad el código QR de tu catálogo para imprimir en acrílicos de mesa, cartas físicas o calcomanías.
-              </p>
-            </div>
-
-            <div className="bg-white p-7 rounded-3xl border border-gray-200/80 shadow-2xs hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center mb-5">
-                <DollarSign className="w-6 h-6" />
-              </div>
-              <h3 className="font-extrabold text-lg text-gray-900 mb-2">Datos de Pago al Instante</h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Adjunta automáticamente tus datos de Pago Móvil, Zelle o transferencias en el mensaje de WhatsApp para que el cliente pague de inmediato.
-              </p>
-            </div>
-
-            <div className="bg-white p-7 rounded-3xl border border-gray-200/80 shadow-2xs hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-700 flex items-center justify-center mb-5">
-                <Sliders className="w-6 h-6" />
-              </div>
-              <h3 className="font-extrabold text-lg text-gray-900 mb-2">Micro-interacciones Fluidas</h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Buscador expansivo "Seek", selector táctil "Hold-to-Sweep", notificación de agotados con animación de campana y slide con física real.
-              </p>
-            </div>
-
-            <div className="bg-white p-7 rounded-3xl border border-gray-200/80 shadow-2xs hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-700 flex items-center justify-center mb-5">
-                <TrendingUp className="w-6 h-6" />
-              </div>
-              <h3 className="font-extrabold text-lg text-gray-900 mb-2">Panel con Métricas Reales</h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Conoce cuántas personas abren tu catálogo, cuántos pedidos generas por WhatsApp y qué productos son los más buscados de tu negocio.
-              </p>
-            </div>
-          </AnimatedGroup>
+          <AppleFeatureCarousel />
         </div>
       </section>
 
