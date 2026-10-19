@@ -497,7 +497,36 @@ export async function getCategories(businessId: string, slug?: string): Promise<
     .eq('business_id', businessId)
     .order('order_index', { ascending: true });
 
-  if (error || !data) return getMockCategoriesByBusinessId(businessId);
+  if (error || !data || data.length === 0) {
+    const fallback = await getMockCategoriesByBusinessId(businessId);
+    if (fallback.length > 0) {
+      try {
+        const payload = fallback.map((c, i) => ({
+          business_id: businessId,
+          name: c.name,
+          order_index: c.order || i + 1,
+        }));
+        await supabase.from('categories').upsert(payload, { onConflict: 'business_id,name' });
+      } catch (e) {}
+      return fallback;
+    }
+
+    // Also derive from products if any exist
+    const products = await getProducts(businessId);
+    const catNames = Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
+    if (catNames.length > 0) {
+      const derived: Category[] = catNames.map((name, i) => ({
+        id: `cat_auto_${i + 1}`,
+        businessId,
+        name,
+        order: i + 1,
+      }));
+      return derived;
+    }
+
+    return [];
+  }
+
   return data.map(mapDbCategory);
 }
 

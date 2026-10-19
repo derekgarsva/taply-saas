@@ -661,7 +661,39 @@ export async function deleteProduct(businessId: string, productId: string): Prom
 // ── Categories Queries ──
 export async function getCategoriesByBusinessId(businessId: string): Promise<Category[]> {
   const store = getStore();
-  return store.categories[businessId] ? [...store.categories[businessId]] : [];
+  let cats = store.categories[businessId];
+
+  // If not found by direct key, resolve through business slug or id
+  if (!cats || cats.length === 0) {
+    const biz = Object.values(store.businesses).find(
+      (b) => b.id === businessId || b.slug.toLowerCase() === businessId.toLowerCase()
+    );
+    if (biz) {
+      if (store.categories[biz.id] && store.categories[biz.id].length > 0) {
+        cats = store.categories[biz.id];
+      } else if (store.categories[biz.slug] && store.categories[biz.slug].length > 0) {
+        cats = store.categories[biz.slug];
+      }
+    }
+  }
+
+  // If still empty, derive categories from the products of this business
+  if (!cats || cats.length === 0) {
+    const products = await getProductsByBusinessId(businessId);
+    const uniqueCats = Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
+    if (uniqueCats.length > 0) {
+      const generatedCats: Category[] = uniqueCats.map((name, idx) => ({
+        id: `cat_${Math.random().toString(36).substring(2, 7)}`,
+        businessId,
+        name,
+        order: idx + 1,
+      }));
+      store.categories[businessId] = generatedCats;
+      return [...generatedCats];
+    }
+  }
+
+  return cats ? [...cats] : [];
 }
 
 export async function addCategory(businessId: string, name: string): Promise<Category> {
