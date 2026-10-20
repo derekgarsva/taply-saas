@@ -112,12 +112,21 @@ function mapDbCategory(row: any): Category {
 
 // Map database row to Order type
 function mapDbOrder(row: any): Order {
+  let normalizedStatus: Order['status'] = 'nuevo';
+  if (row.status) {
+    const s = String(row.status).toLowerCase();
+    if (s === 'pendiente' || s === 'nuevo') normalizedStatus = 'nuevo';
+    else if (s === 'en_proceso' || s === 'en proceso') normalizedStatus = 'en_proceso';
+    else if (s === 'completado') normalizedStatus = 'completado';
+    else if (s === 'cancelado') normalizedStatus = 'cancelado';
+  }
+
   return {
     id: row.id,
     businessId: row.business_id,
     items: Array.isArray(row.items) ? row.items : [],
     total: Number(row.total) || 0,
-    status: row.status || 'nuevo',
+    status: normalizedStatus,
     customerNote: row.customer_notes || undefined,
     whatsappMessage: row.whatsapp_message || undefined,
     createdAt: row.created_at,
@@ -404,8 +413,18 @@ export async function getProducts(businessId: string, slug?: string): Promise<Pr
     .eq('business_id', businessId)
     .order('created_at', { ascending: true });
 
-  if (error || !data) return getMockProductsByBusinessId(businessId);
-  return data.map(mapDbProduct);
+  if (error || !data || data.length === 0) {
+    const fallback = await getMockProductsByBusinessId(businessId);
+    if (fallback && fallback.length > 0) return fallback;
+    return (data || []).map(mapDbProduct);
+  }
+
+  const dbProds = data.map(mapDbProduct);
+  const mockFallback = await getMockProductsByBusinessId(businessId);
+  const dbIds = new Set(dbProds.map((p) => p.id));
+  const extraMock = mockFallback.filter((p) => !dbIds.has(p.id) && p.id.startsWith('prod_'));
+
+  return [...extraMock, ...dbProds];
 }
 
 export const getProductsByBusinessId = getProducts;
@@ -439,28 +458,24 @@ export async function saveProduct(
     payload.id = productData.id;
   }
 
-  // 1. First attempt: save with native images column
+  // 1. First attempt: save with native images column (insert if new, upsert if existing)
   const payloadWithImages = {
     ...payload,
     images: imagesList,
   };
 
-  let { data, error } = await supabase
-    .from('products')
-    .upsert(payloadWithImages)
-    .select()
-    .single();
+  let { data, error } = productData.id
+    ? await supabase.from('products').upsert(payloadWithImages).select().single()
+    : await supabase.from('products').insert(payloadWithImages).select().single();
 
-  // 2. Fallback if column 'images' does not exist yet (PostgreSQL error 42703)
-  if (error && error.code === '42703') {
+  // 2. Fallback if column 'images' does not exist yet (PostgreSQL error 42703 or PostgREST error PGRST204)
+  if (error && (error.code === '42703' || error.code === 'PGRST204' || error.message?.includes('images'))) {
     const encodedDesc = (productData.description || '') + (imagesList.length > 0 ? `\n<!-- taply_images: ${JSON.stringify(imagesList)} -->` : '');
     payload.description = encodedDesc;
 
-    const retry = await supabase
-      .from('products')
-      .upsert(payload)
-      .select()
-      .single();
+    const retry = productData.id
+      ? await supabase.from('products').upsert(payload).select().single()
+      : await supabase.from('products').insert(payload).select().single();
 
     data = retry.data;
     error = retry.error;
@@ -472,16 +487,21 @@ export async function saveProduct(
 
 export async function deleteProduct(businessId: string, productId: string): Promise<boolean> {
   const supabase = getAdminClient();
-  if (!supabase) return deleteMockProduct(businessId, productId);
+  let dbDeleted = false;
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', productId)
+      .eq('business_id', businessId)
+      .select();
+    if (!error && data && data.length > 0) {
+      dbDeleted = true;
+    }
+  }
 
-  const { error } = await supabase
-    .from('products')
-    .delete()
-    .eq('id', productId)
-    .eq('business_id', businessId);
-
-  if (error) return deleteMockProduct(businessId, productId);
-  return true;
+  const mockDeleted = await deleteMockProduct(businessId, productId);
+  return dbDeleted || mockDeleted;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -491,43 +511,115 @@ export async function getCategories(businessId: string, slug?: string): Promise<
   const supabase = getAdminClient();
   if (!supabase) return getMockCategoriesByBusinessId(businessId);
 
+  // Canonicalize businessId if slug or ID
+  let targetId = businessId;
+  const { data: bizData } = await supabase
+    .from('businesses')
+    .select('id')
+    .or(`id.eq.${businessId},slug.eq.${businessId}`)
+    .maybeSingle();
+  if (bizData?.id) {
+    targetId = bizData.id;
+  }
+
   const { data, error } = await supabase
     .from('categories')
     .select('*')
-    .eq('business_id', businessId)
+    .eq('business_id', targetId)
     .order('order_index', { ascending: true });
 
+  let categories: Category[] = [];
+
   if (error || !data || data.length === 0) {
-    const fallback = await getMockCategoriesByBusinessId(businessId);
+    const fallback = await getMockCategoriesByBusinessId(targetId);
     if (fallback.length > 0) {
       try {
         const payload = fallback.map((c, i) => ({
-          business_id: businessId,
+          id: c.id,
+          business_id: targetId,
           name: c.name,
           order_index: c.order || i + 1,
         }));
-        await supabase.from('categories').upsert(payload, { onConflict: 'business_id,name' });
+        await supabase.from('categories').insert(payload);
       } catch (e) {}
-      return fallback;
+      categories = fallback;
     }
-
-    // Also derive from products if any exist
-    const products = await getProducts(businessId);
-    const catNames = Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
-    if (catNames.length > 0) {
-      const derived: Category[] = catNames.map((name, i) => ({
-        id: `cat_auto_${i + 1}`,
-        businessId,
-        name,
-        order: i + 1,
-      }));
-      return derived;
-    }
-
-    return [];
+  } else {
+    categories = data.map(mapDbCategory);
   }
 
-  return data.map(mapDbCategory);
+  // Reconcile categories with active products so no product category is omitted or orphaned
+  const products = await getProducts(targetId);
+  const existingNamesLower = new Set(categories.map((c) => c.name.trim().toLowerCase()));
+
+  const orphanedNames: string[] = [];
+  for (const p of products) {
+    if (p.category && p.category.trim()) {
+      const trimmed = p.category.trim();
+      if (!existingNamesLower.has(trimmed.toLowerCase())) {
+        orphanedNames.push(trimmed);
+        existingNamesLower.add(trimmed.toLowerCase());
+      }
+    }
+  }
+
+  if (orphanedNames.length > 0) {
+    let nextOrder = categories.length > 0 ? Math.max(...categories.map((c) => c.order || 0)) + 1 : 1;
+    const toInsert = orphanedNames.map((name, i) => ({
+      business_id: targetId,
+      name,
+      order_index: nextOrder + i,
+    }));
+
+    try {
+      const { data: inserted, error: insertErr } = await supabase
+        .from('categories')
+        .insert(toInsert)
+        .select();
+
+      if (!insertErr && inserted && inserted.length > 0) {
+        categories.push(...inserted.map(mapDbCategory));
+      } else {
+        toInsert.forEach((item) => {
+          categories.push({
+            id: `cat_auto_${Math.random().toString(36).substring(2, 7)}`,
+            businessId: targetId,
+            name: item.name,
+            order: item.order_index,
+          });
+        });
+      }
+    } catch {
+      toInsert.forEach((item) => {
+        categories.push({
+          id: `cat_auto_${Math.random().toString(36).substring(2, 7)}`,
+          businessId: targetId,
+          name: item.name,
+          order: item.order_index,
+        });
+      });
+    }
+  }
+
+  // If still empty (no categories and no products), provide a default General category
+  if (categories.length === 0) {
+    const generalCat: Category = {
+      id: `cat_general_${Math.random().toString(36).substring(2, 7)}`,
+      businessId: targetId,
+      name: 'General',
+      order: 1,
+    };
+    try {
+      await supabase.from('categories').insert({
+        business_id: targetId,
+        name: 'General',
+        order_index: 1,
+      });
+    } catch {}
+    categories.push(generalCat);
+  }
+
+  return categories;
 }
 
 export const getCategoriesByBusinessId = getCategories;
@@ -536,27 +628,37 @@ export async function addCategory(businessId: string, name: string): Promise<Cat
   const supabase = getAdminClient();
   if (!supabase) return addMockCategory(businessId, name);
 
+  let targetId = businessId;
+  const { data: bizData } = await supabase
+    .from('businesses')
+    .select('id')
+    .or(`id.eq.${businessId},slug.eq.${businessId}`)
+    .maybeSingle();
+  if (bizData?.id) {
+    targetId = bizData.id;
+  }
+
   const cleanName = name.trim();
   const existing = await supabase
     .from('categories')
     .select('*')
-    .eq('business_id', businessId)
+    .eq('business_id', targetId)
     .ilike('name', cleanName)
-    .single();
+    .maybeSingle();
 
-  if (existing.data) return mapDbCategory(existing.data);
+  if (existing?.data) return mapDbCategory(existing.data);
 
   const { data, error } = await supabase
     .from('categories')
     .insert({
-      business_id: businessId,
+      business_id: targetId,
       name: cleanName,
       order_index: 0,
     })
     .select()
     .single();
 
-  if (error || !data) return addMockCategory(businessId, name);
+  if (error || !data) return addMockCategory(targetId, name);
   return mapDbCategory(data);
 }
 
@@ -564,13 +666,57 @@ export async function deleteCategory(businessId: string, categoryId: string): Pr
   const supabase = getAdminClient();
   if (!supabase) return deleteMockCategory(businessId, categoryId);
 
+  // Canonicalize businessId if slug or ID
+  let targetId = businessId;
+  const { data: bizData } = await supabase
+    .from('businesses')
+    .select('id')
+    .or(`id.eq.${businessId},slug.eq.${businessId}`)
+    .maybeSingle();
+  if (bizData?.id) {
+    targetId = bizData.id;
+  }
+
+  // Find the category to know its name for product reassignment
+  const { data: catData } = await supabase
+    .from('categories')
+    .select('id, name')
+    .eq('business_id', targetId)
+    .or(`id.eq.${categoryId},name.eq.${categoryId}`)
+    .maybeSingle();
+
+  const catName = catData?.name;
+  const resolvedCatId = catData?.id || categoryId;
+
   const { error } = await supabase
     .from('categories')
     .delete()
-    .eq('id', categoryId)
-    .eq('business_id', businessId);
+    .eq('id', resolvedCatId)
+    .eq('business_id', targetId);
 
-  if (error) return deleteMockCategory(businessId, categoryId);
+  if (error) return deleteMockCategory(targetId, categoryId);
+
+  // Gracefully reassign products referencing the deleted category
+  if (catName) {
+    const { data: remaining } = await supabase
+      .from('categories')
+      .select('name')
+      .eq('business_id', targetId)
+      .order('order_index', { ascending: true })
+      .limit(1);
+
+    const fallbackCat = remaining && remaining.length > 0 ? remaining[0].name : 'General';
+
+    await supabase
+      .from('products')
+      .update({ category: fallbackCat })
+      .eq('business_id', targetId)
+      .eq('category', catName);
+  }
+
+  // Keep mock store in sync as well
+  await deleteMockCategory(targetId, categoryId);
+
   return true;
 }
 
@@ -845,8 +991,22 @@ export async function restoreDemoStore(slugOrId: string): Promise<boolean> {
   if (supabase) {
     const biz = (await getBusinessBySlug(slugOrId)) || (await getBusinessById(slugOrId));
     if (biz) {
+      const mockCategories = await getMockCategoriesByBusinessId(biz.id);
       const mockProducts = await getMockProductsByBusinessId(biz.id);
       try {
+        // Restore categories in Supabase
+        await supabase.from('categories').delete().eq('business_id', biz.id);
+        if (mockCategories.length > 0) {
+          const catPayload = mockCategories.map((c, i) => ({
+            id: c.id,
+            business_id: biz.id,
+            name: c.name,
+            order_index: c.order || i + 1,
+          }));
+          await supabase.from('categories').insert(catPayload);
+        }
+
+        // Restore products in Supabase
         await supabase.from('products').delete().eq('business_id', biz.id);
         if (mockProducts.length > 0) {
           const payload = mockProducts.map((p) => ({

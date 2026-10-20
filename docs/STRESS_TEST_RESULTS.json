@@ -1,0 +1,98 @@
+[
+  {
+    "name": "50 Concurrent Storefront Reads",
+    "concurrency": 50,
+    "totalRequests": 50,
+    "successes": 50,
+    "clientErrors": 0,
+    "serverErrors": 0,
+    "errorRate": "0.00%",
+    "durationMs": 5528,
+    "throughputRps": 9,
+    "latencies": {
+      "min": 2654,
+      "p50": 4768,
+      "p90": 4948.5,
+      "p95": 4984.9,
+      "p99": 5079.6,
+      "max": 5079.6,
+      "mean": 4695
+    },
+    "memory": {
+      "heapBeforeMB": 5.75,
+      "heapAfterMB": 12.12
+    }
+  },
+  {
+    "name": "75 Concurrent Products & Categories Reads",
+    "concurrency": 75,
+    "totalRequests": 75,
+    "successes": 75,
+    "clientErrors": 0,
+    "serverErrors": 0,
+    "errorRate": "0.00%",
+    "durationMs": 1820,
+    "throughputRps": 41.2,
+    "latencies": {
+      "min": 882.5,
+      "p50": 1349.1,
+      "p90": 1715.4,
+      "p95": 1746.2,
+      "p99": 1789.1,
+      "max": 1789.1,
+      "mean": 1476
+    },
+    "memory": {
+      "heapBeforeMB": 12.16,
+      "heapAfterMB": 13.36
+    }
+  },
+  {
+    "name": "50 Concurrent Order Creations (Writes)",
+    "concurrency": 50,
+    "totalRequests": 50,
+    "successes": 50,
+    "clientErrors": 0,
+    "serverErrors": 0,
+    "errorRate": "0.00%",
+    "durationMs": 775,
+    "throughputRps": 64.5,
+    "latencies": {
+      "min": 366.9,
+      "p50": 691.6,
+      "p90": 753.7,
+      "p95": 757.1,
+      "p99": 757.8,
+      "max": 757.8,
+      "mean": 646
+    },
+    "memory": {
+      "heapBeforeMB": 13.4,
+      "heapAfterMB": 12.05
+    }
+  },
+  {
+    "name": "100 Concurrent Mixed Production Traffic",
+    "concurrency": 100,
+    "totalRequests": 100,
+    "successes": 100,
+    "clientErrors": 0,
+    "serverErrors": 0,
+    "errorRate": "0.00%",
+    "durationMs": 10408,
+    "throughputRps": 9.6,
+    "latencies": {
+      "min": 1022.4,
+      "p50": 8812.2,
+      "p90": 10309.2,
+      "p95": 10323.4,
+      "p99": 10339.9,
+      "max": 10399.3,
+      "mean": 8517
+    },
+    "memory": {
+      "heapBeforeMB": 12.09,
+      "heapAfterMB": 11.14
+    }
+  }
+]

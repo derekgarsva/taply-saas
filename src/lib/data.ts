@@ -440,7 +440,11 @@ export async function getBusinessBySlug(slug: string): Promise<Business | null> 
 
 export async function getBusinessById(id: string): Promise<Business | null> {
   const store = getStore();
-  return store.businesses[id] ? { ...store.businesses[id] } : null;
+  if (store.businesses[id]) {
+    return { ...store.businesses[id] };
+  }
+  const biz = Object.values(store.businesses).find(b => b.id === id || b.slug === id);
+  return biz ? { ...biz } : null;
 }
 
 export async function getAllBusinesses(): Promise<Business[]> {
@@ -612,7 +616,17 @@ export async function recordPageView(businessId: string): Promise<void> {
 // ── Products Queries ──
 export async function getProductsByBusinessId(businessId: string): Promise<Product[]> {
   const store = getStore();
-  return store.products[businessId] ? [...store.products[businessId]] : [];
+  if (store.products[businessId]) {
+    return [...store.products[businessId]];
+  }
+  const biz = Object.values(store.businesses).find(
+    (b) => b.id === businessId || b.slug.toLowerCase() === businessId.toLowerCase()
+  );
+  if (biz) {
+    if (store.products[biz.id]) return [...store.products[biz.id]];
+    if (store.products[biz.slug]) return [...store.products[biz.slug]];
+  }
+  return [];
 }
 
 export async function saveProduct(businessId: string, productData: Partial<Product> & { name: string; price: number }): Promise<Product> {
@@ -654,8 +668,9 @@ export async function saveProduct(businessId: string, productData: Partial<Produ
 export async function deleteProduct(businessId: string, productId: string): Promise<boolean> {
   const store = getStore();
   if (!store.products[businessId]) return false;
+  const initialLen = store.products[businessId].length;
   store.products[businessId] = store.products[businessId].filter(p => p.id !== productId);
-  return true;
+  return store.products[businessId].length < initialLen;
 }
 
 // ── Categories Queries ──
@@ -664,11 +679,13 @@ export async function getCategoriesByBusinessId(businessId: string): Promise<Cat
   let cats = store.categories[businessId];
 
   // If not found by direct key, resolve through business slug or id
-  if (!cats || cats.length === 0) {
-    const biz = Object.values(store.businesses).find(
-      (b) => b.id === businessId || b.slug.toLowerCase() === businessId.toLowerCase()
-    );
-    if (biz) {
+  let resolvedBizId = businessId;
+  const biz = Object.values(store.businesses).find(
+    (b) => b.id === businessId || b.slug.toLowerCase() === businessId.toLowerCase()
+  );
+  if (biz) {
+    resolvedBizId = biz.id;
+    if (!cats || cats.length === 0) {
       if (store.categories[biz.id] && store.categories[biz.id].length > 0) {
         cats = store.categories[biz.id];
       } else if (store.categories[biz.slug] && store.categories[biz.slug].length > 0) {
@@ -677,23 +694,43 @@ export async function getCategoriesByBusinessId(businessId: string): Promise<Cat
     }
   }
 
-  // If still empty, derive categories from the products of this business
-  if (!cats || cats.length === 0) {
-    const products = await getProductsByBusinessId(businessId);
-    const uniqueCats = Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
-    if (uniqueCats.length > 0) {
-      const generatedCats: Category[] = uniqueCats.map((name, idx) => ({
-        id: `cat_${Math.random().toString(36).substring(2, 7)}`,
-        businessId,
-        name,
-        order: idx + 1,
-      }));
-      store.categories[businessId] = generatedCats;
-      return [...generatedCats];
+  if (!store.categories[resolvedBizId]) {
+    store.categories[resolvedBizId] = cats ? [...cats] : [];
+  }
+  const currentCats = store.categories[resolvedBizId];
+
+  // Reconcile: merge any category string found in active products so none is left orphaned
+  const products = await getProductsByBusinessId(resolvedBizId);
+  const existingNamesLower = new Set(currentCats.map((c) => c.name.trim().toLowerCase()));
+
+  let nextOrder = currentCats.length > 0 ? Math.max(...currentCats.map((c) => c.order || 0)) + 1 : 1;
+  for (const p of products) {
+    if (p.category && p.category.trim()) {
+      const trimmed = p.category.trim();
+      if (!existingNamesLower.has(trimmed.toLowerCase())) {
+        const newCat: Category = {
+          id: `cat_${Math.random().toString(36).substring(2, 7)}`,
+          businessId: resolvedBizId,
+          name: trimmed,
+          order: nextOrder++,
+        };
+        currentCats.push(newCat);
+        existingNamesLower.add(trimmed.toLowerCase());
+      }
     }
   }
 
-  return cats ? [...cats] : [];
+  if (currentCats.length === 0) {
+    const generalCat: Category = {
+      id: `cat_general_${Math.random().toString(36).substring(2, 7)}`,
+      businessId: resolvedBizId,
+      name: 'General',
+      order: 1,
+    };
+    currentCats.push(generalCat);
+  }
+
+  return [...currentCats];
 }
 
 export async function addCategory(businessId: string, name: string): Promise<Category> {
@@ -716,8 +753,41 @@ export async function addCategory(businessId: string, name: string): Promise<Cat
 
 export async function deleteCategory(businessId: string, categoryId: string): Promise<boolean> {
   const store = getStore();
-  if (!store.categories[businessId]) return false;
-  store.categories[businessId] = store.categories[businessId].filter(c => c.id !== categoryId);
+  let resolvedBizId = businessId;
+  const biz = Object.values(store.businesses).find(
+    (b) => b.id === businessId || b.slug.toLowerCase() === businessId.toLowerCase()
+  );
+  if (biz) {
+    resolvedBizId = biz.id;
+  }
+
+  const cats = store.categories[resolvedBizId] || store.categories[businessId];
+  if (!cats) return false;
+
+  const targetCategory = cats.find(c => c.id === categoryId || c.name.toLowerCase() === categoryId.toLowerCase());
+  const targetName = targetCategory?.name.trim().toLowerCase();
+
+  // Remove category from store
+  store.categories[resolvedBizId] = cats.filter(c => c.id !== categoryId && c.name.toLowerCase() !== categoryId.toLowerCase());
+  if (businessId !== resolvedBizId && store.categories[businessId]) {
+    store.categories[businessId] = store.categories[businessId].filter(c => c.id !== categoryId && c.name.toLowerCase() !== categoryId.toLowerCase());
+  }
+
+  // Gracefully reassign products referencing this category
+  if (targetName) {
+    const remainingCats = store.categories[resolvedBizId] || [];
+    const fallbackCategoryName = (remainingCats && remainingCats.length > 0)
+      ? remainingCats[0].name
+      : 'General';
+
+    const prods = store.products[resolvedBizId] || store.products[businessId] || [];
+    for (const p of prods) {
+      if (p.category && p.category.trim().toLowerCase() === targetName) {
+        p.category = fallbackCategoryName;
+      }
+    }
+  }
+
   return true;
 }
 

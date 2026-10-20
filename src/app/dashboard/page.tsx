@@ -446,6 +446,43 @@ function DashboardContent() {
     return currentPlanLabel.includes('Big') || currentPlanLabel.includes('34') || currentPlanLabel.includes('37');
   }, [currentPlanLabel]);
 
+  // Unified active categories list: merges registered categories, categories from active products,
+  // and the category of any currently edited product, ensuring no product category is omitted or silently mutated.
+  const availableCategories = useMemo(() => {
+    const list: Array<{ id: string; name: string; order: number }> = [];
+    const seen = new Set<string>();
+
+    categories.forEach(c => {
+      const trimmed = c.name?.trim();
+      if (trimmed && !seen.has(trimmed.toLowerCase())) {
+        seen.add(trimmed.toLowerCase());
+        list.push({ id: c.id, name: trimmed, order: c.order || list.length + 1 });
+      }
+    });
+
+    products.forEach(p => {
+      const trimmed = p.category?.trim();
+      if (trimmed && !seen.has(trimmed.toLowerCase())) {
+        seen.add(trimmed.toLowerCase());
+        list.push({ id: `cat_prod_${trimmed}`, name: trimmed, order: list.length + 1 });
+      }
+    });
+
+    if (productModal?.open && productModal.product?.category) {
+      const modalCat = productModal.product.category.trim();
+      if (modalCat && !seen.has(modalCat.toLowerCase())) {
+        seen.add(modalCat.toLowerCase());
+        list.push({ id: `cat_modal_${modalCat}`, name: modalCat, order: list.length + 1 });
+      }
+    }
+
+    if (list.length === 0) {
+      list.push({ id: 'cat_default_general', name: 'General', order: 1 });
+    }
+
+    return list;
+  }, [categories, products, productModal.open, productModal.product?.category]);
+
   // Product CRUD
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -557,7 +594,7 @@ function DashboardContent() {
   };
 
   const handleDeleteCategory = async (id: string) => {
-    if (!business || !confirm('¿Eliminar esta categoría? Los productos asociados permanecerán')) return;
+    if (!business || !confirm('¿Eliminar esta categoría? Los productos asociados serán reasignados a la categoría principal.')) return;
     try {
       const res = await fetch(`/api/categories?businessId=${business.id}&categoryId=${id}`, {
         method: 'DELETE',
@@ -565,8 +602,11 @@ function DashboardContent() {
       if (res.ok) {
         setCategories(prev => prev.filter(c => c.id !== id));
         showToastMsg('Categoría eliminada');
+        await loadData();
       }
-    } catch {}
+    } catch {
+      showToastMsg('Error al eliminar categoría');
+    }
   };
 
   // Order status update
@@ -1092,7 +1132,7 @@ function DashboardContent() {
                   className="h-10 px-3 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none text-gray-700"
                 >
                   <option value="Todas">Todas las categorías</option>
-                  {categories.map(c => (
+                  {availableCategories.map(c => (
                     <option key={c.id} value={c.name}>{c.name}</option>
                   ))}
                 </select>
@@ -1111,7 +1151,7 @@ function DashboardContent() {
                     mode: 'create',
                     product: {
                       name: '',
-                      category: categories[0]?.name || 'General',
+                      category: availableCategories[0]?.name || 'General',
                       price: 1.0,
                       available: true,
                       image: '',
@@ -1231,6 +1271,7 @@ function DashboardContent() {
                             mode: 'edit',
                             product: {
                               ...product,
+                              category: product.category || availableCategories[0]?.name || 'General',
                               images: prodImages,
                               image: prodImages[0] || product.image || '',
                             },
@@ -1286,8 +1327,8 @@ function DashboardContent() {
 
               {/* Categories list */}
               <div className="divide-y divide-gray-100">
-                {categories.map((cat) => {
-                  const count = products.filter(p => p.category === cat.name).length;
+                {availableCategories.map((cat) => {
+                  const count = products.filter(p => p.category?.trim().toLowerCase() === cat.name.trim().toLowerCase()).length;
                   return (
                     <div key={cat.id} className="py-3 flex items-center justify-between">
                       <div>
@@ -1757,14 +1798,14 @@ function DashboardContent() {
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1">Categoría</label>
                     <select
-                      value={productModal.product.category || categories[0]?.name || 'General'}
+                      value={productModal.product.category || availableCategories[0]?.name || 'General'}
                       onChange={(e) => setProductModal({
                         ...productModal,
                         product: { ...productModal.product, category: e.target.value }
                       })}
                       className="w-full h-10 px-2 text-xs border border-gray-200 rounded-xl bg-white outline-none focus:border-[#00594C]"
                     >
-                      {categories.map(c => (
+                      {availableCategories.map(c => (
                         <option key={c.id} value={c.name}>{c.name}</option>
                       ))}
                     </select>
