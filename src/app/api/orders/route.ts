@@ -3,6 +3,7 @@ export const revalidate = 0;
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getOrdersByBusinessId, createOrder, updateOrderStatus } from '@/lib/db';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -17,6 +18,22 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || '127.0.0.1';
+    const rateCheck = checkRateLimit(`orders:${ip}`, { windowMs: 60_000, max: 25 });
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: 'Demasiadas solicitudes de orden. Por favor espera un momento antes de reintentar.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': '60',
+            'X-RateLimit-Limit': '25',
+            'X-RateLimit-Remaining': '0',
+          },
+        }
+      );
+    }
+
     const body = await request.json();
     if (!body.businessId || !body.items || !body.total) {
       return NextResponse.json({ error: 'Datos incompletos de la orden' }, { status: 400 });

@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { ShoppingBag, ArrowRight, Instagram, MapPin, Phone, Check, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
-import { IPHONE_4K_FRAME } from './iphoneFrameData';
 
 interface IPhoneMockupProps {
   businessName?: string;
@@ -313,10 +312,9 @@ export default function IPhoneMockup({
         {/* ══ 2. AUTHENTIC 4K IPHONE STUDIO FRAME (Extracted from 4500x3000px master) ══ */}
         <img
           src="/iphone-4k-frame.png"
-          onError={(e) => {
-            e.currentTarget.src = IPHONE_4K_FRAME;
-          }}
           alt="iPhone 17 Pro Studio Mockup"
+          loading="eager"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-contain pointer-events-none z-20"
           style={{
             filter: 'drop-shadow(0 25px 50px rgba(0,0,0,0.18))',

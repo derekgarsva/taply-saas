@@ -109,9 +109,11 @@ CREATE TABLE IF NOT EXISTS public.platform_payments (
 CREATE INDEX IF NOT EXISTS idx_businesses_slug ON public.businesses(slug);
 CREATE INDEX IF NOT EXISTS idx_businesses_owner ON public.businesses(owner_id);
 CREATE INDEX IF NOT EXISTS idx_businesses_owner_email ON public.businesses(owner_email);
-CREATE INDEX IF NOT EXISTS idx_products_business ON public.products(business_id);
-CREATE INDEX IF NOT EXISTS idx_categories_business ON public.categories(business_id);
 CREATE INDEX IF NOT EXISTS idx_orders_business ON public.orders(business_id);
+CREATE INDEX IF NOT EXISTS idx_orders_business_created ON public.orders(business_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_categories_business ON public.categories(business_id);
+CREATE INDEX IF NOT EXISTS idx_products_business ON public.products(business_id);
+CREATE INDEX IF NOT EXISTS idx_products_business_available ON public.products(business_id, available);
 CREATE INDEX IF NOT EXISTS idx_platform_payments_created ON public.platform_payments(created_at DESC);
 
 -- ==============================================================================

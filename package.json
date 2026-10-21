@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "node tests/runner.mjs",
+    "test:stress": "node scripts/stress_test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
