@@ -19,6 +19,9 @@ const findings = [];
 async function request(path, options = {}) {
   const url = path.startsWith('http') ? path : `${BASE_URL}${path}`;
   const headers = new Headers(options.headers || {});
+  if (!headers.has('x-taply-test-auth')) {
+    headers.set('x-taply-test-auth', 'taply-e2e-internal');
+  }
   let body = options.body;
   if (body && typeof body === 'object') {
     headers.set('Content-Type', 'application/json');

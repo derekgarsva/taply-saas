@@ -53,6 +53,15 @@ export default function DashboardCardNav({
   const [scrolled, setScrolled] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
 
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      await fetch('/api/auth/login', { method: 'DELETE' });
+    } catch {}
+    setMenuOpen(false);
+    window.location.href = `/login?store=${encodeURIComponent(business?.slug || '')}`;
+  };
+
   // Close menu when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -408,14 +417,14 @@ export default function DashboardCardNav({
                     </Link>
                   </div>
 
-                  <Link
-                    href="/login"
-                    onClick={() => setMenuOpen(false)}
-                    className="text-red-600 hover:text-red-700 font-bold flex items-center gap-1.5 transition-colors"
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="text-red-600 hover:text-red-700 font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-xs"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     <span>Cerrar Sesión</span>
-                  </Link>
+                  </button>
                 </motion.div>
               </motion.div>
             )}

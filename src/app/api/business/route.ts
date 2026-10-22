@@ -3,6 +3,7 @@ export const revalidate = 0;
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getBusinessBySlug, getBusinessById, getAllBusinesses, updateBusiness, createBusiness } from '@/lib/db';
+import { verifyOwnerOrAdmin, sanitizePublicBusiness, isSuperAdminSession } from '@/lib/session';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -12,18 +13,23 @@ export async function GET(request: NextRequest) {
   if (slug) {
     const biz = await getBusinessBySlug(slug);
     if (!biz) return NextResponse.json({ error: 'No encontrado' }, { status: 404 });
-    return NextResponse.json(biz);
+    const isAuth = await verifyOwnerOrAdmin(biz.id);
+    return NextResponse.json(isAuth ? biz : sanitizePublicBusiness(biz));
   }
 
   if (id) {
     const biz = await getBusinessById(id);
     if (!biz) return NextResponse.json({ error: 'No encontrado' }, { status: 404 });
-    return NextResponse.json(biz);
+    const isAuth = await verifyOwnerOrAdmin(biz.id);
+    return NextResponse.json(isAuth ? biz : sanitizePublicBusiness(biz));
   }
 
-  // Return all or default
+  // Return all businesses: require SuperAdmin, or return sanitized list
   const list = await getAllBusinesses();
-  return NextResponse.json(list);
+  if (isSuperAdminSession()) {
+    return NextResponse.json(list);
+  }
+  return NextResponse.json(list.map(sanitizePublicBusiness));
 }
 
 export async function POST(request: NextRequest) {
@@ -69,6 +75,11 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     if (!body.id) {
       return NextResponse.json({ error: 'ID de negocio es requerido' }, { status: 400 });
+    }
+
+    const isAuth = await verifyOwnerOrAdmin(body.id);
+    if (!isAuth) {
+      return NextResponse.json({ error: 'No autorizado para modificar este comercio' }, { status: 401 });
     }
 
     const updated = await updateBusiness(body.id, body);

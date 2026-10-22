@@ -3,6 +3,7 @@ export const revalidate = 0;
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getProductsByBusinessId, saveProduct, deleteProduct, getBusinessById, getBusinessBySlug } from '@/lib/db';
+import { verifyOwnerOrAdmin } from '@/lib/session';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -20,6 +21,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     if (!body.businessId || !body.name || body.price === undefined) {
       return NextResponse.json({ error: 'businessId, nombre y precio son requeridos' }, { status: 400 });
+    }
+
+    const isAuth = await verifyOwnerOrAdmin(body.businessId);
+    if (!isAuth) {
+      return NextResponse.json({ error: 'No autorizado para gestionar productos de este comercio' }, { status: 401 });
     }
 
     // Enforcement: Check plan product limits on creation (not when editing an existing product)
@@ -67,6 +73,11 @@ export async function DELETE(request: NextRequest) {
 
     if (!businessId || !productId) {
       return NextResponse.json({ error: 'businessId y productId son requeridos' }, { status: 400 });
+    }
+
+    const isAuth = await verifyOwnerOrAdmin(businessId);
+    if (!isAuth) {
+      return NextResponse.json({ error: 'No autorizado para eliminar productos de este comercio' }, { status: 401 });
     }
 
     const success = await deleteProduct(businessId, productId);

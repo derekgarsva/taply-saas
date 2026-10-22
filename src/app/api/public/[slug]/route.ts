@@ -3,6 +3,7 @@ export const revalidate = 0;
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getBusinessBySlug, getProductsByBusinessId, getCategoriesByBusinessId, recordPageView } from '@/lib/db';
+import { sanitizePublicBusiness } from '@/lib/session';
 
 export async function GET(
   request: NextRequest,
@@ -24,13 +25,13 @@ export async function GET(
 
     return NextResponse.json(
       {
-        business,
+        business: sanitizePublicBusiness(business),
         products,
         categories,
       },
       {
         headers: {
-          'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=30',
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
         },
       }
     );

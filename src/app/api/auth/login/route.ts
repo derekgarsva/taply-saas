@@ -53,3 +53,55 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Error del servidor al iniciar sesión.' }, { status: 500 });
   }
 }
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const store = searchParams.get('store');
+    const cookieStore = cookies();
+
+    const adminSession = cookieStore.get('taply_admin_session');
+    if (adminSession?.value === 'active') {
+      return NextResponse.json({
+        authenticated: true,
+        isAdmin: true,
+        business: store ? { slug: store } : null,
+      });
+    }
+
+    const ownerSessionCookie = cookieStore.get('taply_owner_session');
+    if (!ownerSessionCookie?.value) {
+      return NextResponse.json({ authenticated: false });
+    }
+
+    const session = JSON.parse(ownerSessionCookie.value);
+    if (!session?.businessId && !session?.slug) {
+      return NextResponse.json({ authenticated: false });
+    }
+
+    if (store) {
+      const match =
+        session.slug?.toLowerCase() === store.toLowerCase() ||
+        session.businessId?.toLowerCase() === store.toLowerCase();
+      return NextResponse.json({
+        authenticated: match,
+        business: match ? session : null,
+        isAdmin: false,
+      });
+    }
+
+    return NextResponse.json({
+      authenticated: true,
+      business: session,
+      isAdmin: false,
+    });
+  } catch {
+    return NextResponse.json({ authenticated: false });
+  }
+}
+
+export async function DELETE() {
+  const cookieStore = cookies();
+  cookieStore.delete('taply_owner_session');
+  return NextResponse.json({ success: true, message: 'Sesión de dueño cerrada' });
+}

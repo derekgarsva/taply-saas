@@ -219,16 +219,19 @@ export default function StorefrontView({
       message += `📝 *Nota:* ${note.trim()}\n\n`;
     }
 
-    // 2. Save order in real backend database
+    // 2. Save order in real backend database with idempotency protection
+    const clientOrderId = 'order_' + business.id + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
     try {
       fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           businessId: business.id,
+          clientOrderId,
           items: orderItems,
           total: totalPrice,
           whatsappMessage: message,
+          customerNote: note || '',
         }),
       }).catch(() => {});
     } catch {}

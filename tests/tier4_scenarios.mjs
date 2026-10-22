@@ -28,9 +28,11 @@ export function createTier4Suite() {
     assertEqual(store.slug, 'panaderia-la-estrella');
     assert(pubRes.data.products.length >= 2, 'Storefront must have products available');
 
-    // 2. Buyer selects 2 items
-    const prod1 = pubRes.data.products[0];
-    const prod2 = pubRes.data.products[1];
+    // 2. Buyer selects 2 available items from the menu
+    const availableProds = pubRes.data.products.filter(p => p.available !== false);
+    assert(availableProds.length >= 2, 'Storefront must have at least 2 available products');
+    const prod1 = availableProds[0];
+    const prod2 = availableProds[1];
     const qty1 = 2;
     const qty2 = 1;
     const itemTotal1 = prod1.price * qty1;

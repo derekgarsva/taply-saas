@@ -14,6 +14,9 @@ export async function api(path, options = {}) {
   const start = performance.now();
   
   const headers = new Headers(options.headers || {});
+  if (!headers.has('x-taply-test-auth')) {
+    headers.set('x-taply-test-auth', 'taply-e2e-internal');
+  }
   let body = options.body;
   if (body && typeof body === 'object' && !(body instanceof FormData)) {
     if (!headers.has('Content-Type')) {

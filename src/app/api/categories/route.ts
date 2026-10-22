@@ -3,6 +3,7 @@ export const revalidate = 0;
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getCategoriesByBusinessId, addCategory, deleteCategory } from '@/lib/db';
+import { verifyOwnerOrAdmin } from '@/lib/session';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -22,6 +23,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'businessId y nombre son requeridos' }, { status: 400 });
     }
 
+    const isAuth = await verifyOwnerOrAdmin(body.businessId);
+    if (!isAuth) {
+      return NextResponse.json({ error: 'No autorizado para gestionar categorías de este comercio' }, { status: 401 });
+    }
+
     const created = await addCategory(body.businessId, body.name.trim());
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
@@ -37,6 +43,11 @@ export async function DELETE(request: NextRequest) {
 
     if (!businessId || !categoryId) {
       return NextResponse.json({ error: 'businessId y categoryId son requeridos' }, { status: 400 });
+    }
+
+    const isAuth = await verifyOwnerOrAdmin(businessId);
+    if (!isAuth) {
+      return NextResponse.json({ error: 'No autorizado para eliminar categorías de este comercio' }, { status: 401 });
     }
 
     const success = await deleteCategory(businessId, categoryId);

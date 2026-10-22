@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Business, Product, Category, Order, MultiLinkItem } from '@/types';
 import QRCodeModal from '@/components/storefront/QRCodeModal';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -65,6 +65,7 @@ export default function DashboardPage() {
 }
 
 function DashboardContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const storeSlug = searchParams.get('store') || 'panaderia-la-estrella';
 
@@ -263,12 +264,21 @@ function DashboardContent() {
     if (!storeSlug) return false;
     const s = storeSlug.toLowerCase();
     return s === 'burger-station' || s === 'panaderia-la-estrella' || s.includes('demo');
-  }, [storeSlug]);
+  }, [storeSlug, router]);
 
   // Load initial data
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
+      // 1. Verify owner or admin session
+      const authRes = await fetch('/api/auth/login?store=' + encodeURIComponent(storeSlug) + '&_t=' + Date.now());
+      if (authRes.ok) {
+        const authData = await authRes.json();
+        if (!authData.authenticated) {
+          router.push('/login?store=' + encodeURIComponent(storeSlug));
+          return;
+        }
+      }
       const res = await fetch(`/api/public/${storeSlug}?_t=${Date.now()}`, {
         cache: 'no-store',
         headers: { 'Cache-Control': 'no-cache' },
