@@ -330,6 +330,8 @@ export default function SuperAdminPage() {
   // 5-second countdown timers for deletions and metric resets
   const [pendingDeletes, setPendingDeletes] = useState<Record<string, number>>({});
   const deleteTimers = React.useRef<Record<string, NodeJS.Timeout>>({});
+  const [pendingBizDeletes, setPendingBizDeletes] = useState<Record<string, number>>({});
+  const bizDeleteTimers = React.useRef<Record<string, NodeJS.Timeout>>({});
   const [resetCountdown, setResetCountdown] = useState<number | null>(null);
   const resetTimer = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -338,6 +340,7 @@ export default function SuperAdminPage() {
     return () => {
       if (resetTimer.current) clearInterval(resetTimer.current);
       Object.values(deleteTimers.current).forEach(clearInterval);
+      Object.values(bizDeleteTimers.current).forEach(clearInterval);
     };
   }, []);
 
@@ -485,6 +488,66 @@ export default function SuperAdminPage() {
     } catch {
       triggerToast('❌ Error al cambiar el plan del comercio');
     }
+  };
+
+  // ── Single Business Deletion with 5-second cancel countdown ──
+  const executeDeleteBusiness = async (id: string, bizName: string) => {
+    try {
+      const res = await fetch(`/api/admin/businesses?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Error al eliminar negocio');
+      }
+
+      setBusinesses((prev) => prev.filter((b) => b.id !== id && b.slug !== id));
+      triggerToast(`🗑️ Negocio "${bizName}" y sus datos han sido eliminados.`);
+      fetchData();
+    } catch (err: any) {
+      triggerToast(`❌ ${err.message || 'Error al eliminar negocio'}`);
+    }
+  };
+
+  const startDeleteBusiness = (id: string, bizName: string) => {
+    if (bizDeleteTimers.current[id]) {
+      clearInterval(bizDeleteTimers.current[id]);
+    }
+    setPendingBizDeletes((prev) => ({ ...prev, [id]: 5 }));
+
+    const interval = setInterval(() => {
+      setPendingBizDeletes((prev) => {
+        const current = prev[id];
+        if (current === undefined) {
+          clearInterval(interval);
+          return prev;
+        }
+        if (current <= 1) {
+          clearInterval(interval);
+          delete bizDeleteTimers.current[id];
+          executeDeleteBusiness(id, bizName);
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        }
+        return { ...prev, [id]: current - 1 };
+      });
+    }, 1000);
+
+    bizDeleteTimers.current[id] = interval;
+  };
+
+  const cancelDeleteBusiness = (id: string) => {
+    if (bizDeleteTimers.current[id]) {
+      clearInterval(bizDeleteTimers.current[id]);
+      delete bizDeleteTimers.current[id];
+    }
+    setPendingBizDeletes((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+    triggerToast('Cancelada la eliminación del negocio');
   };
 
   // Single Payment Deletion with 5-second cancel countdown
@@ -1117,27 +1180,57 @@ export default function SuperAdminPage() {
                         </div>
                       </div>
 
-                      {/* 1-Click Killswitch toggle button */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleBusiness(biz);
-                        }}
-                        disabled={togglingId === biz.id}
-                        className={`w-12 h-6 rounded-full p-0.5 transition-colors relative flex-shrink-0 ${
-                          isActive ? 'bg-emerald-500' : isDark ? 'bg-neutral-800' : 'bg-neutral-300'
-                        }`}
-                        title={isActive ? 'Pausar catálogo' : 'Activar catálogo'}
-                      >
-                        <motion.div
-                          layout
-                          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                          className={`w-5 h-5 rounded-full bg-white shadow-md transform ${
-                            isActive ? 'translate-x-6' : 'translate-x-0'
+                      {/* Actions & 1-Click Killswitch toggle button */}
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {pendingBizDeletes[biz.id] !== undefined ? (
+                          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-red-500/15 border border-red-500/30 text-[10px] text-red-400">
+                            <span>{pendingBizDeletes[biz.id]}s</span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                cancelDeleteBusiness(biz.id);
+                              }}
+                              className="ml-1 underline font-bold hover:text-white"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startDeleteBusiness(biz.id, biz.name);
+                            }}
+                            className="p-1.5 text-neutral-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                            title={`Eliminar comercio "${biz.name}"`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleBusiness(biz);
+                          }}
+                          disabled={togglingId === biz.id}
+                          className={`w-12 h-6 rounded-full p-0.5 transition-colors relative flex-shrink-0 ${
+                            isActive ? 'bg-emerald-500' : isDark ? 'bg-neutral-800' : 'bg-neutral-300'
                           }`}
-                        />
-                      </button>
+                          title={isActive ? 'Pausar catálogo' : 'Activar catálogo'}
+                        >
+                          <motion.div
+                            layout
+                            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                            className={`w-5 h-5 rounded-full bg-white shadow-md transform ${
+                              isActive ? 'translate-x-6' : 'translate-x-0'
+                            }`}
+                          />
+                        </button>
+                      </div>
                     </div>
                   </SwipeActionRow>
                 );
@@ -1290,6 +1383,27 @@ export default function SuperAdminPage() {
                             >
                               <DollarSign className="w-3.5 h-3.5" />
                             </button>
+                            {pendingBizDeletes[biz.id] !== undefined ? (
+                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-red-500/10 border border-red-500/30 text-[11px] text-red-400">
+                                <span>Borrando en <strong className="font-mono text-white">{pendingBizDeletes[biz.id]}s</strong></span>
+                                <button
+                                  type="button"
+                                  onClick={() => cancelDeleteBusiness(biz.id)}
+                                  className="ml-1 underline font-bold hover:text-white"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => startDeleteBusiness(biz.id, biz.name)}
+                                className="p-1.5 rounded-xl border border-transparent hover:border-red-500/30 text-neutral-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                                title={`Eliminar comercio "${biz.name}"`}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                           </div>
                         </td>
 

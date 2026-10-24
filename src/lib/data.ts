@@ -499,6 +499,43 @@ export async function setBusinessActive(id: string, active: boolean): Promise<Bu
   return { ...biz };
 }
 
+export async function deleteBusiness(id: string): Promise<boolean> {
+  const store = getStore();
+  const biz = store.businesses[id] || Object.values(store.businesses).find(b => b.id === id || b.slug === id);
+  if (!biz) return false;
+
+  const targetId = biz.id;
+  const targetSlug = biz.slug;
+
+  // Remove business from dictionary keys
+  delete store.businesses[targetSlug];
+  delete store.businesses[targetId];
+  delete store.businesses[id];
+
+  Object.keys(store.businesses).forEach((k) => {
+    if (store.businesses[k]?.id === targetId || store.businesses[k]?.slug === targetSlug) {
+      delete store.businesses[k];
+    }
+  });
+
+  // Cascade deletion of dependent products, categories, orders
+  delete store.products[targetId];
+  delete store.categories[targetId];
+  delete store.orders[targetId];
+  if (targetSlug !== targetId) {
+    delete store.products[targetSlug];
+    delete store.categories[targetSlug];
+    delete store.orders[targetSlug];
+  }
+
+  // Remove payments tied to this store
+  store.payments = (store.payments || []).filter(
+    (p: PlatformPayment) => p.businessId !== targetId && p.businessSlug !== targetSlug
+  );
+
+  return true;
+}
+
 export async function createBusiness(data: Omit<Business, 'id' | 'pageViews' | 'createdAt' | 'active'> & { active?: boolean }): Promise<Business> {
   const store = getStore();
   const id = 'biz_' + Math.random().toString(36).substring(2, 9);

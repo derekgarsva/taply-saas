@@ -8,6 +8,7 @@ import {
   updateBusiness as updateMockBusiness,
   toggleBusinessStatus as toggleMockBusinessStatus,
   setBusinessActive as setMockBusinessActive,
+  deleteBusiness as deleteMockBusiness,
   getCategoriesByBusinessId as getMockCategoriesByBusinessId,
   addCategory as addMockCategory,
   deleteCategory as deleteMockCategory,
@@ -391,6 +392,40 @@ export async function setBusinessActive(id: string, active: boolean): Promise<Bu
   if (!supabase) return setMockBusinessActive(id, active);
 
   return updateBusiness(id, { active });
+}
+
+export async function deleteBusiness(id: string): Promise<boolean> {
+  const supabase = getAdminClient();
+  let dbDeleted = false;
+
+  if (supabase) {
+    try {
+      const biz = (await getBusinessById(id)) || (await getBusiness(id));
+      const targetId = biz?.id || id;
+      const targetSlug = biz?.slug || id;
+
+      // 1. Cascade cleanup of dependent tables
+      await supabase.from('products').delete().eq('business_id', targetId);
+      await supabase.from('categories').delete().eq('business_id', targetId);
+      await supabase.from('orders').delete().eq('business_id', targetId);
+      await supabase.from('platform_payments').delete().eq('business_id', targetId);
+
+      // 2. Delete business row
+      const { error } = await supabase
+        .from('businesses')
+        .delete()
+        .or(`id.eq.${targetId},slug.eq.${targetSlug}`);
+
+      if (!error) {
+        dbDeleted = true;
+      }
+    } catch (err) {
+      console.error('Supabase deleteBusiness error:', err);
+    }
+  }
+
+  const mockDeleted = await deleteMockBusiness(id);
+  return dbDeleted || mockDeleted;
 }
 
 export async function recordPageView(businessId: string): Promise<void> {
