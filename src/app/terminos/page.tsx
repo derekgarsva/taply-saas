@@ -161,7 +161,9 @@ export default function TerminosPage() {
               <span>WhatsApp Fundador: +58 424 308 7887</span>
             </div>
             <a
-              href="https://wa.me/584243087887?text=Hola,%20tengo%20una%20consulta%20sobre%20los%20términos%20y%20condiciones%20de%20Taply"
+              href={`https://wa.me/584243087887?text=${encodeURIComponent(
+                'Hola Derek, tengo una consulta sobre los términos y condiciones de Taply.'.normalize('NFC')
+              )}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#00594C] hover:underline font-extrabold flex items-center gap-1"

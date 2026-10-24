@@ -11,10 +11,15 @@ interface DeactivatedStoreViewProps {
 }
 
 export default function DeactivatedStoreView({ business }: DeactivatedStoreViewProps) {
-  const whatsappUrl = business.phone
-    ? `https://wa.me/${business.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-        `Hola, me comunico para consultar información sobre ${business.name}.`
-      )}`
+  let cleanPhone = (business.phone || '').replace(/\D/g, '');
+  if (cleanPhone.startsWith('0') && cleanPhone.length === 11) {
+    cleanPhone = '58' + cleanPhone.slice(1);
+  } else if (cleanPhone.length === 10) {
+    cleanPhone = '58' + cleanPhone;
+  }
+  const cleanMsg = `Hola, me comunico para consultar información sobre ${business.name}.`.normalize('NFC');
+  const whatsappUrl = cleanPhone
+    ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(cleanMsg)}`
     : null;
 
   return (

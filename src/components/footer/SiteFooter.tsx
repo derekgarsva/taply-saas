@@ -64,7 +64,7 @@ const defaultColumns: SiteFooterColumn[] = [
     links: [
       { label: 'Acceso Panel de Dueño', href: '/login' },
       { label: 'Crear Mi Tienda en 60s', href: '/onboarding' },
-      { label: 'WhatsApp del Fundador', href: 'https://wa.me/584243087887', external: true },
+      { label: 'WhatsApp del Fundador', href: `https://wa.me/584243087887?text=${encodeURIComponent('¡Hola Derek! Me gustaría conversar sobre Taply para mi negocio.'.normalize('NFC'))}`, external: true },
     ],
   },
 ];
@@ -76,7 +76,7 @@ const defaultLegal: SiteFooterLink[] = [
 ];
 
 const defaultSocials: SiteFooterLink[] = [
-  { label: 'WhatsApp', href: 'https://wa.me/584243087887', external: true },
+  { label: 'WhatsApp', href: `https://wa.me/584243087887?text=${encodeURIComponent('¡Hola Derek! Me gustaría conversar sobre Taply para mi negocio.'.normalize('NFC'))}`, external: true },
   { label: 'Instagram', href: 'https://instagram.com', external: true },
   { label: 'TikTok', href: 'https://tiktok.com', external: true },
 ];

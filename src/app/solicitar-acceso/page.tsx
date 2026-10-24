@@ -24,9 +24,8 @@ import TextReveal from '@/components/ui/text-reveal';
 
 export default function SolicitarAccesoPage() {
   const founderPhone = '584243087887';
-  const whatsappUrl = `https://wa.me/${founderPhone}?text=${encodeURIComponent(
-    '¡Hola! Quiero solicitar acceso demo al Panel de Dueño de Taply para probar cómo gestionar mi catálogo y productos.'
-  )}`;
+  const rawMsg = '¡Hola Derek! Quiero solicitar acceso demo al Panel de Dueño de Taply para probar cómo gestionar mi catálogo y productos.'.normalize('NFC');
+  const whatsappUrl = `https://wa.me/${founderPhone}?text=${encodeURIComponent(rawMsg)}`;
 
   const handleSlideConfirm = () => {
     if (typeof window !== 'undefined') {

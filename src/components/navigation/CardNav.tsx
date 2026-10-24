@@ -284,7 +284,9 @@ export default function CardNav() {
                   </a>
 
                   <a
-                    href="https://wa.me/584120000000?text=Hola,%20quiero%20solicitar%20acceso%20a%20Taply"
+                    href={`https://wa.me/584243087887?text=${encodeURIComponent(
+                      '¡Hola Derek! Quiero solicitar acceso demo a Taply.'.normalize('NFC')
+                    )}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => setMenuOpen(false)}

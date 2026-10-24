@@ -840,7 +840,7 @@ function DashboardContent() {
             </div>
             <a
               href={`https://wa.me/584243087887?text=${encodeURIComponent(
-                `Hola Derek, soy el dueño de *${business.name}* (taply.app/${business.slug}). Mi catálogo aparece en estado Pausado. Deseo reactivarlo para recibir pedidos.`
+                `Hola Derek, soy el dueño de *${business.name}* (taply.app/${business.slug}). Mi catálogo aparece en estado Pausado. Deseo reactivarlo para recibir pedidos.`.normalize('NFC')
               )}`}
               target="_blank"
               rel="noopener noreferrer"
@@ -2101,7 +2101,7 @@ function DashboardContent() {
                       </p>
                       <a
                         href={`https://wa.me/584243087887?text=${encodeURIComponent(
-                          `Hola Derek, soy el dueño de *${business.name}* (taply.app/${business.slug}). Actualmente estoy en el plan Big Taply y deseo cambiar al *Plan Inicial ($12/mes)*. Entiendo que pagaré los $12 de mi suscripción mensual. ¿Me indicas los datos para el pago?`
+                          `Hola Derek, soy el dueño de *${business.name}* (taply.app/${business.slug}). Actualmente estoy en el plan Big Taply y deseo cambiar al *Plan Inicial ($12/mes)*. Entiendo que pagaré los $12 de mi suscripción mensual. ¿Me indicas los datos para el pago?`.normalize('NFC')
                         )}`}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -2170,7 +2170,7 @@ function DashboardContent() {
                       </p>
                       <a
                         href={`https://wa.me/584243087887?text=${encodeURIComponent(
-                          `Hola Derek, soy el dueño de *${business.name}* (taply.app/${business.slug}). Actualmente estoy en el *Plan Inicial ($12/mes)* y deseo mejorar al plan *Big Taply ($37)* para tener productos ilimitados y soporte prioritario. ¿Me indicas los datos para transferir los $37?`
+                          `Hola Derek, soy el dueño de *${business.name}* (taply.app/${business.slug}). Actualmente estoy en el *Plan Inicial ($12/mes)* y deseo mejorar al plan *Big Taply ($37)* para tener productos ilimitados y soporte prioritario. ¿Me indicas los datos para transferir los $37?`.normalize('NFC')
                         )}`}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -2197,7 +2197,7 @@ function DashboardContent() {
                 </div>
                 <a
                   href={`https://wa.me/584243087887?text=${encodeURIComponent(
-                    `Hola Derek, soy el dueño de *${business.name}* (taply.app/${business.slug}). Tengo una consulta sobre mi plan de suscripción en Taply.`
+                    `Hola Derek, soy el dueño de *${business.name}* (taply.app/${business.slug}). Tengo una consulta sobre mi plan de suscripción en Taply.`.normalize('NFC')
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
