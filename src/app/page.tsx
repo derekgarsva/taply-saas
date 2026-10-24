@@ -88,19 +88,19 @@ export default function LandingPage() {
           ✓ Sin comisiones por venta &nbsp;•&nbsp; ✓ Sin registros para tus clientes &nbsp;•&nbsp; ✓ Listo para Venezuela y Latinoamérica
         </p>
 
-        {/* ══ AUTHENTIC 4K STUDIO IPHONE MOCKUP (AGENDOD STYLE) ══ */}
+        {/* ══ IPHONE MINIMAL PLAYER (PANTALLA LIMPIA SIN MARCOS) ══ */}
         <div className="mt-14 max-w-sm sm:max-w-md mx-auto relative">
           <IPhoneMockup businessName="Panadería La Estrella" slug="panaderia-la-estrella" />
 
           <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-2">
             <span className="text-xs font-semibold text-gray-500">
-              💡 Prueba sumar productos y tocar pedir en el iPhone arriba, o
+              💡 Mira la experiencia fluida de Taply en el iPhone, o
             </span>
             <Link
               href="/panaderia-la-estrella"
               className="text-xs font-bold text-[#00594C] hover:underline inline-flex items-center gap-1"
             >
-              <span>ver el catálogo completo en vivo</span>
+              <span>ver el catálogo demo completo en vivo</span>
               <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
