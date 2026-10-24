@@ -186,8 +186,8 @@ function LoginFormContent() {
       return;
     }
 
-    if (newPin.trim().length < 4) {
-      setRecoveryError('El PIN debe tener al menos 4 dígitos.');
+    if (newPin.trim().length !== 6) {
+      setRecoveryError('El PIN debe tener exactamente 6 dígitos numéricos.');
       return;
     }
 

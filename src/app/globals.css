@@ -8,6 +8,38 @@
   --foreground-rgb: 17, 24, 39;
   --background-start-rgb: 248, 249, 250;
   --background-end-rgb: 255, 255, 255;
+
+  /* Arc Design System & Toast Stack Tokens */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+  --radius-panel: 1rem;
+  --radius-pill: 9999px;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-muted: #f9fafb;
+  --foreground: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  --shadow-raised: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  --shadow-floating: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
+  --duration-instant: 100ms;
+  --duration-fast: 150ms;
+  --duration-standard: 250ms;
+  --duration-spring: 350ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --success: #059669;
+  --accent: #0284c7;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --text-sm: 0.875rem;
+  --tracking-body: normal;
 }
 
 html {

@@ -468,6 +468,17 @@ export default function SuperAdminPage() {
       setBusinesses((prev) =>
         prev.map((b) => (b.id === bizId ? { ...b, plan: newPlan } : b))
       );
+      
+      // Broadcast real-time event for instant cross-tab sync without delay
+      try {
+        localStorage.setItem('taply-plan-update-event', JSON.stringify({ businessId: bizId, plan: newPlan, timestamp: Date.now() }));
+        if (typeof BroadcastChannel !== 'undefined') {
+          const bc = new BroadcastChannel('taply-realtime');
+          bc.postMessage({ type: 'PLAN_UPDATED', businessId: bizId, plan: newPlan });
+          bc.close();
+        }
+      } catch {}
+
       const bizName = businesses.find((b) => b.id === bizId)?.name || 'comercio';
       triggerToast(`⭐ Plan de "${bizName}" actualizado a ${newPlan}. Límites aplicados en tiempo real.`);
       fetchData();
@@ -646,6 +657,14 @@ export default function SuperAdminPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: selectedBizId, plan: paymentPlan }),
         }).catch(() => {});
+        try {
+          localStorage.setItem('taply-plan-update-event', JSON.stringify({ businessId: selectedBizId, plan: paymentPlan, timestamp: Date.now() }));
+          if (typeof BroadcastChannel !== 'undefined') {
+            const bc = new BroadcastChannel('taply-realtime');
+            bc.postMessage({ type: 'PLAN_UPDATED', businessId: selectedBizId, plan: paymentPlan });
+            bc.close();
+          }
+        } catch {}
       }
 
       setIsPaymentSheetOpen(false);

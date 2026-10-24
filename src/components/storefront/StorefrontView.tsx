@@ -189,7 +189,7 @@ export default function StorefrontView({
       });
     } catch {}
 
-    // 1. Prepare formatted order message
+    // 1. Prepare formatted order message with 100% universal character compatibility
     let message = `🛒 *Nuevo Pedido para ${business.name}*\n\n`;
     const orderItems: Array<{ productId: string; name: string; price: number; quantity: number }> = [];
 
@@ -197,13 +197,21 @@ export default function StorefrontView({
       const item = products.find(p => p.id === id);
       if (item && qty > 0) {
         orderItems.push({ productId: item.id, name: item.name, price: item.price, quantity: qty });
-        message += `• ${qty}x ${item.name} — ${business.currencySymbol}${(item.price * qty).toFixed(2)}\n`;
+        // Use clean ASCII hyphen ' - ' instead of em-dash '—' to guarantee universal encoding across all devices
+        message += `- ${qty}x ${item.name} - ${business.currencySymbol}${(item.price * qty).toFixed(2)}\n`;
       }
     });
 
     message += `\n*Total a Pagar:* ${business.currencySymbol}${totalPrice.toFixed(2)} ${business.currency}\n\n`;
-    if (business.paymentNotes) {
-      message += `💳 *${business.paymentNotes}*\n\n`;
+    
+    // Safely format payment notes line-by-line (WhatsApp bold does not span across newlines)
+    if (business.paymentNotes && business.paymentNotes.trim()) {
+      const formattedNotes = business.paymentNotes
+        .split('\n')
+        .map(l => l.trim())
+        .filter(Boolean)
+        .join('\n');
+      message += `💳 *Datos de Pago:*\n${formattedNotes}\n\n`;
     }
 
     if (deliveryType === 'delivery') {
@@ -218,6 +226,9 @@ export default function StorefrontView({
     if (note && note.trim()) {
       message += `📝 *Nota:* ${note.trim()}\n\n`;
     }
+
+    // Apply Unicode NFC normalization to ensure clean canonical UTF-8 encoding without mojibake
+    message = message.normalize('NFC');
 
     // 2. Save order in real backend database with idempotency protection
     const clientOrderId = 'order_' + business.id + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);

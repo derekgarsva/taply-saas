@@ -49,7 +49,7 @@ function mapDbBusiness(row: any): Business {
     plan: row.plan || 'Plan Inicial ($12)',
     createdAt: row.created_at,
     ownerEmail: row.owner_email || '',
-    ownerPin: row.owner_pin || '1234',
+    ownerPin: row.owner_pin || '543543',
   };
 }
 
@@ -1097,8 +1097,8 @@ export async function resetOwnerPin(
   const cleanToken = token.trim();
   const cleanPin = newPin.trim();
 
-  if (!cleanPin || cleanPin.length < 4) {
-    return { success: false, error: 'El PIN debe tener al menos 4 dígitos.' };
+  if (!cleanPin || cleanPin.length !== 6) {
+    return { success: false, error: 'El PIN debe tener exactamente 6 dígitos numéricos.' };
   }
 
   const supabase = getAdminClient();

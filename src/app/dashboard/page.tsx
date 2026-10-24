@@ -46,6 +46,7 @@ import {
 } from 'lucide-react';
 import DashboardCardNav from '@/components/navigation/DashboardCardNav';
 import LineChart, { LineChartDatum, LineChartSeries } from '@/components/ui/line-chart';
+import { ToastStack, ToastStackProvider, useToastStack } from '@/components/ui/toast-stack/toast-stack';
 
 export default function DashboardPage() {
   return (
@@ -59,7 +60,10 @@ export default function DashboardPage() {
         </div>
       }
     >
-      <DashboardContent />
+      <ToastStackProvider duration={5000} limit={12}>
+        <DashboardContent />
+        <ToastStack position="bottom-right" />
+      </ToastStackProvider>
     </Suspense>
   );
 }
@@ -68,6 +72,10 @@ function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const storeSlug = searchParams.get('store') || 'panaderia-la-estrella';
+
+  const { toast: pushToast } = useToastStack();
+  const lastKnownPlanRef = React.useRef<string | null>(null);
+  const initialPlanLoadedRef = React.useRef(false);
 
   const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'categories' | 'orders' | 'branding'>('overview');
   const [loading, setLoading] = useState(true);
@@ -286,6 +294,10 @@ function DashboardContent() {
       if (res.ok) {
         const data = await res.json();
         setBusiness(data.business);
+        if (!initialPlanLoadedRef.current && data.business?.plan) {
+          lastKnownPlanRef.current = data.business.plan;
+          initialPlanLoadedRef.current = true;
+        }
         setProducts(data.products || []);
         setCategories(data.categories || []);
 
@@ -309,6 +321,94 @@ function DashboardContent() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // ── Real-Time Plan Notification & Synchronization ──
+  // Listens to plan changes made by SuperAdmin from /admin via BroadcastChannel, storage events, and live polling
+  useEffect(() => {
+    if (!storeSlug) return;
+
+    const handlePlanChangeDetected = (newPlan: string) => {
+      if (!newPlan) return;
+      if (lastKnownPlanRef.current && lastKnownPlanRef.current !== newPlan) {
+        lastKnownPlanRef.current = newPlan;
+        setBusiness((prev) => (prev ? { ...prev, plan: newPlan } : null));
+
+        // Persistent notification that stays on screen until dismissed by clicking 'X'
+        pushToast({
+          type: 'success',
+          title: '✨ ¡Plan Actualizado en Vivo!',
+          description: `El administrador ha actualizado tu plan a "${newPlan}". Las nuevas funciones y límites ya están activos.`,
+          duration: Infinity, // Stays until user manually clicks X
+        });
+      } else if (!lastKnownPlanRef.current) {
+        lastKnownPlanRef.current = newPlan;
+      }
+    };
+
+    // 1. Instant cross-tab sync via BroadcastChannel
+    let bc: BroadcastChannel | null = null;
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        bc = new BroadcastChannel('taply-realtime');
+        bc.onmessage = (event) => {
+          if (event.data?.type === 'PLAN_UPDATED') {
+            if (business?.id && event.data.businessId === business.id) {
+              handlePlanChangeDetected(event.data.plan);
+            } else {
+              fetch(`/api/public/${storeSlug}?_t=${Date.now()}`)
+                .then((r) => r.json())
+                .then((d) => {
+                  if (d.business?.plan) handlePlanChangeDetected(d.business.plan);
+                })
+                .catch(() => {});
+            }
+          }
+        };
+      }
+    } catch {}
+
+    // 2. Storage event listener for cross-tab sync
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'taply-plan-update-event' && e.newValue) {
+        try {
+          const payload = JSON.parse(e.newValue);
+          if (business?.id && payload.businessId === business.id) {
+            handlePlanChangeDetected(payload.plan);
+          } else {
+            fetch(`/api/public/${storeSlug}?_t=${Date.now()}`)
+              .then((r) => r.json())
+              .then((d) => {
+                if (d.business?.plan) handlePlanChangeDetected(d.business.plan);
+              })
+              .catch(() => {});
+          }
+        } catch {}
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    // 3. Robust polling every 2.5s for cross-device/network synchronization
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/public/${storeSlug}?_t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.business?.plan) {
+            handlePlanChangeDetected(data.business.plan);
+          }
+        }
+      } catch {}
+    }, 2500);
+
+    return () => {
+      if (bc) bc.close();
+      window.removeEventListener('storage', handleStorage);
+      clearInterval(interval);
+    };
+  }, [storeSlug, business?.id, pushToast]);
 
   const handleRestoreDemo = async () => {
     if (!business?.slug) return;

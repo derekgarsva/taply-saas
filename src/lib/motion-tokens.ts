@@ -8,6 +8,7 @@ export const motionTokens = {
     standard: 0.38,
     considered: 0.65,
     slow: 0.9,
+    exit: 0.18,
   },
   stagger: {
     tight: 0.02,
@@ -26,9 +27,10 @@ export const motionTokens = {
     inOut: [0.4, 0, 0.2, 1] as const,
   },
   spring: {
-    smooth: { type: 'spring', stiffness: 280, damping: 28, visualDuration: 0.35, bounce: 0.15 },
-    snappy: { type: 'spring', stiffness: 420, damping: 32, visualDuration: 0.2, bounce: 0.05 },
+    smooth: { type: 'spring' as const, stiffness: 280, damping: 28, visualDuration: 0.35, bounce: 0.15 },
+    snappy: { type: 'spring' as const, stiffness: 420, damping: 32, visualDuration: 0.2, bounce: 0.05 },
+    morph: { type: 'spring' as const, stiffness: 350, damping: 30, visualDuration: 0.3, bounce: 0.1 },
   },
-};
+} as const;
 
 export default motionTokens;

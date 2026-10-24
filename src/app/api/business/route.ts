@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       links: body.links || [],
       plan: body.plan || 'Plan Inicial ($12)',
       ownerEmail: body.ownerEmail || body.email || '',
-      ownerPin: body.ownerPin || body.pin || '1234',
+      ownerPin: body.ownerPin || body.pin || '543543',
     });
 
     return NextResponse.json(created, { status: 201 });

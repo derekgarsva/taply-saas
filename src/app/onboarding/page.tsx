@@ -42,6 +42,11 @@ export default function OnboardingPage() {
       return;
     }
 
+    if (!formData.ownerPin || formData.ownerPin.trim().length !== 6) {
+      setError('El PIN de acceso al panel de dueño debe tener exactamente 6 dígitos numéricos (ej. 543543).');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -189,17 +194,24 @@ export default function OnboardingPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  PIN de Acceso (4 dígitos)
+                  PIN de Acceso al Panel (6 dígitos)
                 </label>
                 <input
                   type="password"
-                  placeholder="••••"
+                  placeholder="••••••"
                   maxLength={6}
+                  minLength={6}
                   value={formData.ownerPin}
-                  onChange={(e) => setFormData({ ...formData, ownerPin: e.target.value })}
-                  className="w-full h-11 px-3.5 text-xs font-mono bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-[#00594C]"
+                  onChange={(e) => {
+                    const clean = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    setFormData({ ...formData, ownerPin: clean });
+                  }}
+                  className="w-full h-11 px-3.5 text-xs font-mono tracking-widest bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-[#00594C]"
                   required
                 />
+                <span className="text-[10px] text-gray-400 mt-1 block">
+                  Código de 6 dígitos para ingresar a tu panel en /login.
+                </span>
               </div>
             </div>
 
