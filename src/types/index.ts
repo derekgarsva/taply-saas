@@ -89,13 +89,35 @@ export interface Order {
   items: OrderItem[];
   total: number;
   customerNote?: string;
-  status: 'nuevo' | 'en_proceso' | 'completado' | 'cancelado' | 'pendiente' | 'Pendiente' | 'pagado' | 'Pagado';
+  status: 'nuevo' | 'en_proceso' | 'completado' | 'cancelado' | 'pendiente' | 'Pendiente' | 'pagado' | 'Pagado' | 'en_camino' | 'entregado';
   createdAt: string;
   whatsappMessage?: string;
   deliveryType?: 'delivery' | 'pickup' | string;
   customerName?: string;
+  customerPhone?: string;
   deliveryAddress?: string;
   paymentMethod?: string;
+  assignedTo?: string;
+}
+
+export interface DispatchOrderItem {
+  productId?: string;
+  name: string;
+  quantity: number;
+}
+
+export interface DispatchOrder {
+  id: string;
+  businessId: string;
+  status: Order['status'];
+  deliveryType: 'delivery' | 'pickup' | string;
+  customerName?: string;
+  customerPhone?: string;
+  deliveryAddress?: string;
+  customerNote?: string;
+  items: DispatchOrderItem[];
+  assignedTo?: string;
+  createdAt: string;
 }
 
 export interface CartState {

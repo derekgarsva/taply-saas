@@ -302,3 +302,66 @@ $$;
 
 -- Habilitar replicación de Realtime sobre orders
 ALTER PUBLICATION supabase_realtime ADD TABLE public.orders;
+
+-- ==============================================================================
+-- 10. SUBPANEL DE DESPACHO & MUTACIÓN ATÓMICA ANTI-COLISIÓN (DELIVERY)
+-- ==============================================================================
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS assigned_to TEXT DEFAULT NULL;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS customer_phone TEXT DEFAULT NULL;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS customer_name TEXT DEFAULT NULL;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS delivery_address TEXT DEFAULT NULL;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_orders_dispatch ON public.orders(business_id, status)
+  WHERE status IN ('pagado', 'en_camino');
+
+CREATE OR REPLACE FUNCTION public.take_order_delivery(
+  p_business_id TEXT,
+  p_order_id TEXT,
+  p_rider_name TEXT
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_order RECORD;
+BEGIN
+  -- 1. Bloqueo exclusivo de fila (FOR UPDATE) para prevenir condiciones de carrera
+  SELECT * INTO v_order
+  FROM public.orders
+  WHERE id = p_order_id AND business_id = p_business_id
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RETURN jsonb_build_object(
+      'success', false,
+      'code', 'NOT_FOUND',
+      'error', 'Orden no encontrada'
+    );
+  END IF;
+
+  -- 2. Verificación anti-colisión: Solo puede ser tomada si su estado es exactamente 'pagado'
+  IF v_order.status != 'pagado' THEN
+    RETURN jsonb_build_object(
+      'success', false,
+      'code', 'ALREADY_TAKEN',
+      'error', 'Esta orden ya fue tomada por otro repartidor o no está en estado pagado',
+      'assigned_to', v_order.assigned_to,
+      'current_status', v_order.status
+    );
+  END IF;
+
+  -- 3. Actualización atómica condicional
+  UPDATE public.orders
+  SET status = 'en_camino',
+      assigned_to = p_rider_name
+  WHERE id = p_order_id AND business_id = p_business_id AND status = 'pagado';
+
+  RETURN jsonb_build_object(
+    'success', true,
+    'status', 'en_camino',
+    'assigned_to', p_rider_name
+  );
+END;
+$$;

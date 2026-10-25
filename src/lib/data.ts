@@ -829,6 +829,15 @@ export async function deleteCategory(businessId: string, categoryId: string): Pr
 }
 
 // ── Orders Queries ──
+function resolveBusinessIdInStore(businessIdOrSlug: string): string {
+  const store = getStore();
+  const clean = (businessIdOrSlug || '').toLowerCase().trim();
+  const found = Object.values(store.businesses).find(
+    (b) => b.id.toLowerCase() === clean || b.slug.toLowerCase() === clean
+  );
+  return found ? found.id : businessIdOrSlug;
+}
+
 export async function createOrder(data: {
   id?: string;
   orderNumber?: string;
@@ -839,17 +848,20 @@ export async function createOrder(data: {
   whatsappMessage?: string;
   deliveryType?: string;
   customerName?: string;
+  customerPhone?: string;
   deliveryAddress?: string;
   paymentMethod?: string;
+  assignedTo?: string;
   status?: Order['status'];
 }): Promise<Order> {
   const store = getStore();
-  if (!store.orders[data.businessId]) {
-    store.orders[data.businessId] = [];
+  const targetId = resolveBusinessIdInStore(data.businessId);
+  if (!store.orders[targetId]) {
+    store.orders[targetId] = [];
   }
   const newOrder: Order = {
     id: data.id || data.orderNumber || ('#' + Math.floor(1000 + Math.random() * 9000)),
-    businessId: data.businessId,
+    businessId: targetId,
     items: data.items,
     total: data.total,
     customerNote: data.customerNote,
@@ -857,27 +869,73 @@ export async function createOrder(data: {
     status: data.status || 'pendiente',
     deliveryType: data.deliveryType,
     customerName: data.customerName,
+    customerPhone: data.customerPhone,
     deliveryAddress: data.deliveryAddress,
     paymentMethod: data.paymentMethod,
+    assignedTo: data.assignedTo,
     createdAt: new Date().toISOString(),
   };
-  store.orders[data.businessId].unshift(newOrder);
+  store.orders[targetId].unshift(newOrder);
   return newOrder;
 }
 
 export async function getOrdersByBusinessId(businessId: string): Promise<Order[]> {
   const store = getStore();
+  const targetId = resolveBusinessIdInStore(businessId);
+  const byId = store.orders[targetId] ? [...store.orders[targetId]] : [];
+  if (byId.length > 0) return byId;
   return store.orders[businessId] ? [...store.orders[businessId]] : [];
 }
 
 export async function updateOrderStatus(businessId: string, orderId: string, status: Order['status']): Promise<Order | null> {
   const store = getStore();
-  const orders = store.orders[businessId];
+  const targetId = resolveBusinessIdInStore(businessId);
+  const orders = store.orders[targetId] || store.orders[businessId];
   if (!orders) return null;
   const order = orders.find(o => o.id === orderId);
   if (!order) return null;
   order.status = status;
   return { ...order };
+}
+
+export async function takeOrderDeliveryMock(
+  businessId: string,
+  orderId: string,
+  riderName: string
+): Promise<{ success: boolean; code?: string; error?: string; order?: Order }> {
+  const store = getStore();
+  const targetId = resolveBusinessIdInStore(businessId);
+  const orders = store.orders[targetId] || store.orders[businessId];
+  if (!orders) return { success: false, code: 'NOT_FOUND', error: 'Orden no encontrada' };
+  const order = orders.find(o => o.id === orderId);
+  if (!order) return { success: false, code: 'NOT_FOUND', error: 'Orden no encontrada' };
+
+  const currentStatus = String(order.status || '').toLowerCase();
+  if (currentStatus !== 'pagado') {
+    return {
+      success: false,
+      code: 'ALREADY_TAKEN',
+      error: `Esta orden ya fue tomada por ${order.assignedTo || 'otro repartidor'} o no está pagada.`,
+    };
+  }
+
+  order.status = 'en_camino';
+  order.assignedTo = riderName;
+  return { success: true, order: { ...order } };
+}
+
+export async function completeOrderDeliveryMock(
+  businessId: string,
+  orderId: string
+): Promise<{ success: boolean; error?: string; order?: Order }> {
+  const store = getStore();
+  const targetId = resolveBusinessIdInStore(businessId);
+  const orders = store.orders[targetId] || store.orders[businessId];
+  if (!orders) return { success: false, error: 'Orden no encontrada' };
+  const order = orders.find(o => o.id === orderId);
+  if (!order) return { success: false, error: 'Orden no encontrada' };
+  order.status = 'entregado';
+  return { success: true, order: { ...order } };
 }
 
 export async function restoreMockDemoStore(slugOrId: string): Promise<boolean> {

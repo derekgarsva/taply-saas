@@ -18,6 +18,8 @@ import {
   getOrdersByBusinessId as getMockOrdersByBusinessId,
   createOrder as createMockOrder,
   updateOrderStatus as updateMockOrderStatus,
+  takeOrderDeliveryMock,
+  completeOrderDeliveryMock,
   getPlatformPayments as getMockPlatformPayments,
   addPlatformPayment as addMockPlatformPayment,
   deletePlatformPayment as deleteMockPlatformPayment,
@@ -25,8 +27,9 @@ import {
   getPlatformMetrics as getMockPlatformMetrics,
   recordPageView as recordMockPageView,
   restoreMockDemoStore,
+  getStore,
 } from './data';
-import { Business, Product, Category, Order, PlatformPayment, PlatformMetrics } from '@/types';
+import { Business, Product, Category, Order, PlatformPayment, PlatformMetrics, DispatchOrder } from '@/types';
 
 // Map database row to Business type
 function mapDbBusiness(row: any): Business {
@@ -118,21 +121,26 @@ function mapDbOrder(row: any): Order {
     const s = String(row.status).toLowerCase();
     if (s === 'pagado') normalizedStatus = 'pagado';
     else if (s === 'pendiente' || s === 'nuevo') normalizedStatus = 'pendiente';
+    else if (s === 'en_camino' || s === 'en camino') normalizedStatus = 'en_camino';
+    else if (s === 'entregado') normalizedStatus = 'entregado';
     else if (s === 'en_proceso' || s === 'en proceso' || s === 'en preparación') normalizedStatus = 'en_proceso';
-    else if (s === 'completado' || s === 'entregado') normalizedStatus = 'completado';
+    else if (s === 'completado') normalizedStatus = 'completado';
     else if (s === 'cancelado') normalizedStatus = 'cancelado';
   }
 
   // Parse customer details from customer_notes if aggregated
   let customerName = row.customer_name;
+  let customerPhone = row.customer_phone;
   let deliveryAddress = row.delivery_address;
   let paymentMethod = row.payment_method;
   let customerNote = row.customer_notes;
+  let assignedTo = row.assigned_to;
 
   if (customerNote && typeof customerNote === 'string' && customerNote.includes('|')) {
     const parts = customerNote.split('|').map((p: string) => p.trim());
     for (const part of parts) {
       if (part.startsWith('Cliente:')) customerName = part.replace('Cliente:', '').trim();
+      else if (part.startsWith('Tlf:') || part.startsWith('Teléfono:') || part.startsWith('Telefono:')) customerPhone = part.replace(/^(Tlf:|Teléfono:|Telefono:)/, '').trim();
       else if (part.startsWith('Dir:') || part.startsWith('Dirección:')) deliveryAddress = part.replace(/^(Dir:|Dirección:)/, '').trim();
       else if (part.startsWith('Pago:')) paymentMethod = part.replace('Pago:', '').trim();
       else if (part.startsWith('Nota:')) customerNote = part.replace('Nota:', '').trim();
@@ -149,8 +157,10 @@ function mapDbOrder(row: any): Order {
     whatsappMessage: row.whatsapp_message || undefined,
     deliveryType: row.delivery_type || 'delivery',
     customerName: customerName || undefined,
+    customerPhone: customerPhone || undefined,
     deliveryAddress: deliveryAddress || undefined,
     paymentMethod: paymentMethod || undefined,
+    assignedTo: assignedTo || undefined,
     createdAt: row.created_at,
   };
 }
@@ -789,8 +799,10 @@ export async function createOrder(data: {
   whatsappMessage?: string;
   deliveryType?: string;
   customerName?: string;
+  customerPhone?: string;
   deliveryAddress?: string;
   paymentMethod?: string;
+  assignedTo?: string;
   status?: Order['status'];
 }): Promise<Order> {
   const shortId = data.id || data.orderNumber || `#${Math.floor(1000 + Math.random() * 9000)}`;
@@ -798,9 +810,10 @@ export async function createOrder(data: {
   if (!supabase) return createMockOrder({ ...data, id: shortId, status: data.status || 'pendiente' });
 
   let aggregatedNotes = data.customerNote || '';
-  if (data.customerName || data.deliveryAddress || data.paymentMethod) {
+  if (data.customerName || data.deliveryAddress || data.paymentMethod || data.customerPhone) {
     const parts = [];
     if (data.customerName) parts.push(`Cliente: ${data.customerName}`);
+    if (data.customerPhone) parts.push(`Tlf: ${data.customerPhone}`);
     if (data.deliveryAddress) parts.push(`Dirección: ${data.deliveryAddress}`);
     if (data.paymentMethod) parts.push(`Pago: ${data.paymentMethod}`);
     if (data.customerNote) parts.push(`Nota: ${data.customerNote}`);
@@ -817,12 +830,36 @@ export async function createOrder(data: {
     delivery_type: data.deliveryType || 'pickup',
     status: 'Pendiente',
   };
+  if (data.customerName) payload.customer_name = data.customerName;
+  if (data.customerPhone) payload.customer_phone = data.customerPhone;
+  if (data.deliveryAddress) payload.delivery_address = data.deliveryAddress;
+  if (data.paymentMethod) payload.payment_method = data.paymentMethod;
+  if (data.assignedTo) payload.assigned_to = data.assignedTo;
 
-  const { data: created, error } = await supabase
+  let { data: created, error } = await supabase
     .from('orders')
     .insert(payload)
     .select()
     .single();
+
+  if (error && (error.code === 'PGRST204' || error.message?.includes('column') || error.code === '42703')) {
+    // Retry with baseline columns only (storing all details in customer_notes)
+    const basePayload = {
+      id: shortId,
+      business_id: data.businessId,
+      items: data.items,
+      total: data.total,
+      customer_notes: aggregatedNotes,
+      whatsapp_message: data.whatsappMessage || '',
+      delivery_type: data.deliveryType || 'pickup',
+      status: 'Pendiente',
+    };
+    const retry = await supabase.from('orders').insert(basePayload).select().single();
+    if (!retry.error && retry.data) {
+      created = retry.data;
+      error = null;
+    }
+  }
 
   if (error || !created) {
     if (error?.code === '23505') {
@@ -837,17 +874,24 @@ export async function createOrder(data: {
 }
 
 export async function getOrders(businessId: string, slug?: string): Promise<Order[]> {
+  const biz = (await getBusinessById(businessId)) || (await getBusinessBySlug(businessId));
+  const targetId = biz?.id || businessId;
   const supabase = getAdminClient();
-  if (!supabase) return getMockOrdersByBusinessId(businessId);
+  const mockOrders = await getMockOrdersByBusinessId(targetId);
+
+  if (!supabase) return mockOrders;
 
   const { data, error } = await supabase
     .from('orders')
     .select('*')
-    .eq('business_id', businessId)
+    .eq('business_id', targetId)
     .order('created_at', { ascending: false });
 
-  if (error || !data) return getMockOrdersByBusinessId(businessId);
-  return data.map(mapDbOrder);
+  if (error || !data) return mockOrders;
+  const dbOrders = data.map(mapDbOrder);
+  const dbIds = new Set(dbOrders.map((o) => o.id));
+  const additionalMock = mockOrders.filter((m) => !dbIds.has(m.id));
+  return [...dbOrders, ...additionalMock];
 }
 
 export const getOrdersByBusinessId = getOrders;
@@ -857,18 +901,20 @@ export async function updateOrderStatus(
   orderId: string,
   status: Order['status']
 ): Promise<Order | null> {
+  const biz = (await getBusinessById(businessId)) || (await getBusinessBySlug(businessId));
+  const targetId = biz?.id || businessId;
   const supabase = getAdminClient();
-  if (!supabase) return updateMockOrderStatus(businessId, orderId, status);
+  if (!supabase) return updateMockOrderStatus(targetId, orderId, status);
 
   const { data, error } = await supabase
     .from('orders')
     .update({ status })
     .eq('id', orderId)
-    .eq('business_id', businessId)
+    .eq('business_id', targetId)
     .select()
     .single();
 
-  if (error || !data) return updateMockOrderStatus(businessId, orderId, status);
+  if (error || !data) return updateMockOrderStatus(targetId, orderId, status);
   return mapDbOrder(data);
 }
 
@@ -880,13 +926,15 @@ export async function confirmOrderAndDeductStock(
   businessId: string,
   orderId: string
 ): Promise<{ success: boolean; order?: Order; error?: string }> {
+  const biz = (await getBusinessById(businessId)) || (await getBusinessBySlug(businessId));
+  const targetId = biz?.id || businessId;
   const supabase = getAdminClient();
 
   if (supabase) {
     // 1. Try Supabase RPC
     try {
       const { data: rpcData, error: rpcError } = await supabase.rpc('confirm_order_and_deduct_stock', {
-        p_business_id: businessId,
+        p_business_id: targetId,
         p_order_id: orderId,
       });
 
@@ -895,7 +943,7 @@ export async function confirmOrderAndDeductStock(
           .from('orders')
           .select('*')
           .eq('id', orderId)
-          .eq('business_id', businessId)
+          .eq('business_id', targetId)
           .single();
         return { success: true, order: updatedRow ? mapDbOrder(updatedRow) : undefined };
       }
@@ -909,18 +957,31 @@ export async function confirmOrderAndDeductStock(
         .from('orders')
         .select('*')
         .eq('id', orderId)
-        .eq('business_id', businessId)
+        .eq('business_id', targetId)
         .single();
 
       if (fetchErr || !orderRow) {
-        return { success: false, error: 'Orden no encontrada' };
+        // Check mock store fallback
+        const mockOrder = await updateMockOrderStatus(targetId, orderId, 'pagado');
+        if (!mockOrder) return { success: false, error: 'Orden no encontrada' };
+
+        const mockProds = await getProductsByBusinessId(targetId);
+        for (const item of mockOrder.items) {
+          const prod = mockProds.find((p) => p.id === item.productId || p.name === item.name);
+          if (prod) {
+            const curr = typeof prod.stock === 'number' ? prod.stock : 100;
+            prod.stock = Math.max(0, curr - item.quantity);
+            if (prod.stock === 0) prod.available = false;
+          }
+        }
+        return { success: true, order: mockOrder };
       }
 
       const { data: updatedOrder, error: updateErr } = await supabase
         .from('orders')
         .update({ status: 'pagado' })
         .eq('id', orderId)
-        .eq('business_id', businessId)
+        .eq('business_id', targetId)
         .select()
         .single();
 
@@ -963,10 +1024,10 @@ export async function confirmOrderAndDeductStock(
   }
 
   // 3. Mock fallback
-  const mockOrder = await updateMockOrderStatus(businessId, orderId, 'pagado');
+  const mockOrder = await updateMockOrderStatus(targetId, orderId, 'pagado');
   if (!mockOrder) return { success: false, error: 'Orden no encontrada' };
 
-  const mockProds = await getProductsByBusinessId(businessId);
+  const mockProds = await getProductsByBusinessId(targetId);
   for (const item of mockOrder.items) {
     const prod = mockProds.find((p) => p.id === item.productId);
     if (prod) {
@@ -989,6 +1050,230 @@ export async function cancelOrder(
   const updated = await updateOrderStatus(businessId, orderId, 'cancelado');
   if (!updated) return { success: false, error: 'Orden no encontrada' };
   return { success: true, order: updated };
+}
+
+/**
+ * ─────────────────────────────────────────────────────────────
+ * SUBPANEL DE DESPACHO & ANTI-COLISIÓN (DELIVERY / PICKUP)
+ * ─────────────────────────────────────────────────────────────
+ */
+
+/**
+ * Takes an order for delivery with optimistic concurrency / anti-collision protection.
+ * If another rider already took the order, or if status is not 'pagado',
+ * it returns { success: false, code: 'ALREADY_TAKEN' }
+ */
+export async function takeOrderDelivery(
+  businessId: string,
+  orderId: string,
+  riderName: string
+): Promise<{ success: boolean; code?: string; error?: string; order?: Order }> {
+  const biz = (await getBusinessById(businessId)) || (await getBusinessBySlug(businessId));
+  const targetId = biz?.id || businessId;
+  const supabase = getAdminClient();
+
+  if (supabase) {
+    // 1. Try Supabase RPC first (Row lock FOR UPDATE + atomic status check)
+    try {
+      const { data: rpcData, error: rpcError } = await supabase.rpc('take_order_delivery', {
+        p_business_id: targetId,
+        p_order_id: orderId,
+        p_rider_name: riderName || 'Repartidor',
+      });
+
+      if (!rpcError && rpcData) {
+        if (!rpcData.success) {
+          return {
+            success: false,
+            code: rpcData.code || 'ALREADY_TAKEN',
+            error: rpcData.error || 'La orden ya fue tomada por otro repartidor.',
+          };
+        }
+        const { data: row } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('id', orderId)
+          .eq('business_id', targetId)
+          .single();
+        return { success: true, order: row ? mapDbOrder(row) : undefined };
+      }
+    } catch (err) {
+      console.warn('RPC take_order_delivery unavailable, falling back to conditional update:', err);
+    }
+
+    // 2. Direct conditional atomic update: WHERE id = orderId AND business_id = businessId AND status = 'pagado'
+    try {
+      // First check if order exists in Supabase
+      const { data: current } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', orderId)
+        .eq('business_id', targetId)
+        .maybeSingle();
+
+      if (!current) {
+        return takeOrderDeliveryMock(targetId, orderId, riderName || 'Repartidor');
+      }
+
+      const currentStatus = String(current.status || '').toLowerCase();
+      if (currentStatus !== 'pagado') {
+        const takenBy = current.assigned_to ? ` por ${current.assigned_to}` : '';
+        return {
+          success: false,
+          code: 'ALREADY_TAKEN',
+          error: `Esta orden ya fue tomada${takenBy} (estado actual: ${current.status}).`,
+        };
+      }
+
+      let updatePayload: any = { status: 'en_camino', assigned_to: riderName || 'Repartidor' };
+      let { data: updated, error: updateErr } = await supabase
+        .from('orders')
+        .update(updatePayload)
+        .eq('id', orderId)
+        .eq('business_id', targetId)
+        .eq('status', 'pagado')
+        .select()
+        .maybeSingle();
+
+      if (updateErr && (updateErr.code === 'PGRST204' || updateErr.message?.includes('column') || updateErr.code === '42703')) {
+        // Fallback if assigned_to column isn't in remote Supabase schema yet
+        const retry = await supabase
+          .from('orders')
+          .update({ status: 'en_camino' })
+          .eq('id', orderId)
+          .eq('business_id', targetId)
+          .eq('status', 'pagado')
+          .select()
+          .maybeSingle();
+        updated = retry.data;
+      }
+
+      if (!updated) {
+        // Query to check who took it during race condition
+        const { data: latest } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('id', orderId)
+          .eq('business_id', targetId)
+          .maybeSingle();
+
+        const takenBy = latest?.assigned_to ? ` por ${latest.assigned_to}` : '';
+        return {
+          success: false,
+          code: 'ALREADY_TAKEN',
+          error: `Esta orden ya fue tomada${takenBy} por otro repartidor.`,
+        };
+      }
+
+      const mapped = mapDbOrder(updated);
+      mapped.assignedTo = riderName || 'Repartidor';
+      return { success: true, order: mapped };
+    } catch (err: any) {
+      return takeOrderDeliveryMock(targetId, orderId, riderName || 'Repartidor');
+    }
+  }
+
+  // 3. Fallback to mock store
+  return takeOrderDeliveryMock(targetId, orderId, riderName || 'Repartidor');
+}
+
+/**
+ * Mark order as completed / delivered
+ */
+export async function completeOrderDelivery(
+  businessId: string,
+  orderId: string
+): Promise<{ success: boolean; error?: string; order?: Order }> {
+  const biz = (await getBusinessById(businessId)) || (await getBusinessBySlug(businessId));
+  const targetId = biz?.id || businessId;
+  const supabase = getAdminClient();
+
+  if (supabase) {
+    try {
+      const { data: updated, error } = await supabase
+        .from('orders')
+        .update({ status: 'entregado' })
+        .eq('id', orderId)
+        .eq('business_id', targetId)
+        .select()
+        .maybeSingle();
+
+      if (error || !updated) {
+        return completeOrderDeliveryMock(targetId, orderId);
+      }
+
+      try {
+        const store = getStore();
+        const mockOrder = (store.orders[targetId] || []).find((o) => o.id === orderId);
+        if (mockOrder) {
+          mockOrder.status = 'entregado';
+        }
+      } catch {}
+
+      return { success: true, order: mapDbOrder(updated) };
+    } catch (err: any) {
+      return completeOrderDeliveryMock(targetId, orderId);
+    }
+  }
+
+  return completeOrderDeliveryMock(targetId, orderId);
+}
+
+/**
+ * Fetch orders for the dispatch view:
+ * 1. STRICT PRIVACY: Strips all pricing, totals, and bank credentials.
+ * 2. Filters strictly to status in ('pagado', 'en_camino').
+ */
+export async function getDispatchOrders(businessIdOrSlug: string): Promise<{
+  business: {
+    id: string;
+    name: string;
+    slug: string;
+    themeColor: string;
+    bannerImage?: string;
+    logoImage?: string;
+    phone?: string;
+  };
+  orders: DispatchOrder[];
+} | null> {
+  const biz = (await getBusinessById(businessIdOrSlug)) || (await getBusinessBySlug(businessIdOrSlug));
+  if (!biz) return null;
+
+  const allOrders = await getOrdersByBusinessId(biz.id);
+  const activeDispatchOrders = allOrders.filter(
+    (o) => o.status === 'pagado' || o.status === 'en_camino'
+  );
+
+  const sanitizedOrders: DispatchOrder[] = activeDispatchOrders.map((o) => ({
+    id: o.id,
+    businessId: o.businessId,
+    status: o.status,
+    deliveryType: (o.deliveryType === 'retiro' || o.deliveryType === 'pickup') ? 'pickup' : 'delivery',
+    customerName: o.customerName,
+    customerPhone: o.customerPhone,
+    deliveryAddress: o.deliveryAddress,
+    customerNote: o.customerNote,
+    assignedTo: o.assignedTo,
+    createdAt: o.createdAt,
+    items: (o.items || []).map((item) => ({
+      productId: item.productId,
+      name: item.name,
+      quantity: item.quantity,
+    })),
+  }));
+
+  return {
+    business: {
+      id: biz.id,
+      name: biz.name,
+      slug: biz.slug,
+      themeColor: biz.themeColor || '#00594C',
+      bannerImage: biz.bannerImage,
+      logoImage: biz.logoImage,
+      phone: biz.phone,
+    },
+    orders: sanitizedOrders,
+  };
 }
 
 // ─────────────────────────────────────────────────────────────

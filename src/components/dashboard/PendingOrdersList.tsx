@@ -298,8 +298,20 @@ export default function PendingOrdersList({
             </p>
           </div>
 
-          {/* Realtime Live Status Pill */}
-          <div className="flex items-center gap-2 self-start sm:self-auto">
+          {/* Actions: Dispatch Link + Realtime Live Status Pill */}
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            <a
+              href={`/despacho/${business.slug || business.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-2xs active:scale-95"
+              title="Abrir vista de despacho para cocina y repartidores"
+            >
+              <Bike className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Subpanel de Despacho</span>
+              <ExternalLink className="w-3 h-3 text-slate-400" />
+            </a>
+
             <div
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
                 realtimeActive
