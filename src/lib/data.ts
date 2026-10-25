@@ -418,7 +418,7 @@ const initialOrders: Record<string, Order[]> = {
   ]
 };
 
-function getStore(): StoreData {
+export function getStore(): StoreData {
   if (!globalForData.taplyStore) {
     globalForData.taplyStore = {
       businesses: { ...initialBusinesses },

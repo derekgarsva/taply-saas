@@ -29,6 +29,8 @@ import CardNav from '@/components/navigation/CardNav';
 import SiteFooter from '@/components/footer/SiteFooter';
 import TextReveal from '@/components/ui/text-reveal';
 import AppleFeatureCarousel from '@/components/home/AppleFeatureCarousel';
+import BentoGridSection from '@/components/home/BentoGridSection';
+import ValueStackSection from '@/components/home/ValueStackSection';
 
 export default function LandingPage() {
   return (
@@ -37,7 +39,7 @@ export default function LandingPage() {
       <CardNav />
 
       {/* ══ HERO SECTION ══ */}
-      <section className="pt-12 pb-20 px-4 max-w-6xl mx-auto text-center">
+      <section className="pt-12 pb-16 px-4 max-w-6xl mx-auto text-center">
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -45,13 +47,13 @@ export default function LandingPage() {
           className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-[#00594C] text-xs font-bold mb-6 shadow-2xs"
         >
           <Sparkles className="w-3.5 h-3.5" />
-          <span>La forma más rápida de vender por WhatsApp en 2026</span>
+          <span>La solución definitiva para vender por WhatsApp en 2026</span>
         </motion.div>
 
         <TextReveal
           as="h1"
-          text="Convierte tu enlace en bio en una máquina de pedidos por WhatsApp"
-          className="text-4xl sm:text-6xl font-extrabold text-gray-950 tracking-tight leading-tight sm:leading-none max-w-4xl mx-auto"
+          text="Convierte tu WhatsApp en una caja registradora automática y maneja todo tu negocio desde un solo panel."
+          className="text-3xl sm:text-5xl lg:text-6xl font-black text-gray-950 tracking-tight leading-[1.12] max-w-4xl mx-auto"
         />
 
         <motion.p
@@ -60,7 +62,7 @@ export default function LandingPage() {
           transition={{ duration: 0.45, delay: 0.2 }}
           className="mt-6 text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed font-normal"
         >
-          Crea tu catálogo interactivo multilink en 60 segundos. Tus clientes eligen sus productos con un toque, deslizan para confirmar y te envían el pedido ordenado y listo con sus datos de pago.
+          Elimina las horas perdidas respondiendo precios uno a uno, enviando fotos sueltas y descifrando capturas. Tus clientes eligen sus productos en 3 toques y tú recibes los pedidos listos y ordenados directo a tu WhatsApp y panel en tiempo real.
         </motion.p>
 
         {/* Hero CTAs con Magnetic Button y Continuidad G2 */}
@@ -72,7 +74,7 @@ export default function LandingPage() {
         >
           <MagneticButton as="div" strength={14} className="w-full sm:w-auto">
             <G2Button href="/onboarding" variant="primary">
-              <span>Crear Catálogo Gratis</span>
+              <span>Probar 14 días sin costo</span>
               <ArrowRight className="w-4 h-4" />
             </G2Button>
           </MagneticButton>
@@ -84,8 +86,9 @@ export default function LandingPage() {
           </MagneticButton>
         </motion.div>
 
-        <p className="mt-3 text-xs text-gray-400">
-          ✓ Sin comisiones por venta &nbsp;•&nbsp; ✓ Sin registros para tus clientes &nbsp;•&nbsp; ✓ Listo para Venezuela y Latinoamérica
+        {/* Microcopy Requerido */}
+        <p className="mt-4 text-xs font-semibold text-emerald-800 bg-emerald-50/70 border border-emerald-100/90 py-1 px-3.5 rounded-full inline-block">
+          Te montamos tus primeros 30 productos gratis • Listo en 24h • Cero comisiones
         </p>
 
         {/* ══ IPHONE MINIMAL PLAYER (PANTALLA LIMPIA SIN MARCOS) ══ */}
@@ -106,6 +109,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ══ BENTO GRID SECTION: CAJA DIARIO, PIPELINE DESPACHO Y CONTROL DE STOCK ══ */}
+      <BentoGridSection />
 
       {/* ══ FEATURES APPLE-STYLE INTERACTIVE CAROUSEL ══ */}
       <section id="caracteristicas" className="py-20 sm:py-24 bg-gray-50/70 border-y border-gray-200/80 px-4">
@@ -202,6 +208,9 @@ export default function LandingPage() {
         </AnimatedGroup>
       </section>
 
+      {/* ══ STACK DE VALOR Y GARANTÍA INVERTIDA DE 14 DÍAS ══ */}
+      <ValueStackSection />
+
       {/* ══ PRICING ══ */}
       <section id="pricing" className="py-20 bg-gray-50 border-t border-gray-100 px-4">
         <div className="max-w-6xl mx-auto">
@@ -267,7 +276,7 @@ export default function LandingPage() {
                   href="/onboarding"
                   className="w-full h-11 rounded-2xl bg-gray-900 text-white font-bold text-xs flex items-center justify-center hover:bg-black transition-colors"
                 >
-                  Empezar con Plan Inicial ($12)
+                  Probar 14 días sin costo (Plan Inicial)
                 </Link>
               </div>
             </div>
@@ -322,7 +331,7 @@ export default function LandingPage() {
                     href="/onboarding"
                     className="w-full h-11 rounded-2xl bg-white text-gray-950 font-extrabold text-xs flex items-center justify-center hover:bg-emerald-50 transition-colors shadow-sm"
                   >
-                    Elegir Big Taply ($34)
+                    Probar 14 días sin costo (Big Taply)
                   </Link>
                 </div>
               </div>

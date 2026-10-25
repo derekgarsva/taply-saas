@@ -1204,7 +1204,7 @@ export async function completeOrderDelivery(
 
       try {
         const store = getStore();
-        const mockOrder = (store.orders[targetId] || []).find((o) => o.id === orderId);
+        const mockOrder = (store.orders[targetId] || []).find((o: Order) => o.id === orderId);
         if (mockOrder) {
           mockOrder.status = 'entregado';
         }
