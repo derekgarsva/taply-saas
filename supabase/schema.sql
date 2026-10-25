@@ -242,3 +242,63 @@ INSERT INTO public.platform_payments (id, business_id, business_name, business_s
   ('pay_1', 'biz_estrella_1', 'Panadería La Estrella', 'panaderia-la-estrella', 'Plan Inicial ($12)', 12.00, 'USD', 'Pago Móvil', 'PM-8921-391', 'Membresía mes en curso', 'completado'),
   ('pay_2', 'biz_burger_2', 'Burger Station 🍔', 'burger-station', 'Big Taply ($34)', 34.00, 'USD', 'Binance USDT', 'TXID-992381283', 'Membresía mensual catálogo grande', 'completado')
 ON CONFLICT (id) DO NOTHING;
+
+-- ==============================================================================
+-- 9. EXTENSIÓN: COLUMNA DE STOCK Y RPC ATÓMICO DE PAGO Y DESCUENTO DE STOCK
+-- ==============================================================================
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS stock INTEGER DEFAULT 100;
+
+CREATE OR REPLACE FUNCTION public.confirm_order_and_deduct_stock(
+  p_business_id TEXT,
+  p_order_id TEXT
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_order RECORD;
+  v_item JSONB;
+  v_prod_id TEXT;
+  v_qty INTEGER;
+BEGIN
+  -- 1. Buscar y bloquear orden pendiente
+  SELECT * INTO v_order FROM public.orders
+  WHERE id = p_order_id AND business_id = p_business_id
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Orden no encontrada');
+  END IF;
+
+  -- 2. Actualizar estado a 'pagado'
+  UPDATE public.orders
+  SET status = 'pagado'
+  WHERE id = p_order_id AND business_id = p_business_id;
+
+  -- 3. Descontar atómicamente el stock de cada producto en el pedido
+  IF v_order.items IS NOT NULL THEN
+    FOR v_item IN SELECT * FROM jsonb_array_elements(v_order.items)
+    LOOP
+      v_prod_id := v_item->>'productId';
+      IF v_prod_id IS NULL THEN
+        v_prod_id := v_item->>'id';
+      END IF;
+      v_qty := COALESCE((v_item->>'quantity')::integer, 1);
+
+      IF v_prod_id IS NOT NULL THEN
+        UPDATE public.products
+        SET stock = GREATEST(0, COALESCE(stock, 100) - v_qty),
+            available = CASE WHEN GREATEST(0, COALESCE(stock, 100) - v_qty) = 0 THEN FALSE ELSE available END,
+            updated_at = NOW()
+        WHERE id = v_prod_id AND business_id = p_business_id;
+      END IF;
+    END LOOP;
+  END IF;
+
+  RETURN jsonb_build_object('success', true, 'status', 'pagado');
+END;
+$$;
+
+-- Habilitar replicación de Realtime sobre orders
+ALTER PUBLICATION supabase_realtime ADD TABLE public.orders;

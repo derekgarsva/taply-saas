@@ -69,6 +69,7 @@ export interface Product {
   price: number;
   compareAtPrice?: number;
   available: boolean;
+  stock?: number;
   image: string;
   images?: string[];
   description?: string;
@@ -88,7 +89,7 @@ export interface Order {
   items: OrderItem[];
   total: number;
   customerNote?: string;
-  status: 'nuevo' | 'en_proceso' | 'completado' | 'cancelado' | 'pendiente' | 'Pendiente';
+  status: 'nuevo' | 'en_proceso' | 'completado' | 'cancelado' | 'pendiente' | 'Pendiente' | 'pagado' | 'Pagado';
   createdAt: string;
   whatsappMessage?: string;
   deliveryType?: 'delivery' | 'pickup' | string;

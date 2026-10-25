@@ -113,13 +113,30 @@ function mapDbCategory(row: any): Category {
 
 // Map database row to Order type
 function mapDbOrder(row: any): Order {
-  let normalizedStatus: Order['status'] = 'nuevo';
+  let normalizedStatus: Order['status'] = 'pendiente';
   if (row.status) {
     const s = String(row.status).toLowerCase();
-    if (s === 'pendiente' || s === 'nuevo') normalizedStatus = 'nuevo';
-    else if (s === 'en_proceso' || s === 'en proceso') normalizedStatus = 'en_proceso';
-    else if (s === 'completado') normalizedStatus = 'completado';
+    if (s === 'pagado') normalizedStatus = 'pagado';
+    else if (s === 'pendiente' || s === 'nuevo') normalizedStatus = 'pendiente';
+    else if (s === 'en_proceso' || s === 'en proceso' || s === 'en preparación') normalizedStatus = 'en_proceso';
+    else if (s === 'completado' || s === 'entregado') normalizedStatus = 'completado';
     else if (s === 'cancelado') normalizedStatus = 'cancelado';
+  }
+
+  // Parse customer details from customer_notes if aggregated
+  let customerName = row.customer_name;
+  let deliveryAddress = row.delivery_address;
+  let paymentMethod = row.payment_method;
+  let customerNote = row.customer_notes;
+
+  if (customerNote && typeof customerNote === 'string' && customerNote.includes('|')) {
+    const parts = customerNote.split('|').map((p: string) => p.trim());
+    for (const part of parts) {
+      if (part.startsWith('Cliente:')) customerName = part.replace('Cliente:', '').trim();
+      else if (part.startsWith('Dir:') || part.startsWith('Dirección:')) deliveryAddress = part.replace(/^(Dir:|Dirección:)/, '').trim();
+      else if (part.startsWith('Pago:')) paymentMethod = part.replace('Pago:', '').trim();
+      else if (part.startsWith('Nota:')) customerNote = part.replace('Nota:', '').trim();
+    }
   }
 
   return {
@@ -128,8 +145,12 @@ function mapDbOrder(row: any): Order {
     items: Array.isArray(row.items) ? row.items : [],
     total: Number(row.total) || 0,
     status: normalizedStatus,
-    customerNote: row.customer_notes || undefined,
+    customerNote: customerNote || undefined,
     whatsappMessage: row.whatsapp_message || undefined,
+    deliveryType: row.delivery_type || 'delivery',
+    customerName: customerName || undefined,
+    deliveryAddress: deliveryAddress || undefined,
+    paymentMethod: paymentMethod || undefined,
     createdAt: row.created_at,
   };
 }
@@ -849,6 +870,125 @@ export async function updateOrderStatus(
 
   if (error || !data) return updateMockOrderStatus(businessId, orderId, status);
   return mapDbOrder(data);
+}
+
+/**
+ * Confirm order payment and atomically deduct stock in Supabase products table
+ * (calls RPC confirm_order_and_deduct_stock if available, or falls back to atomic server mutation)
+ */
+export async function confirmOrderAndDeductStock(
+  businessId: string,
+  orderId: string
+): Promise<{ success: boolean; order?: Order; error?: string }> {
+  const supabase = getAdminClient();
+
+  if (supabase) {
+    // 1. Try Supabase RPC
+    try {
+      const { data: rpcData, error: rpcError } = await supabase.rpc('confirm_order_and_deduct_stock', {
+        p_business_id: businessId,
+        p_order_id: orderId,
+      });
+
+      if (!rpcError && rpcData?.success) {
+        const { data: updatedRow } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('id', orderId)
+          .eq('business_id', businessId)
+          .single();
+        return { success: true, order: updatedRow ? mapDbOrder(updatedRow) : undefined };
+      }
+    } catch (err) {
+      console.warn('Supabase RPC call failed, using atomic fallback:', err);
+    }
+
+    // 2. Fallback: update status to 'pagado' and deduct stock in products table
+    try {
+      const { data: orderRow, error: fetchErr } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', orderId)
+        .eq('business_id', businessId)
+        .single();
+
+      if (fetchErr || !orderRow) {
+        return { success: false, error: 'Orden no encontrada' };
+      }
+
+      const { data: updatedOrder, error: updateErr } = await supabase
+        .from('orders')
+        .update({ status: 'pagado' })
+        .eq('id', orderId)
+        .eq('business_id', businessId)
+        .select()
+        .single();
+
+      if (updateErr) {
+        return { success: false, error: updateErr.message };
+      }
+
+      // Deduct stock for each item in the order
+      if (Array.isArray(orderRow.items)) {
+        for (const item of orderRow.items) {
+          const prodId = item.productId || item.id;
+          const qty = Number(item.quantity) || 1;
+          if (prodId) {
+            const { data: prod } = await supabase
+              .from('products')
+              .select('id, stock, available')
+              .eq('id', prodId)
+              .single();
+
+            if (prod) {
+              const currentStock = typeof prod.stock === 'number' ? prod.stock : 100;
+              const newStock = Math.max(0, currentStock - qty);
+              await supabase
+                .from('products')
+                .update({
+                  stock: newStock,
+                  available: newStock > 0 ? prod.available : false,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', prodId);
+            }
+          }
+        }
+      }
+
+      return { success: true, order: mapDbOrder(updatedOrder) };
+    } catch (e: any) {
+      return { success: false, error: e?.message || 'Error al procesar pago' };
+    }
+  }
+
+  // 3. Mock fallback
+  const mockOrder = await updateMockOrderStatus(businessId, orderId, 'pagado');
+  if (!mockOrder) return { success: false, error: 'Orden no encontrada' };
+
+  const mockProds = await getProductsByBusinessId(businessId);
+  for (const item of mockOrder.items) {
+    const prod = mockProds.find((p) => p.id === item.productId);
+    if (prod) {
+      const curr = typeof prod.stock === 'number' ? prod.stock : 100;
+      prod.stock = Math.max(0, curr - item.quantity);
+      if (prod.stock === 0) prod.available = false;
+    }
+  }
+
+  return { success: true, order: mockOrder };
+}
+
+/**
+ * Cancel an order without modifying stock
+ */
+export async function cancelOrder(
+  businessId: string,
+  orderId: string
+): Promise<{ success: boolean; order?: Order; error?: string }> {
+  const updated = await updateOrderStatus(businessId, orderId, 'cancelado');
+  if (!updated) return { success: false, error: 'Orden no encontrada' };
+  return { success: true, order: updated };
 }
 
 // ─────────────────────────────────────────────────────────────

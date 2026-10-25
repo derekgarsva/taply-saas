@@ -47,6 +47,7 @@ import {
 import DashboardCardNav from '@/components/navigation/DashboardCardNav';
 import LineChart, { LineChartDatum, LineChartSeries } from '@/components/ui/line-chart';
 import { ToastStack, ToastStackProvider, useToastStack } from '@/components/ui/toast-stack/toast-stack';
+import PendingOrdersList from '@/components/dashboard/PendingOrdersList';
 
 export default function DashboardPage() {
   return (
@@ -855,11 +856,19 @@ function DashboardContent() {
         <div className="mb-6 overflow-x-auto no-scrollbar py-1">
           <nav className="inline-flex items-center gap-1.5 p-1.5 bg-white/80 backdrop-blur-md border border-gray-200/90 rounded-2xl sm:rounded-full shadow-2xs min-w-full sm:min-w-0">
             {[
-              { id: 'overview' as const, label: 'Resumen', icon: LayoutDashboard, count: null },
-              { id: 'products' as const, label: 'Productos', icon: Package, count: products.length },
-              { id: 'categories' as const, label: 'Categorías', icon: FolderTree, count: categories.length },
-              { id: 'orders' as const, label: 'Pedidos WhatsApp', icon: ShoppingBag, count: orders.length },
-              { id: 'branding' as const, label: 'Marca y Cobros', icon: Sliders, count: null },
+              { id: 'overview' as const, label: 'Resumen', icon: LayoutDashboard, count: null, highlight: false },
+              { id: 'products' as const, label: 'Productos', icon: Package, count: products.length, highlight: false },
+              { id: 'categories' as const, label: 'Categorías', icon: FolderTree, count: categories.length, highlight: false },
+              {
+                id: 'orders' as const,
+                label: 'Pedidos',
+                icon: ShoppingBag,
+                count: orders.filter((o) => !o.status || o.status.toLowerCase() === 'pendiente' || o.status.toLowerCase() === 'nuevo').length > 0
+                  ? `${orders.filter((o) => !o.status || o.status.toLowerCase() === 'pendiente' || o.status.toLowerCase() === 'nuevo').length} pendientes`
+                  : orders.length,
+                highlight: orders.some((o) => !o.status || o.status.toLowerCase() === 'pendiente' || o.status.toLowerCase() === 'nuevo'),
+              },
+              { id: 'branding' as const, label: 'Marca y Cobros', icon: Sliders, count: null, highlight: false },
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -887,7 +896,9 @@ function DashboardContent() {
                     {tab.count !== null && (
                       <span
                         className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                          isActive
+                          tab.highlight
+                            ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                            : isActive
                             ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/80'
                             : 'bg-gray-100 text-gray-500'
                         }`}
@@ -1462,13 +1473,29 @@ function DashboardContent() {
 
         {/* ════ TAB 4: ORDERS ════ */}
         {activeTab === 'orders' && (
-          <div className="space-y-4 animate-fade-in">
-            <div className="bg-white p-5 rounded-3xl border border-gray-200 shadow-2xs">
-              <div className="flex items-center justify-between mb-4">
+          <div className="space-y-6 animate-fade-in">
+            {/* 1. VISTA DE PEDIDOS PENDIENTES CON SWIPE ACTIONS Y REALTIME */}
+            {business && (
+              <PendingOrdersList
+                business={business}
+                initialOrders={orders}
+                onOrderUpdated={(updated) => {
+                  setOrders((prev) =>
+                    prev.map((o) => (o.id === updated.id ? updated : o))
+                  );
+                }}
+                currencySymbol={business.currencySymbol}
+                currency={business.currency}
+              />
+            )}
+
+            {/* 2. HISTORIAL COMPLETO DE PEDIDOS */}
+            <div className="bg-white p-5 rounded-3xl border border-gray-200/90 shadow-2xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
                 <div>
-                  <h4 className="font-extrabold text-gray-900 text-base">Registro de Pedidos WhatsApp</h4>
+                  <h4 className="font-extrabold text-gray-900 text-base">Historial de Todos los Pedidos</h4>
                   <p className="text-xs text-gray-500">
-                    Controla el despacho de los pedidos generados por tus clientes
+                    Registro de pedidos procesados, entregados y cancelados
                   </p>
                 </div>
                 <span className="text-xs font-bold text-gray-500">
@@ -1508,6 +1535,7 @@ function DashboardContent() {
                             className="h-8 px-2 text-xs font-bold rounded-lg border border-gray-200 bg-gray-50 text-gray-800"
                           >
                             <option value="pendiente">Pendiente</option>
+                            <option value="pagado">Pagado</option>
                             <option value="en_proceso">En Proceso</option>
                             <option value="completado">Completado</option>
                             <option value="cancelado">Cancelado</option>
