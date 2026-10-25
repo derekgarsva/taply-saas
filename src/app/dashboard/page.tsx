@@ -1489,7 +1489,9 @@ function DashboardContent() {
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-gray-100">
                         <div className="flex items-center gap-2">
-                          <span className="font-extrabold text-sm text-gray-900">Orden #{order.id}</span>
+                          <span className="font-extrabold text-sm text-gray-900">
+                            Orden {order.id.startsWith('#') ? order.id : `#${order.id}`}
+                          </span>
                           <span className="text-[11px] text-gray-400">
                             {new Date(order.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
                           </span>
@@ -1501,11 +1503,11 @@ function DashboardContent() {
                           </span>
 
                           <select
-                            value={order.status}
+                            value={order.status === 'nuevo' ? 'pendiente' : order.status}
                             onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value as Order['status'])}
                             className="h-8 px-2 text-xs font-bold rounded-lg border border-gray-200 bg-gray-50 text-gray-800"
                           >
-                            <option value="nuevo">Nuevo</option>
+                            <option value="pendiente">Pendiente</option>
                             <option value="en_proceso">En Proceso</option>
                             <option value="completado">Completado</option>
                             <option value="cancelado">Cancelado</option>

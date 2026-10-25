@@ -88,9 +88,13 @@ export interface Order {
   items: OrderItem[];
   total: number;
   customerNote?: string;
-  status: 'nuevo' | 'en_proceso' | 'completado' | 'cancelado';
+  status: 'nuevo' | 'en_proceso' | 'completado' | 'cancelado' | 'pendiente' | 'Pendiente';
   createdAt: string;
   whatsappMessage?: string;
+  deliveryType?: 'delivery' | 'pickup' | string;
+  customerName?: string;
+  deliveryAddress?: string;
+  paymentMethod?: string;
 }
 
 export interface CartState {

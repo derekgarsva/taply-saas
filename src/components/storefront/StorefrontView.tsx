@@ -9,7 +9,7 @@ import TopMenu from './TopMenu';
 import Stepper from './Stepper';
 import NotifySoldOut from './NotifySoldOut';
 import SlideConfirmWhatsApp from './SlideConfirmWhatsApp';
-import CartBottomSheet from './CartBottomSheet';
+import CartBottomSheet, { OrderCustomerDetails } from './CartBottomSheet';
 import ProductDetailSheet from './ProductDetailSheet';
 import QRCodeModal from './QRCodeModal';
 import MultiLinkBar from './MultiLinkBar';
@@ -176,8 +176,33 @@ export default function StorefrontView({
   }, [products, selectedCategory, searchQuery]);
 
   // Handle WhatsApp Checkout
-  const handleOrderWhatsApp = async (deliveryType?: 'delivery' | 'pickup', note?: string) => {
+  const handleOrderWhatsApp = async (details?: OrderCustomerDetails) => {
     if (totalPrice === 0) return;
+
+    // Resolve details from argument or localStorage (for bottom bar direct slide)
+    let orderType = details?.orderType;
+    let customerName = details?.customerName;
+    let deliveryAddress = details?.deliveryAddress;
+    let paymentMethod = details?.paymentMethod;
+    let customerNote = details?.customerNote;
+
+    if (typeof window !== 'undefined') {
+      if (!orderType) {
+        orderType = (localStorage.getItem('taply_delivery_type') as 'delivery' | 'pickup') || 'pickup';
+      }
+      if (!customerName) {
+        customerName = localStorage.getItem('taply_customer_name') || '';
+      }
+      if (!deliveryAddress && orderType === 'delivery') {
+        deliveryAddress = localStorage.getItem('taply_customer_address') || '';
+      }
+      if (!paymentMethod) {
+        paymentMethod = localStorage.getItem('taply_payment_method') || 'Pago Móvil';
+      }
+    }
+
+    // Generate short order ID (#1042 or similar)
+    const shortOrderId = '#' + Math.floor(1000 + Math.random() * 9000);
 
     // Trigger celebratory confetti
     try {
@@ -190,59 +215,78 @@ export default function StorefrontView({
     } catch {}
 
     // 1. Prepare formatted order message with 100% universal character compatibility
-    let message = `🛒 *Nuevo Pedido para ${business.name}*\n\n`;
+    let message = `*Nuevo Pedido ${shortOrderId}*\n`;
+    message += `*Comercio:* ${business.name}\n\n`;
+
     const orderItems: Array<{ productId: string; name: string; price: number; quantity: number }> = [];
 
+    message += `*Productos:*\n`;
     Object.entries(cart).forEach(([id, qty]) => {
       const item = products.find(p => p.id === id);
       if (item && qty > 0) {
         orderItems.push({ productId: item.id, name: item.name, price: item.price, quantity: qty });
-        // Use clean ASCII hyphen ' - ' instead of em-dash '—' to guarantee universal encoding across all devices
         message += `- ${qty}x ${item.name} - ${business.currencySymbol}${(item.price * qty).toFixed(2)}\n`;
       }
     });
 
-    message += `\n*Total a Pagar:* ${business.currencySymbol}${totalPrice.toFixed(2)} ${business.currency}\n\n`;
-    
-    // Safely format payment notes line-by-line (WhatsApp bold does not span across newlines)
+    message += `\n*Total a Pagar:* ${business.currencySymbol}${totalPrice.toFixed(2)} ${business.currency} (Aceptamos Bs a tasa BCV)\n\n`;
+
+    if (paymentMethod) {
+      message += `*Método de Pago:* ${paymentMethod}\n\n`;
+    }
+
+    if (orderType === 'delivery') {
+      message += `*Tipo de Entrega:* Delivery\n`;
+      message += `*Cliente:* ${customerName || 'Cliente'}\n`;
+      if (deliveryAddress && deliveryAddress.trim()) {
+        message += `*Dirección y Punto de Referencia:* ${deliveryAddress.trim()}\n\n`;
+      } else {
+        message += `*Dirección:* Por coordinar en el chat\n\n`;
+      }
+    } else {
+      message += `*Tipo de Entrega:* Retiro en local\n`;
+      message += `*Cliente:* ${customerName || 'Cliente'}\n\n`;
+    }
+
+    if (customerNote && customerNote.trim()) {
+      message += `*Nota del Cliente:* ${customerNote.trim()}\n\n`;
+    }
+
+    // Safely format payment instructions (cleaning escaped \n and normalizing bullets)
     if (business.paymentNotes && business.paymentNotes.trim()) {
-      const formattedNotes = business.paymentNotes
+      const unescaped = business.paymentNotes.replace(/\\n/g, '\n').replace(/\r/g, '');
+      const lines = unescaped
         .split('\n')
         .map(l => l.trim())
-        .filter(Boolean)
-        .join('\n');
-      message += `💳 *Datos de Pago:*\n${formattedNotes}\n\n`;
+        .filter(l => l.length > 0 && !l.toLowerCase().startsWith('datos de pago:'))
+        .map(l => `- ${l.replace(/^[•\-\*]\s*/, '')}`);
+
+      if (lines.length > 0) {
+        message += `*Datos de Pago:*\n${lines.join('\n')}\n`;
+      }
     }
 
-    if (deliveryType === 'delivery') {
-      message += `🛵 *Tipo de Entrega:* Delivery\n`;
-      message += `📍 *Dirección de Entrega:*\n\n`;
-    } else if (deliveryType === 'pickup') {
-      message += `🏪 *Tipo de Entrega:* Retiro en local\n\n`;
-    } else {
-      message += `📍 *Dirección de Entrega / Retiro:*\n\n`;
-    }
-
-    if (note && note.trim()) {
-      message += `📝 *Nota:* ${note.trim()}\n\n`;
-    }
-
-    // Apply Unicode NFC normalization to ensure clean canonical UTF-8 encoding without mojibake
+    // Apply Unicode NFC normalization
     message = message.normalize('NFC');
 
-    // 2. Save order in real backend database with idempotency protection
-    const clientOrderId = 'order_' + business.id + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    // 2. Save order in backend database / Supabase with short order ID (#1042) and status 'pendiente'
     try {
       fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          orderId: shortOrderId,
           businessId: business.id,
-          clientOrderId,
+          clientOrderId: shortOrderId,
           items: orderItems,
           total: totalPrice,
           whatsappMessage: message,
-          customerNote: note || '',
+          customerNote: customerNote || '',
+          deliveryType: orderType,
+          customerName: customerName || '',
+          deliveryAddress: deliveryAddress || '',
+          paymentMethod: paymentMethod || '',
+          status: 'pendiente',
         }),
       }).catch(() => {});
     } catch {}
@@ -655,7 +699,14 @@ export default function StorefrontView({
                 <SlideConfirmWhatsApp
                   total={totalPrice}
                   currencySymbol={business.currencySymbol}
-                  onConfirm={() => handleOrderWhatsApp()}
+                  onConfirm={() => {
+                    const savedName = typeof window !== 'undefined' ? localStorage.getItem('taply_customer_name') : null;
+                    if (!savedName || !savedName.trim()) {
+                      setCartDrawerOpen(true);
+                      return;
+                    }
+                    handleOrderWhatsApp();
+                  }}
                   disabled={totalPrice === 0}
                   accentColor={business.themeColor}
                   label="Pedir por WhatsApp"
@@ -708,8 +759,8 @@ export default function StorefrontView({
         onUpdateQty={updateQty}
         onRemoveItem={onRemoveItem}
         onClearCart={onClearCart}
-        onOrderConfirm={(deliveryType, note) => {
-          handleOrderWhatsApp(deliveryType, note);
+        onOrderConfirm={(details) => {
+          handleOrderWhatsApp(details);
         }}
         onSelectProduct={(prod) => {
           setSelectedProduct(prod);

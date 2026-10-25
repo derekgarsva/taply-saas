@@ -759,21 +759,41 @@ export async function deleteCategory(businessId: string, categoryId: string): Pr
 // ORDERS
 // ─────────────────────────────────────────────────────────────
 export async function createOrder(data: {
+  id?: string;
+  orderNumber?: string;
   businessId: string;
   items: Array<{ productId: string; name: string; price: number; quantity: number }>;
   total: number;
   customerNote?: string;
   whatsappMessage?: string;
+  deliveryType?: string;
+  customerName?: string;
+  deliveryAddress?: string;
+  paymentMethod?: string;
+  status?: Order['status'];
 }): Promise<Order> {
+  const shortId = data.id || data.orderNumber || `#${Math.floor(1000 + Math.random() * 9000)}`;
   const supabase = getAdminClient();
-  if (!supabase) return createMockOrder(data);
+  if (!supabase) return createMockOrder({ ...data, id: shortId, status: data.status || 'pendiente' });
 
-  const payload = {
+  let aggregatedNotes = data.customerNote || '';
+  if (data.customerName || data.deliveryAddress || data.paymentMethod) {
+    const parts = [];
+    if (data.customerName) parts.push(`Cliente: ${data.customerName}`);
+    if (data.deliveryAddress) parts.push(`Dirección: ${data.deliveryAddress}`);
+    if (data.paymentMethod) parts.push(`Pago: ${data.paymentMethod}`);
+    if (data.customerNote) parts.push(`Nota: ${data.customerNote}`);
+    aggregatedNotes = parts.join(' | ');
+  }
+
+  const payload: any = {
+    id: shortId,
     business_id: data.businessId,
     items: data.items,
     total: data.total,
-    customer_notes: data.customerNote || '',
+    customer_notes: aggregatedNotes,
     whatsapp_message: data.whatsappMessage || '',
+    delivery_type: data.deliveryType || 'pickup',
     status: 'Pendiente',
   };
 
@@ -783,7 +803,15 @@ export async function createOrder(data: {
     .select()
     .single();
 
-  if (error || !created) return createMockOrder(data);
+  if (error || !created) {
+    if (error?.code === '23505') {
+      const retryId = `#${Math.floor(1000 + Math.random() * 9000)}`;
+      payload.id = retryId;
+      const { data: retryCreated } = await supabase.from('orders').insert(payload).select().single();
+      if (retryCreated) return mapDbOrder(retryCreated);
+    }
+    return createMockOrder({ ...data, id: shortId, customerNote: aggregatedNotes, status: data.status || 'pendiente' });
+  }
   return mapDbOrder(created);
 }
 

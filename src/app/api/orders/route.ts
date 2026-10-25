@@ -158,11 +158,18 @@ export async function POST(request: NextRequest) {
 
     // 4. Persist validated order
     const order = await createOrder({
+      id: body.orderId || body.clientOrderId,
+      orderNumber: body.orderId || body.clientOrderId,
       businessId: biz.id,
       items: validatedItems,
       total: calculatedTotal,
       customerNote: body.customerNote || body.customerNotes,
       whatsappMessage: body.whatsappMessage,
+      deliveryType: body.deliveryType,
+      customerName: body.customerName,
+      deliveryAddress: body.deliveryAddress,
+      paymentMethod: body.paymentMethod,
+      status: 'pendiente',
     });
 
     // 5. Store in idempotency cache if clientOrderId provided

@@ -830,24 +830,35 @@ export async function deleteCategory(businessId: string, categoryId: string): Pr
 
 // ── Orders Queries ──
 export async function createOrder(data: {
+  id?: string;
+  orderNumber?: string;
   businessId: string;
   items: Array<{ productId: string; name: string; price: number; quantity: number }>;
   total: number;
   customerNote?: string;
   whatsappMessage?: string;
+  deliveryType?: string;
+  customerName?: string;
+  deliveryAddress?: string;
+  paymentMethod?: string;
+  status?: Order['status'];
 }): Promise<Order> {
   const store = getStore();
   if (!store.orders[data.businessId]) {
     store.orders[data.businessId] = [];
   }
   const newOrder: Order = {
-    id: 'ord_' + Math.floor(1000 + Math.random() * 9000),
+    id: data.id || data.orderNumber || ('#' + Math.floor(1000 + Math.random() * 9000)),
     businessId: data.businessId,
     items: data.items,
     total: data.total,
     customerNote: data.customerNote,
     whatsappMessage: data.whatsappMessage,
-    status: 'nuevo',
+    status: data.status || 'pendiente',
+    deliveryType: data.deliveryType,
+    customerName: data.customerName,
+    deliveryAddress: data.deliveryAddress,
+    paymentMethod: data.paymentMethod,
     createdAt: new Date().toISOString(),
   };
   store.orders[data.businessId].unshift(newOrder);
