@@ -696,4 +696,107 @@ body {
   box-shadow: 0 0 0 2px var(--fill-slab, var(--card)), 0 0 0 4px rgba(var(--fill-on-rgb, var(--ink-rgb)), 0.45);
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   PERK DESIGN SYSTEM FOR TAPLY (CLONE ARCHITECTURE)
+══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --perk-green: #0d7a53;
+  --pine: #0a3d2c;
+  --deep: #0b5c40;
+  --clover: #16a06e;
+  --mint: #e4f4ec;
+  --coral: #ff6a3d;
+  --coral-deep: #c23e1a;
+  --ink: #16201c;
+  --slate: #5b6b63;
+  --cloud: #e3e8e5;
+  --paper: #f8faf9;
+}
+
+.perk-wrap {
+  max-width: 1020px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+@media (max-width: 640px) {
+  .perk-wrap {
+    padding: 0 16px;
+  }
+}
+
+.perk-star {
+  background: var(--deep);
+  clip-path: polygon(50% 0%, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0% 50%, 38% 38%);
+  opacity: 0.55;
+  pointer-events: none;
+  position: absolute;
+  animation: perkStarPulse 5s ease-in-out infinite alternate;
+}
+
+@keyframes perkStarPulse {
+  0% { transform: scale(1) translateY(0); opacity: 0.45; }
+  50% { opacity: 0.65; }
+  100% { transform: scale(1.06) translateY(-5px); opacity: 0.55; }
+}
+
+.perk-cta {
+  background: var(--perk-green);
+  color: #fff;
+  border-radius: 10px;
+  padding: 15px 34px;
+  font-size: 17px;
+  font-weight: 500;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s ease, box-shadow 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 6px 18px rgba(13, 122, 83, 0.28);
+  cursor: pointer;
+}
+
+.perk-cta:hover {
+  background: var(--clover);
+  color: #fff;
+  transform: translateY(-1.5px);
+  box-shadow: 0 8px 24px rgba(13, 122, 83, 0.38);
+}
+
+.perk-cta:active {
+  transform: translateY(0.5px);
+}
+
+.perk-cta-white {
+  background: #ffffff;
+  color: var(--pine);
+  border-radius: 10px;
+  padding: 15px 34px;
+  font-size: 17px;
+  font-weight: 500;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s ease, box-shadow 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+.perk-cta-white:hover {
+  background: var(--mint);
+  color: var(--pine);
+  transform: translateY(-1.5px);
+}
+
+.perk-card-hover {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.perk-card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(22, 32, 28, 0.08);
+}
+
+
 
