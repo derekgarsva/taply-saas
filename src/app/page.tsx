@@ -34,17 +34,17 @@ import ValueStackSection from '@/components/home/ValueStackSection';
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#FDFDFD] text-gray-900 font-sans selection:bg-[#00594C] selection:text-white">
+    <div className="min-h-screen bg-[#FBFBFA] text-gray-900 font-sans selection:bg-[#00594C] selection:text-white">
       {/* ══ FLOATING CARD NAVBAR WITH SLIDING PILL NAVIGATION MENU ══ */}
       <CardNav />
 
       {/* ══ HERO SECTION ══ */}
-      <section className="pt-12 pb-16 px-4 max-w-6xl mx-auto text-center">
+      <section className="pt-10 sm:pt-14 pb-14 sm:pb-20 px-4 sm:px-6 max-w-6xl mx-auto text-center">
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-[#00594C] text-xs font-bold mb-6 shadow-2xs"
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-600/20 text-[#00594C] text-xs font-bold mb-6 shadow-2xs"
         >
           <Sparkles className="w-3.5 h-3.5" />
           <span>La solución definitiva para vender por WhatsApp en 2026</span>
@@ -53,14 +53,14 @@ export default function LandingPage() {
         <TextReveal
           as="h1"
           text="Convierte tu WhatsApp en una caja registradora automática y maneja todo tu negocio desde un solo panel."
-          className="text-3xl sm:text-5xl lg:text-6xl font-black text-gray-950 tracking-tight leading-[1.12] max-w-4xl mx-auto"
+          className="text-2xl xs:text-3xl sm:text-5xl lg:text-6xl font-black text-gray-950 tracking-tight leading-[1.14] max-w-4xl mx-auto"
         />
 
         <motion.p
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.2 }}
-          className="mt-6 text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed font-normal"
+          className="mt-6 text-sm sm:text-base lg:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed font-normal px-2"
         >
           Elimina las horas perdidas respondiendo precios uno a uno, enviando fotos sueltas y descifrando capturas. Tus clientes eligen sus productos en 3 toques y tú recibes los pedidos listos y ordenados directo a tu WhatsApp y panel en tiempo real.
         </motion.p>
@@ -87,12 +87,12 @@ export default function LandingPage() {
         </motion.div>
 
         {/* Microcopy Requerido */}
-        <p className="mt-4 text-xs font-semibold text-emerald-800 bg-emerald-50/70 border border-emerald-100/90 py-1 px-3.5 rounded-full inline-block">
+        <p className="mt-4 text-[11px] sm:text-xs font-semibold text-emerald-800 bg-emerald-500/[0.08] border border-emerald-600/[0.15] py-1.5 px-3.5 rounded-full inline-block text-center max-w-full leading-normal">
           Te montamos tus primeros 30 productos gratis • Listo en 24h • Cero comisiones
         </p>
 
         {/* ══ IPHONE MINIMAL PLAYER (PANTALLA LIMPIA SIN MARCOS) ══ */}
-        <div className="mt-14 max-w-sm sm:max-w-md mx-auto relative">
+        <div className="mt-12 sm:mt-14 max-w-sm sm:max-w-md mx-auto relative px-2">
           <IPhoneMockup businessName="Panadería La Estrella" slug="panaderia-la-estrella" />
 
           <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-2">
@@ -114,16 +114,16 @@ export default function LandingPage() {
       <BentoGridSection />
 
       {/* ══ FEATURES APPLE-STYLE INTERACTIVE CAROUSEL ══ */}
-      <section id="caracteristicas" className="py-20 sm:py-24 bg-gray-50/70 border-y border-gray-200/80 px-4">
+      <section id="caracteristicas" className="py-20 sm:py-24 bg-[#F5F5F7] border-y border-black/[0.05] px-2 sm:px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
-            <span className="text-xs font-black text-[#00594C] uppercase tracking-widest px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 inline-block mb-3">
+          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-16 px-4">
+            <span className="text-xs font-black text-[#00594C] uppercase tracking-widest px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-600/20 inline-block mb-3">
               DISEÑADO PARA VENDER MÁS
             </span>
             <TextReveal
               as="h2"
               text="Todo lo que necesitas para tu negocio en un solo lugar"
-              className="text-3xl sm:text-4xl font-black text-gray-950 mt-1 tracking-tight"
+              className="text-2xl sm:text-4xl font-black text-gray-950 mt-1 tracking-tight"
             />
             <p className="text-xs sm:text-sm text-gray-500 mt-3 max-w-lg mx-auto">
               Diseñado con la filosofía de 3 toques para convertir visitantes casuales en pedidos confirmados por WhatsApp.
@@ -135,7 +135,7 @@ export default function LandingPage() {
       </section>
 
       {/* ══ DEMOS SHOWCASE ══ */}
-      <section id="demos" className="py-20 px-4 max-w-6xl mx-auto">
+      <section id="demos" className="py-20 px-4 sm:px-6 max-w-6xl mx-auto">
         <div className="text-center max-w-2xl mx-auto mb-12">
           <span className="text-xs font-extrabold text-[#00594C] uppercase tracking-widest">
             PRUÉBALO TÚ MISMO
@@ -143,7 +143,7 @@ export default function LandingPage() {
           <TextReveal
             as="h2"
             text="Catálogos de ejemplo listos para probar"
-            className="text-3xl font-extrabold text-gray-950 mt-1"
+            className="text-2xl sm:text-3xl font-extrabold text-gray-950 mt-1"
           />
         </div>
 
@@ -156,7 +156,7 @@ export default function LandingPage() {
           <TiltCard maxTilt={5} scaleHover={1.02}>
             <Link
               href="/panaderia-la-estrella"
-              className="group block p-5 rounded-3xl bg-white border border-gray-200 hover:border-[#00594C] transition-all shadow-2xs hover:shadow-md h-full"
+              className="group block p-5 sm:p-6 rounded-3xl bg-white border border-black/[0.06] hover:border-[#00594C]/50 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.03),0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_36px_rgba(0,89,76,0.08)] h-full"
             >
               <div className="relative h-44 rounded-2xl overflow-hidden mb-4">
                 <img
@@ -164,7 +164,7 @@ export default function LandingPage() {
                   alt="Panadería La Estrella"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-extrabold text-gray-900">
+                <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-extrabold text-gray-900 border border-black/[0.05] shadow-xs">
                   PANADERÍA
                 </div>
               </div>
@@ -183,7 +183,7 @@ export default function LandingPage() {
           <TiltCard maxTilt={5} scaleHover={1.02}>
             <Link
               href="/burger-station"
-              className="group block p-5 rounded-3xl bg-white border border-gray-200 hover:border-red-600 transition-all shadow-2xs hover:shadow-md h-full"
+              className="group block p-5 sm:p-6 rounded-3xl bg-white border border-black/[0.06] hover:border-red-600/50 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.03),0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_36px_rgba(220,38,38,0.08)] h-full"
             >
               <div className="relative h-44 rounded-2xl overflow-hidden mb-4">
                 <img
@@ -191,7 +191,7 @@ export default function LandingPage() {
                   alt="Burger Station"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-extrabold text-gray-900">
+                <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-extrabold text-gray-900 border border-black/[0.05] shadow-xs">
                   SMASH BURGERS
                 </div>
               </div>
@@ -212,13 +212,13 @@ export default function LandingPage() {
       <ValueStackSection />
 
       {/* ══ PRICING ══ */}
-      <section id="pricing" className="py-20 bg-gray-50 border-t border-gray-100 px-4">
+      <section id="pricing" className="py-20 sm:py-24 bg-[#F5F5F7] border-t border-black/[0.05] px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-14">
             <span className="text-xs font-extrabold text-[#00594C] uppercase tracking-widest">
               PLANES SIMPLES
             </span>
-            <h2 className="text-3xl font-extrabold text-gray-950 mt-1">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-950 mt-1">
               Sin comisiones por tus ventas
             </h2>
             <p className="text-xs text-gray-500 mt-2">
@@ -232,7 +232,7 @@ export default function LandingPage() {
             className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto items-stretch"
           >
             {/* Starter Plan $12 */}
-            <div className="p-8 rounded-3xl bg-white border border-gray-200 shadow-2xs flex flex-col justify-between">
+            <div className="p-6 sm:p-8 rounded-3xl bg-white border border-black/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.04)] flex flex-col justify-between">
               <div>
                 <span className="text-xs font-bold text-gray-500 uppercase">PLAN INICIAL</span>
                 <div className="mt-2 flex items-baseline gap-1">
@@ -283,7 +283,7 @@ export default function LandingPage() {
 
             {/* Big Taply $34 con 3D Tilt */}
             <TiltCard maxTilt={5} scaleHover={1.02} className="h-full">
-              <div className="p-8 rounded-3xl bg-gradient-to-b from-emerald-950 to-gray-950 text-white border border-emerald-900 shadow-md flex flex-col justify-between relative overflow-hidden h-full">
+              <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-[#06201B] to-[#0A100F] text-white border border-emerald-900/60 shadow-[0_12px_36px_rgba(0,89,76,0.15)] flex flex-col justify-between relative overflow-hidden h-full">
                 <div className="absolute top-4 right-4 bg-emerald-500 text-emerald-950 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                   MÁS DE 100 PRODUCTOS
                 </div>

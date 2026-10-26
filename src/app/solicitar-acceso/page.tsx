@@ -34,7 +34,7 @@ export default function SolicitarAccesoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] text-gray-900 font-sans selection:bg-[#00594C] selection:text-white flex flex-col justify-between">
+    <div className="min-h-screen bg-[#FBFBFA] text-gray-900 font-sans selection:bg-[#00594C] selection:text-white flex flex-col justify-between">
       {/* ══ FLOATING CARD NAVBAR (SAME AS HOME) ══ */}
       <CardNav />
 

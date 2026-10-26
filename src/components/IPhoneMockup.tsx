@@ -99,7 +99,7 @@ export default function IphoneMinimalPlayer({
     <div className="flex items-center justify-center select-none">
       {/* PANTALLA DE IPHONE MINIMALISTA SIN MARCOS EXTERIORES (Curva continua de 48px) */}
       <div
-        className="relative w-[320px] sm:w-[336px] h-[670px] sm:h-[712px] rounded-[48px] overflow-hidden bg-[#FFFFFF]
+        className="relative w-full max-w-[320px] sm:w-[336px] h-[670px] sm:h-[712px] rounded-[44px] sm:rounded-[48px] overflow-hidden bg-[#FFFFFF]
                    shadow-[0_25px_60px_-12px_rgba(0,0,0,0.38),0_10px_24px_-8px_rgba(0,0,0,0.22)] flex flex-col justify-between"
       >
         {/* ══ 1. Barra de Estado iOS + Dynamic Island al píxel ══ */}

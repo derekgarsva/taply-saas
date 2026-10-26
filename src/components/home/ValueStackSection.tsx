@@ -59,7 +59,7 @@ export default function ValueStackSection() {
   ];
 
   return (
-    <section id="oferta" className="py-20 sm:py-28 bg-[#FBFBFC] border-t border-gray-200/90 px-4 font-sans text-gray-900">
+    <section id="oferta" className="py-20 sm:py-28 bg-[#FBFBFA] border-t border-black/[0.05] px-4 font-sans text-gray-900">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-14 sm:mb-16">
@@ -101,7 +101,7 @@ export default function ValueStackSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.4 }}
-          className="rounded-3xl bg-white border border-gray-200/90 shadow-sm p-6 sm:p-10 mb-10"
+          className="rounded-3xl bg-white border border-black/[0.06] shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-6 sm:p-10 mb-10"
         >
           <div className="divide-y divide-gray-100">
             {stackItems.map((item, index) => {
@@ -139,7 +139,7 @@ export default function ValueStackSection() {
           </div>
 
           {/* Stack Summary Banner */}
-          <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gray-50/70 -mx-6 sm:-mx-10 -mb-6 sm:-mb-10 p-6 sm:p-8 rounded-b-3xl">
+          <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#F5F5F7] -mx-6 sm:-mx-10 -mb-6 sm:-mb-10 p-6 sm:p-8 rounded-b-3xl">
             <div>
               <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
                 Valor Real del Paquete Completo
