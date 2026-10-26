@@ -28,85 +28,70 @@ export default function PerkFluidNavbar() {
       <div
         className={`pointer-events-auto flex items-center justify-between transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           isScrolled
-            ? 'w-[calc(100%-24px)] sm:w-[calc(100%-48px)] max-w-[1060px] h-[52px] sm:h-[54px] mt-2.5 sm:mt-3.5 px-3.5 sm:px-6 rounded-full border border-[#d2d2c8] bg-[#f5f5eb]/95 backdrop-blur-xl shadow-[0_16px_40px_rgba(20,20,15,0.08),0_2px_6px_rgba(20,20,15,0.04)]'
-            : 'w-full max-w-[1380px] h-[72px] sm:h-[76px] mt-0 px-5 sm:px-8 rounded-none border-b border-[#d2d2c8]/60 bg-[#f5f5eb]/85 backdrop-blur-md'
+            ? 'w-[calc(100%-24px)] sm:w-[calc(100%-48px)] max-w-[1060px] h-[52px] sm:h-[54px] mt-2.5 sm:mt-3.5 px-4 sm:px-6 rounded-full border border-neutral-800 bg-neutral-900/95 backdrop-blur-2xl shadow-2xl shadow-black/60'
+            : 'w-full max-w-6xl h-16 sm:h-[72px] mt-0 px-4 sm:px-6 rounded-none border-b border-neutral-800/80 bg-neutral-950/85 backdrop-blur-xl'
         }`}
       >
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-[30px] h-[30px] sm:w-[32px] sm:h-[32px] rounded-lg bg-[#beff50] text-[#14140f] flex items-center justify-center font-black text-sm tracking-tighter shadow-xs group-hover:scale-105 transition-transform">
+          <span className="w-8 h-8 rounded-xl bg-emerald-600 group-hover:bg-emerald-500 text-white flex items-center justify-center font-black text-sm transition-colors shadow-sm shadow-emerald-950">
             T
-          </div>
-          <span className="font-extrabold text-[19px] sm:text-[21px] tracking-tight text-[#14140f]">
+          </span>
+          <span className="font-black text-xl tracking-tight text-white">
             Taply
           </span>
         </Link>
 
-        {/* Desktop Nav Items */}
-        <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-[13.5px] lg:text-[14px] font-semibold text-[#6e6e64]">
-          <a
-            href="#solucion"
-            className="hover:text-[#14140f] transition-colors"
-          >
-            Plataforma
+        {/* Desktop Navigation Links */}
+        <nav className="hidden md:flex items-center gap-6 lg:gap-7 text-xs font-bold text-neutral-400">
+          <a href="#dolor" className="hover:text-white transition-colors">
+            El Problema
           </a>
-          <a
-            href="#caracteristicas"
-            className="hover:text-[#14140f] transition-colors"
-          >
-            Cómo Funciona
+          <a href="#operatividad" className="hover:text-white transition-colors">
+            Operatividad
           </a>
-          <a
-            href="#metricas"
-            className="hover:text-[#14140f] transition-colors"
-          >
-            Impacto
+          <a href="#carrusel" className="hover:text-white transition-colors">
+            Flujo
           </a>
-          <a
-            href="#planes"
-            className="hover:text-[#14140f] transition-colors"
-          >
+          <a href="#pricing" className="hover:text-white transition-colors">
             Planes
           </a>
-          <a
-            href="#preguntas"
-            className="hover:text-[#14140f] transition-colors"
-          >
+          <a href="#faq" className="hover:text-white transition-colors">
             Preguntas
           </a>
         </nav>
 
-        {/* Desktop Action CTAs */}
+        {/* Desktop Right CTAs */}
         <div className="hidden md:flex items-center gap-3">
           <Link
             href="/login"
-            className="text-[13px] font-semibold text-[#6e6e64] hover:text-[#14140f] px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5"
+            className="text-xs font-bold text-neutral-400 hover:text-white px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5"
           >
-            <Lock className="w-3.5 h-3.5" />
+            <Lock className="w-3.5 h-3.5 text-neutral-400" />
             <span>Acceso Dueño</span>
           </Link>
 
           <Link
             href="/onboarding"
-            className="bg-[#beff50] hover:bg-[#aef038] text-[#14140f] text-[13px] font-bold px-4 py-2 rounded-full transition-all shadow-xs active:scale-95 flex items-center gap-1.5"
+            className="px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black tracking-tight transition-all active:scale-95 shadow-md shadow-emerald-950/60 flex items-center gap-1.5"
           >
-            <span>Probar 14 días</span>
-            <ArrowRight className="w-3.5 h-3.5 text-[#14140f]" />
+            <span>Activar mi negocio</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
-        {/* Mobile Hamburger Button */}
+        {/* Mobile Menu Button */}
         <button
           type="button"
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="md:hidden flex items-center justify-center w-8 h-8 rounded-full bg-white/80 border border-[#d2d2c8] text-[#14140f] focus:outline-none"
+          className="md:hidden p-2 rounded-full bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-white focus:outline-none"
           aria-label="Toggle menu"
         >
           {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
         </button>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer Dropdown */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -114,59 +99,66 @@ export default function PerkFluidNavbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="pointer-events-auto fixed top-[64px] inset-x-3 bg-[#f5f5eb] border border-[#d2d2c8] rounded-2xl p-5 shadow-2xl md:hidden z-50 flex flex-col gap-3 text-[#14140f]"
+            className="pointer-events-auto fixed top-[68px] inset-x-3 bg-neutral-950 border border-neutral-800 rounded-2xl p-5 shadow-2xl md:hidden z-50 flex flex-col gap-3 text-neutral-200"
           >
             <a
-              href="#solucion"
+              href="#dolor"
               onClick={() => setMobileOpen(false)}
-              className="text-[15px] font-semibold py-1.5 border-b border-[#d2d2c8]/40"
+              className="text-xs font-bold text-neutral-300 py-1.5 border-b border-neutral-800"
             >
-              Plataforma
+              El Problema
             </a>
             <a
-              href="#caracteristicas"
+              href="#operatividad"
               onClick={() => setMobileOpen(false)}
-              className="text-[15px] font-semibold py-1.5 border-b border-[#d2d2c8]/40"
+              className="text-xs font-bold text-neutral-300 py-1.5 border-b border-neutral-800"
             >
-              Cómo Funciona
+              Operatividad
             </a>
             <a
-              href="#metricas"
+              href="#carrusel"
               onClick={() => setMobileOpen(false)}
-              className="text-[15px] font-semibold py-1.5 border-b border-[#d2d2c8]/40"
+              className="text-xs font-bold text-neutral-300 py-1.5 border-b border-neutral-800"
             >
-              Impacto
+              Flujo Interactivo
             </a>
             <a
-              href="#planes"
+              href="#pricing"
               onClick={() => setMobileOpen(false)}
-              className="text-[15px] font-semibold py-1.5 border-b border-[#d2d2c8]/40"
+              className="text-xs font-bold text-neutral-300 py-1.5 border-b border-neutral-800"
             >
               Planes
             </a>
             <a
-              href="#preguntas"
+              href="#faq"
               onClick={() => setMobileOpen(false)}
-              className="text-[15px] font-semibold py-1.5"
+              className="text-xs font-bold text-neutral-300 py-1.5"
             >
               Preguntas
             </a>
 
-            <div className="pt-2 flex flex-col gap-2">
+            <div className="pt-2 border-t border-neutral-800 flex flex-col gap-2">
               <Link
                 href="/onboarding"
                 onClick={() => setMobileOpen(false)}
-                className="w-full text-center bg-[#beff50] text-[#14140f] py-3 rounded-xl font-bold text-[14px] shadow-sm flex items-center justify-center gap-1.5"
+                className="w-full py-3 rounded-xl bg-emerald-600 text-white text-xs font-black text-center flex items-center justify-center gap-1.5"
               >
                 <span>Activar mi negocio en 24 horas</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-3.5 h-3.5" />
               </Link>
               <Link
                 href="/login"
                 onClick={() => setMobileOpen(false)}
-                className="w-full text-center bg-white border border-[#d2d2c8] text-[#14140f] py-2.5 rounded-xl font-semibold text-[13.5px]"
+                className="w-full py-2.5 rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-300 text-xs font-bold text-center"
               >
                 Acceso Dueño
+              </Link>
+              <Link
+                href="/panaderia-la-estrella"
+                onClick={() => setMobileOpen(false)}
+                className="w-full py-2 rounded-xl bg-neutral-900/60 border border-neutral-800 text-neutral-400 text-xs font-semibold text-center"
+              >
+                Ver Demo en Vivo
               </Link>
             </div>
           </motion.div>

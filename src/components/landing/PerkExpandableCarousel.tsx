@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, ChevronRight, CheckCircle2, ShieldCheck, Zap, AlertTriangle, Truck } from 'lucide-react';
+import { Play, Pause, ChevronRight, CheckCircle2, ShieldCheck, Zap, AlertTriangle, Truck, Sparkles } from 'lucide-react';
 
 interface Slide {
   id: string;
@@ -87,17 +87,18 @@ export default function PerkExpandableCarousel() {
   };
 
   return (
-    <section id="caracteristicas" className="py-20 sm:py-28 bg-[#f6f5f0] overflow-hidden">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
+    <section id="carrusel" className="py-20 sm:py-28 bg-neutral-950 border-t border-neutral-800/80 overflow-hidden text-neutral-100">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Section Heading */}
-        <div className="max-w-[760px] mb-12 sm:mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#d2d2c8] text-[#14140f] text-[12px] font-bold uppercase tracking-wider mb-4">
-            <span>Operatividad de Alto Rendimiento</span>
+        <div className="max-w-2xl mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-4">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Flujo Operativo Interactivo</span>
           </div>
-          <h2 className="text-[32px] sm:text-[46px] font-black text-[#14140f] tracking-[-0.03em] leading-[1.1]">
+          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-[1.12]">
             Potente para el dueño, sin esfuerzo para el cliente
           </h2>
-          <p className="mt-4 text-[17px] text-[#6e6e64] leading-relaxed">
+          <p className="mt-4 text-sm sm:text-base text-neutral-400 leading-relaxed font-normal">
             Diseñamos cada pantalla para eliminar el trabajo repetitivo, proteger tus márgenes en bolívares y convertir chats en ventas confirmadas.
           </p>
         </div>
@@ -115,27 +116,27 @@ export default function PerkExpandableCarousel() {
                   onClick={() => handleStepClick(index)}
                   className={`text-left p-4 sm:p-5 rounded-2xl border transition-all duration-300 relative ${
                     isActive
-                      ? 'bg-white border-[#14140f] shadow-[0_10px_30px_rgba(20,20,15,0.06)]'
-                      : 'bg-[#f5f5eb] border-[#d2d2c8]/60 hover:bg-white/60'
+                      ? 'bg-neutral-900 border-emerald-500/60 shadow-xl shadow-emerald-950/20'
+                      : 'bg-neutral-950 border-neutral-800/80 hover:bg-neutral-900/60'
                   }`}
                 >
                   {/* Active highlight line */}
                   {isActive && (
                     <motion.div
-                      layoutId="activeSlideIndicator"
-                      className="absolute left-0 top-3 bottom-3 w-1.5 bg-[#beff50] rounded-r-full"
+                      layoutId="activeSlideIndicatorDark"
+                      className="absolute left-0 top-3 bottom-3 w-1.5 bg-emerald-500 rounded-r-full"
                     />
                   )}
 
                   <div className="flex items-center justify-between mb-1 pl-1">
-                    <span className="text-[11px] font-black uppercase tracking-wider text-[#6e6e64]">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-neutral-400">
                       {s.tag}
                     </span>
                     <span
                       className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                         isActive
-                          ? 'bg-[#14140f] text-[#beff50]'
-                          : 'bg-white border border-[#d2d2c8] text-[#6e6e64]'
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                          : 'bg-neutral-800 text-neutral-400'
                       }`}
                     >
                       {s.badge}
@@ -143,8 +144,8 @@ export default function PerkExpandableCarousel() {
                   </div>
 
                   <h3
-                    className={`text-[16px] sm:text-[17px] font-bold pl-1 transition-colors ${
-                      isActive ? 'text-[#14140f]' : 'text-[#6e6e64]'
+                    className={`text-[15px] sm:text-[16px] font-bold pl-1 transition-colors ${
+                      isActive ? 'text-white' : 'text-neutral-400'
                     }`}
                   >
                     {s.title}
@@ -155,9 +156,9 @@ export default function PerkExpandableCarousel() {
           </div>
 
           {/* Right Showcase Display */}
-          <div className="lg:col-span-7 bg-[#14140f] text-white rounded-[28px] sm:rounded-[36px] p-7 sm:p-10 flex flex-col justify-between relative overflow-hidden shadow-2xl">
+          <div className="lg:col-span-7 bg-neutral-900 border border-neutral-800 rounded-3xl p-7 sm:p-10 flex flex-col justify-between relative overflow-hidden shadow-2xl">
             {/* Ambient Corner Glow */}
-            <div className="absolute top-0 right-0 w-80 h-80 bg-[#beff50]/15 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
 
             <AnimatePresence mode="wait">
               <motion.div
@@ -168,26 +169,26 @@ export default function PerkExpandableCarousel() {
                 transition={{ duration: 0.35 }}
                 className="relative z-10 space-y-6"
               >
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#beff50]/20 border border-[#beff50]/30 text-[#beff50] text-[12px] font-bold uppercase tracking-wider">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider">
                   <span>{slides[activeIndex].tag}</span>
                 </div>
 
-                <h3 className="text-[26px] sm:text-[34px] font-black tracking-tight leading-tight text-white">
+                <h3 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight text-white">
                   {slides[activeIndex].title}
                 </h3>
 
-                <p className="text-[16px] sm:text-[17.5px] text-[#d2d2c8] leading-relaxed max-w-xl font-normal">
+                <p className="text-sm sm:text-base text-neutral-300 leading-relaxed max-w-xl font-normal">
                   {slides[activeIndex].desc}
                 </p>
 
                 {/* Visual card simulator */}
-                <div className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                <div className="p-5 rounded-2xl bg-neutral-950 border border-neutral-800">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-[16px] font-extrabold text-white">
+                      <div className="text-[16px] font-black text-white">
                         {slides[activeIndex].previewHeading}
                       </div>
-                      <div className="text-[12.5px] text-[#beff50] mt-0.5">
+                      <div className="text-xs text-emerald-400 font-semibold mt-0.5">
                         {slides[activeIndex].previewSub}
                       </div>
                     </div>
@@ -197,8 +198,8 @@ export default function PerkExpandableCarousel() {
               </motion.div>
             </AnimatePresence>
 
-            {/* Step Player Controller (.spl-track and .spl-tool) */}
-            <div className="mt-8 pt-6 border-t border-white/10 relative z-10 flex items-center justify-between">
+            {/* Step Player Controller */}
+            <div className="mt-8 pt-6 border-t border-neutral-800 relative z-10 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {slides.map((_, i) => (
                   <button
@@ -207,8 +208,8 @@ export default function PerkExpandableCarousel() {
                     onClick={() => handleStepClick(i)}
                     className={`h-2 rounded-full transition-all duration-300 ${
                       i === activeIndex
-                        ? 'w-8 bg-[#beff50]'
-                        : 'w-2 bg-white/30 hover:bg-white/50'
+                        ? 'w-8 bg-emerald-500'
+                        : 'w-2 bg-neutral-700 hover:bg-neutral-600'
                     }`}
                     aria-label={`Ir al paso ${i + 1}`}
                   />
@@ -219,7 +220,7 @@ export default function PerkExpandableCarousel() {
               <button
                 type="button"
                 onClick={togglePlay}
-                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+                className="w-9 h-9 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white flex items-center justify-center transition-colors"
                 aria-label={isPlaying ? 'Pausar carrusel' : 'Reproducir carrusel'}
               >
                 {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
