@@ -15,57 +15,64 @@ async function verifyLandingPage() {
   assert(html.includes(expectedH1), `H1 missing: "${expectedH1}"`);
   console.log('✅ 1. Hero H1 verified exact match.');
 
-  // 2. Hero Subtitle Cuello de Botella Check
+  // 2. Hero Subtitle Check
   assert(
-    html.includes('Elimina las horas perdidas') && html.includes('3 toques'),
-    'Hero subtitle addressing bottleneck missing'
+    html.includes('Tus clientes compran en 3 toques') && html.includes('tasa del día'),
+    'Hero subtitle addressing 3 touches & daily rate missing'
   );
-  console.log('✅ 2. Hero subtitle addressing bottleneck verified.');
+  console.log('✅ 2. Hero subtitle verified.');
 
   // 3. CTA & Microcopy Check
   assert(
-    html.includes('Probar 14 días sin costo'),
-    'CTA "Probar 14 días sin costo" missing'
+    html.includes('Activar mi negocio en 24 horas'),
+    'CTA "Activar mi negocio en 24 horas" missing'
   );
   assert(
-    html.includes('Te montamos tus primeros 30 productos gratis • Listo en 24h • Cero comisiones'),
+    html.includes('Sin tarjeta de crédito • Te montamos tus primeros 30 productos gratis • Cero comisiones por venta'),
     'Microcopy missing'
   );
   console.log('✅ 3. CTA and Microcopy verified exact match.');
 
   // 4. Bento Grid Section Check
   assert(
-    html.includes('Cuadre Diario Automático') || html.includes('Ventas Netas Hoy'),
-    'Bento Grid: Cuadre de caja diario missing'
+    html.includes('Recaudado hoy') && html.includes('340.00'),
+    'Bento Grid: Recaudado hoy 340.00 missing'
   );
   assert(
-    html.includes('Pago Móvil') && html.includes('Zelle') && html.includes('Efectivo'),
+    html.includes('Pago Móvil') && html.includes('Zelle') && html.includes('Binance') && html.includes('Efectivo'),
     'Bento Grid: Desglose por método missing'
   );
   assert(
-    html.includes('Pipeline de Despacho en Vivo') || html.includes('Para Delivery'),
-    'Bento Grid: Pipeline de despacho en vivo missing'
+    html.includes('Para Delivery') && html.includes('Retiro en Local'),
+    'Bento Grid: Subpanel Despacho missing'
   );
   assert(
-    html.includes('Control de Stock a 1 Toque') || html.includes('unidades disponibles'),
-    'Bento Grid: Control de stock missing'
+    html.includes('1042') && html.includes('Descartar') && html.includes('Confirmar'),
+    'Bento Grid: Swipe actions missing'
   );
-  console.log('✅ 4. Bento Grid (Caja Diario, Pipeline Despacho, Control Stock) verified.');
+  console.log('✅ 4. Bento Grid (4 bloques operativos) verified.');
 
   // 5. Value Stack & Inverted Guarantee Check
   assert(
-    html.includes('Stack de Valor') || html.includes('Todo lo que recibes'),
-    'Value Stack section missing'
-  );
-  assert(
-    html.includes('Garantía Invertida de 14 Días') && html.includes('El riesgo lo asumimos nosotros al 100%'),
+    html.includes('Garantía de Riesgo Cero por 14 Días'),
     'Inverted guarantee (14 days) missing'
   );
   assert(
-    html.includes('30 productos gratis'),
+    html.includes('30 productos'),
     'Guarantee 30 products free offer missing'
   );
   console.log('✅ 5. Value Stack & Inverted Guarantee (14 Days) verified.');
+
+  // 6. FAQ & Footer Check
+  assert(
+    html.includes('Deja de perder clientes por responder tarde en WhatsApp.'),
+    'Footer conversion H3 missing'
+  );
+  assert(
+    html.includes('Hablar con un asesor'),
+    'Footer WhatsApp asesor button missing'
+  );
+  console.log('✅ 6. FAQ & Conversion Footer verified.');
 
   console.log('\n🎉 ALL LANDING PAGE REQUIREMENTS VERIFIED 100% SUCCESSFULLY!');
 }

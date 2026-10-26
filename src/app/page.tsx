@@ -1,348 +1,390 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import IPhoneMockup from '@/components/IPhoneMockup';
-import {
-  TextEffect,
-  AnimatedGroup,
-  MagneticButton,
-  G2Button,
-  TiltCard,
-} from '@/components/motion';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles,
   ArrowRight,
+  Clock,
+  TrendingDown,
+  AlertTriangle,
+  Flame,
   CheckCircle2,
-  QrCode,
-  Smartphone,
+  Lock,
+  Menu,
+  X,
+  MessageCircle,
   Zap,
   ShoppingBag,
-  ExternalLink,
-  ShieldCheck,
-  TrendingUp,
-  Sliders,
-  DollarSign
 } from 'lucide-react';
-import CardNav from '@/components/navigation/CardNav';
-import SiteFooter from '@/components/footer/SiteFooter';
-import TextReveal from '@/components/ui/text-reveal';
-import AppleFeatureCarousel from '@/components/home/AppleFeatureCarousel';
-import BentoGridSection from '@/components/home/BentoGridSection';
-import ValueStackSection from '@/components/home/ValueStackSection';
+import PricingAndBento from '@/components/landing/PricingAndBento';
+import FaqAndFooter from '@/components/landing/FaqAndFooter';
 
 export default function LandingPage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
-    <div className="min-h-screen bg-[#FBFBFA] text-gray-900 font-sans selection:bg-[#00594C] selection:text-white">
-      {/* ══ FLOATING CARD NAVBAR WITH SLIDING PILL NAVIGATION MENU ══ */}
-      <CardNav />
-
-      {/* ══ HERO SECTION ══ */}
-      <section className="pt-10 sm:pt-14 pb-14 sm:pb-20 px-4 sm:px-6 max-w-6xl mx-auto text-center">
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-600/20 text-[#00594C] text-xs font-bold mb-6 shadow-2xs"
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>La solución definitiva para vender por WhatsApp en 2026</span>
-        </motion.div>
-
-        <TextReveal
-          as="h1"
-          text="Convierte tu WhatsApp en una caja registradora automática y maneja todo tu negocio desde un solo panel."
-          className="text-2xl xs:text-3xl sm:text-5xl lg:text-6xl font-black text-gray-950 tracking-tight leading-[1.14] max-w-4xl mx-auto"
-        />
-
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.2 }}
-          className="mt-6 text-sm sm:text-base lg:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed font-normal px-2"
-        >
-          Elimina las horas perdidas respondiendo precios uno a uno, enviando fotos sueltas y descifrando capturas. Tus clientes eligen sus productos en 3 toques y tú recibes los pedidos listos y ordenados directo a tu WhatsApp y panel en tiempo real.
-        </motion.p>
-
-        {/* Hero CTAs con Magnetic Button y Continuidad G2 */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.3 }}
-          className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-xs sm:max-w-none mx-auto"
-        >
-          <MagneticButton as="div" strength={14} className="w-full sm:w-auto">
-            <G2Button href="/onboarding" variant="primary">
-              <span>Probar 14 días sin costo</span>
-              <ArrowRight className="w-4 h-4" />
-            </G2Button>
-          </MagneticButton>
-
-          <MagneticButton as="div" strength={14} className="w-full sm:w-auto">
-            <G2Button href="/panaderia-la-estrella" variant="secondary">
-              <span>Ver Demo en Vivo</span>
-            </G2Button>
-          </MagneticButton>
-        </motion.div>
-
-        {/* Microcopy Requerido */}
-        <p className="mt-4 text-[11px] sm:text-xs font-semibold text-emerald-800 bg-emerald-500/[0.08] border border-emerald-600/[0.15] py-1.5 px-3.5 rounded-full inline-block text-center max-w-full leading-normal">
-          Te montamos tus primeros 30 productos gratis • Listo en 24h • Cero comisiones
-        </p>
-
-        {/* ══ IPHONE MINIMAL PLAYER (PANTALLA LIMPIA SIN MARCOS) ══ */}
-        <div className="mt-12 sm:mt-14 max-w-sm sm:max-w-md mx-auto relative px-2">
-          <IPhoneMockup businessName="Panadería La Estrella" slug="panaderia-la-estrella" />
-
-          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-2">
-            <span className="text-xs font-semibold text-gray-500">
-              💡 Mira la experiencia fluida de Taply en el iPhone, o
+    <div className="min-h-screen bg-neutral-950 text-neutral-100 font-sans selection:bg-emerald-500 selection:text-neutral-950">
+      {/* ══════════════════════════════════════════════════════════════════════════
+          TOP NAVBAR DE ALTO CONTRASTE (DARK MODE STREAMLINED)
+      ══════════════════════════════════════════════════════════════════════════ */}
+      <header className="sticky top-0 z-50 w-full bg-neutral-950/85 backdrop-blur-xl border-b border-neutral-800/80">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          {/* Logo Brand */}
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <span className="w-8 h-8 rounded-xl bg-emerald-600 group-hover:bg-emerald-500 text-white flex items-center justify-center font-black text-sm transition-colors shadow-sm shadow-emerald-950">
+              T
             </span>
+            <span className="font-black text-xl tracking-tight text-white">
+              Taply
+            </span>
+          </Link>
+
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-7 text-xs font-bold text-neutral-400">
+            <a href="#dolor" className="hover:text-white transition-colors">
+              El Problema
+            </a>
+            <a href="#operatividad" className="hover:text-white transition-colors">
+              Operatividad
+            </a>
+            <a href="#pricing" className="hover:text-white transition-colors">
+              Planes
+            </a>
+            <a href="#faq" className="hover:text-white transition-colors">
+              Preguntas
+            </a>
+          </nav>
+
+          {/* Desktop Right CTAs */}
+          <div className="hidden md:flex items-center gap-3">
             <Link
-              href="/panaderia-la-estrella"
-              className="text-xs font-bold text-[#00594C] hover:underline inline-flex items-center gap-1"
+              href="/login"
+              className="text-xs font-bold text-neutral-400 hover:text-white px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5"
             >
-              <span>ver el catálogo demo completo en vivo</span>
-              <ArrowRight className="w-3 h-3" />
+              <Lock className="w-3.5 h-3.5 text-neutral-400" />
+              <span>Acceso Dueño</span>
+            </Link>
+
+            <Link
+              href="/onboarding"
+              className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black tracking-tight transition-all active:scale-95 shadow-md shadow-emerald-950/60 flex items-center gap-1.5"
+            >
+              <span>Activar mi negocio</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
-        </div>
-      </section>
 
-      {/* ══ BENTO GRID SECTION: CAJA DIARIO, PIPELINE DESPACHO Y CONTROL DE STOCK ══ */}
-      <BentoGridSection />
-
-      {/* ══ FEATURES APPLE-STYLE INTERACTIVE CAROUSEL ══ */}
-      <section id="caracteristicas" className="py-20 sm:py-24 bg-[#F5F5F7] border-y border-black/[0.05] px-2 sm:px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-16 px-4">
-            <span className="text-xs font-black text-[#00594C] uppercase tracking-widest px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-600/20 inline-block mb-3">
-              DISEÑADO PARA VENDER MÁS
-            </span>
-            <TextReveal
-              as="h2"
-              text="Todo lo que necesitas para tu negocio en un solo lugar"
-              className="text-2xl sm:text-4xl font-black text-gray-950 mt-1 tracking-tight"
-            />
-            <p className="text-xs sm:text-sm text-gray-500 mt-3 max-w-lg mx-auto">
-              Diseñado con la filosofía de 3 toques para convertir visitantes casuales en pedidos confirmados por WhatsApp.
-            </p>
-          </div>
-
-          <AppleFeatureCarousel />
-        </div>
-      </section>
-
-      {/* ══ DEMOS SHOWCASE ══ */}
-      <section id="demos" className="py-20 px-4 sm:px-6 max-w-6xl mx-auto">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-xs font-extrabold text-[#00594C] uppercase tracking-widest">
-            PRUÉBALO TÚ MISMO
-          </span>
-          <TextReveal
-            as="h2"
-            text="Catálogos de ejemplo listos para probar"
-            className="text-2xl sm:text-3xl font-extrabold text-gray-950 mt-1"
-          />
-        </div>
-
-        <AnimatedGroup
-          variant="blur-fade"
-          stagger={0.1}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto"
-        >
-          {/* Demo 1 */}
-          <TiltCard maxTilt={5} scaleHover={1.02}>
-            <Link
-              href="/panaderia-la-estrella"
-              className="group block p-5 sm:p-6 rounded-3xl bg-white border border-black/[0.06] hover:border-[#00594C]/50 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.03),0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_36px_rgba(0,89,76,0.08)] h-full"
-            >
-              <div className="relative h-44 rounded-2xl overflow-hidden mb-4">
-                <img
-                  src="https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80"
-                  alt="Panadería La Estrella"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-extrabold text-gray-900 border border-black/[0.05] shadow-xs">
-                  PANADERÍA
-                </div>
-              </div>
-              <h4 className="font-extrabold text-lg text-gray-900">Panadería La Estrella</h4>
-              <p className="text-xs text-gray-500 mt-1">
-                Masa madre, panes campesinos, cachitos y golfeados con checkout a WhatsApp.
-              </p>
-              <div className="mt-4 flex items-center gap-1.5 text-xs font-bold text-[#00594C]">
-                <span>Ver Catálogo en Vivo</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-          </TiltCard>
-
-          {/* Demo 2 */}
-          <TiltCard maxTilt={5} scaleHover={1.02}>
-            <Link
-              href="/burger-station"
-              className="group block p-5 sm:p-6 rounded-3xl bg-white border border-black/[0.06] hover:border-red-600/50 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.03),0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_36px_rgba(220,38,38,0.08)] h-full"
-            >
-              <div className="relative h-44 rounded-2xl overflow-hidden mb-4">
-                <img
-                  src="https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=800&q=80"
-                  alt="Burger Station"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-extrabold text-gray-900 border border-black/[0.05] shadow-xs">
-                  SMASH BURGERS
-                </div>
-              </div>
-              <h4 className="font-extrabold text-lg text-gray-900">Burger Station 🍔</h4>
-              <p className="text-xs text-gray-500 mt-1">
-                Hamburguesas smashed con bacon crocante, papas con cheddar y refrescos.
-              </p>
-              <div className="mt-4 flex items-center gap-1.5 text-xs font-bold text-red-600">
-                <span>Ver Catálogo en Vivo</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-          </TiltCard>
-        </AnimatedGroup>
-      </section>
-
-      {/* ══ STACK DE VALOR Y GARANTÍA INVERTIDA DE 14 DÍAS ══ */}
-      <ValueStackSection />
-
-      {/* ══ PRICING ══ */}
-      <section id="pricing" className="py-20 sm:py-24 bg-[#F5F5F7] border-t border-black/[0.05] px-4 sm:px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-14">
-            <span className="text-xs font-extrabold text-[#00594C] uppercase tracking-widest">
-              PLANES SIMPLES
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-950 mt-1">
-              Sin comisiones por tus ventas
-            </h2>
-            <p className="text-xs text-gray-500 mt-2">
-              Tus ganancias son 100% tuyas, pagadas directo a tu cuenta bancaria o WhatsApp
-            </p>
-          </div>
-
-          <AnimatedGroup
-            variant="blur-fade"
-            stagger={0.12}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto items-stretch"
+          {/* Mobile Menu Button */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-white"
+            aria-label="Toggle menu"
           >
-            {/* Starter Plan $12 */}
-            <div className="p-6 sm:p-8 rounded-3xl bg-white border border-black/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.04)] flex flex-col justify-between">
-              <div>
-                <span className="text-xs font-bold text-gray-500 uppercase">PLAN INICIAL</span>
-                <div className="mt-2 flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold text-gray-900">$12</span>
-                  <span className="text-xs text-gray-400">/ mes</span>
-                </div>
-                <p className="text-xs text-gray-600 mt-3">
-                  Perfecto para locales y marcas que inician su catálogo digital profesional.
-                </p>
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
 
-                <ul className="mt-6 space-y-2.5 text-xs text-gray-700">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>Catálogo multilink con tu URL personalizada</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>Hasta <strong>100 productos activos</strong></span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>Pedidos ilimitados por WhatsApp</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>Código QR descargable para tu local</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>Botón con tus datos de pago (Pago Móvil, Zelle)</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span><strong>0% de comisiones por tus ventas</strong></span>
-                  </li>
-                </ul>
-              </div>
+        {/* Mobile Dropdown */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="md:hidden border-b border-neutral-800 bg-neutral-950 px-4 py-4 space-y-3"
+            >
+              <a
+                href="#dolor"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-xs font-bold text-neutral-300 py-1.5"
+              >
+                El Problema
+              </a>
+              <a
+                href="#operatividad"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-xs font-bold text-neutral-300 py-1.5"
+              >
+                Operatividad
+              </a>
+              <a
+                href="#pricing"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-xs font-bold text-neutral-300 py-1.5"
+              >
+                Planes
+              </a>
+              <a
+                href="#faq"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-xs font-bold text-neutral-300 py-1.5"
+              >
+                Preguntas
+              </a>
 
-              <div className="mt-8">
+              <div className="pt-3 border-t border-neutral-800 flex flex-col gap-2">
                 <Link
                   href="/onboarding"
-                  className="w-full h-11 rounded-2xl bg-gray-900 text-white font-bold text-xs flex items-center justify-center hover:bg-black transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full py-3 rounded-xl bg-emerald-600 text-white text-xs font-black text-center"
                 >
-                  Probar 14 días sin costo (Plan Inicial)
+                  Activar mi negocio en 24 horas
+                </Link>
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full py-2.5 rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-300 text-xs font-bold text-center"
+                >
+                  Acceso Dueño
                 </Link>
               </div>
-            </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </header>
 
-            {/* Big Taply $34 con 3D Tilt */}
-            <TiltCard maxTilt={5} scaleHover={1.02} className="h-full">
-              <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-[#06201B] to-[#0A100F] text-white border border-emerald-900/60 shadow-[0_12px_36px_rgba(0,89,76,0.15)] flex flex-col justify-between relative overflow-hidden h-full">
-                <div className="absolute top-4 right-4 bg-emerald-500 text-emerald-950 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                  MÁS DE 100 PRODUCTOS
+      {/* ══════════════════════════════════════════════════════════════════════════
+          2. SECCIÓN HERO (ALTO CONTRASTE Y FRICCIÓN CERO)
+      ══════════════════════════════════════════════════════════════════════════ */}
+      <section className="pt-14 sm:pt-20 pb-16 sm:pb-24 px-4 sm:px-6 max-w-5xl mx-auto text-center relative overflow-hidden">
+        {/* Ambient Top Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-emerald-600/10 rounded-full blur-[110px] pointer-events-none" />
+
+        <div className="relative z-10">
+          {/* Badge Superior Requerido */}
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-black uppercase tracking-wider mb-6"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Para comercios que venden por Instagram y WhatsApp</span>
+          </motion.div>
+
+          {/* H1 Requerido */}
+          <motion.h1
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.1 }}
+            className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.14] max-w-4xl mx-auto"
+          >
+            Convierte tu WhatsApp en una caja registradora automática y maneja todo tu negocio desde un solo panel.
+          </motion.h1>
+
+          {/* Subtítulo Requerido */}
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.2 }}
+            className="mt-6 text-sm sm:text-base lg:text-lg text-neutral-300 max-w-3xl mx-auto leading-relaxed font-normal"
+          >
+            Tus clientes compran en 3 toques con cálculo a tasa del día y pago verificado. Tú recibes el pedido listo en chat y controlas inventario, tasas y despacho desde tu panel privado sin tocar una hoja de Excel.
+          </motion.p>
+
+          {/* CTA Principal Requerido */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.3 }}
+            className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-md mx-auto"
+          >
+            <Link
+              href="/onboarding"
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm tracking-tight flex items-center justify-center gap-2.5 shadow-xl shadow-emerald-950/60 transition-all active:scale-95"
+            >
+              <span>Activar mi negocio en 24 horas</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+
+            <Link
+              href="/panaderia-la-estrella"
+              className="w-full sm:w-auto px-6 py-4 rounded-2xl bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-200 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all active:scale-95"
+            >
+              <span>Ver Demo en Vivo</span>
+            </Link>
+          </motion.div>
+
+          {/* Micro-copy Requerido */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.45, delay: 0.4 }}
+            className="mt-5 text-[11px] sm:text-xs font-semibold text-neutral-400"
+          >
+            Sin tarjeta de crédito • Te montamos tus primeros 30 productos gratis • Cero comisiones por venta
+          </motion.p>
+
+          {/* ── PREVIEW DESACOPLADO REALISTA DE TELÉFONO MÓVIL (SIN BARRAS SIMULADAS DE NAVEGADOR) ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.45 }}
+            className="mt-14 max-w-sm sm:max-w-md mx-auto"
+          >
+            <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-5 sm:p-6 shadow-2xl text-left relative overflow-hidden">
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-800">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-xs font-black text-white">Catálogo en 3 Toques</span>
                 </div>
+                <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                  Tasa 124.50
+                </span>
+              </div>
 
-                <div>
-                  <span className="text-xs font-bold text-emerald-400 uppercase">BIG TAPLY</span>
-                  <div className="mt-2 flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold text-white">$34</span>
-                    <span className="text-xs text-emerald-300">/ mes</span>
+              {/* Items reales limpios sin la palabra precio */}
+              <div className="mt-4 space-y-2.5">
+                <div className="p-3 rounded-2xl bg-neutral-950 border border-neutral-800/80 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-neutral-900 text-amber-400 flex items-center justify-center text-base">
+                      🥐
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-white">Pan de Jamón Tradicional</div>
+                      <div className="text-[10px] text-neutral-400">1 unidad • Bs. 3.735,00</div>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-300 mt-3">
-                    Para bodegones, panaderías grandes, restaurantes y tiendas con inventario masivo.
-                  </p>
-
-                  <ul className="mt-6 space-y-2.5 text-xs text-gray-200">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      <span><strong>Más de 100 productos e inventario masivo</strong></span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      <span>Múltiples categorías y buscador avanzado</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      <span>Estadísticas completas de visitas y conversión</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      <span>Personalización total de colores y marca</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      <span>Sin marca de agua de Taply</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                      <span>Soporte prioritario VIP por WhatsApp</span>
-                    </li>
-                  </ul>
+                  <span className="text-xs font-black text-white">30.00</span>
                 </div>
 
-                <div className="mt-8">
-                  <Link
-                    href="/onboarding"
-                    className="w-full h-11 rounded-2xl bg-white text-gray-950 font-extrabold text-xs flex items-center justify-center hover:bg-emerald-50 transition-colors shadow-sm"
-                  >
-                    Probar 14 días sin costo (Big Taply)
-                  </Link>
+                <div className="p-3 rounded-2xl bg-neutral-950 border border-neutral-800/80 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-neutral-900 text-orange-400 flex items-center justify-center text-base">
+                      🧀
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-white">Golfeado con Queso</div>
+                      <div className="text-[10px] text-neutral-400">2 unidades • Bs. 871,50</div>
+                    </div>
+                  </div>
+                  <span className="text-xs font-black text-white">7.00</span>
                 </div>
               </div>
-            </TiltCard>
-          </AnimatedGroup>
 
+              {/* Total & Slide Action */}
+              <div className="mt-4 pt-3 border-t border-neutral-800">
+                <div className="flex items-baseline justify-between mb-3 text-xs">
+                  <span className="text-neutral-400 font-semibold">Total a pagar:</span>
+                  <div className="text-right">
+                    <span className="text-base font-black text-white">37.00 USD</span>
+                    <span className="text-[10px] text-emerald-400 block font-mono">
+                      (Bs. 4.606,50)
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-emerald-600 text-white flex items-center justify-between shadow-md shadow-emerald-950">
+                  <div className="w-7 h-7 rounded-lg bg-neutral-950 text-emerald-400 flex items-center justify-center font-black text-xs">
+                    →
+                  </div>
+                  <span className="text-xs font-extrabold pr-2">Deslizar para pedir por WhatsApp</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* ══ SITE FOOTER (UIARC LOGO VARIANT WITH NEWSLETTER & RISING BRAND MARK) ══ */}
-      <SiteFooter variant="logo" />
+      {/* ══════════════════════════════════════════════════════════════════════════
+          3. SECCIÓN EL DOLOR: LA MATEMÁTICA DE LAS VENTAS PERDIDAS
+      ══════════════════════════════════════════════════════════════════════════ */}
+      <section id="dolor" className="py-20 sm:py-28 px-4 sm:px-6 max-w-6xl mx-auto border-t border-neutral-800/80">
+        <div className="text-center max-w-3xl mx-auto mb-14 sm:mb-18">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold uppercase tracking-wider mb-4">
+            <AlertTriangle className="w-3.5 h-3.5" />
+            <span>El cuello de botella de WhatsApp</span>
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+            La matemática de las ventas que pierdes cada día
+          </h2>
+          <p className="mt-4 text-sm sm:text-base text-neutral-400 max-w-2xl mx-auto font-normal leading-relaxed">
+            Vender por chat manual parece gratis, pero te cuesta miles de dólares en ventas perdidas y márgenes destruidos por recálculos a mano:
+          </p>
+        </div>
+
+        {/* 3 Tarjetas Oscuras de Alto Contraste con Bordes Sutiles */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Tarjeta 1: La regla de los 5 minutos (-80% cierre) */}
+          <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-7 flex flex-col justify-between hover:border-neutral-700 transition-all">
+            <div>
+              <span className="text-[11px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 inline-block mb-4">
+                -80% de probabilidad de cierre
+              </span>
+              <h3 className="text-xl font-black text-white tracking-tight">
+                La regla mortal de los 5 minutos
+              </h3>
+              <p className="mt-3 text-xs sm:text-sm text-neutral-400 leading-relaxed font-normal">
+                Si un cliente te escribe pidiendo opciones y tardas más de 5 minutos en responder con fotos y montos, la probabilidad de cerrar la venta cae un 80%.
+              </p>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-neutral-800/80">
+              <span className="text-[11px] text-neutral-400 block font-semibold uppercase">Impacto mensual:</span>
+              <span className="text-lg font-black text-red-400 mt-0.5 block">
+                Perder 2 ventas de 15 al día = 900 al mes
+              </span>
+            </div>
+          </div>
+
+          {/* Tarjeta 2: Fuga de margen por tasa manual */}
+          <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-7 flex flex-col justify-between hover:border-neutral-700 transition-all">
+            <div>
+              <span className="text-[11px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 inline-block mb-4">
+                Fuga silenciosa de margen
+              </span>
+              <h3 className="text-xl font-black text-white tracking-tight">
+                El caos de la tasa manual
+              </h3>
+              <p className="mt-3 text-xs sm:text-sm text-neutral-400 leading-relaxed font-normal">
+                Recalcular la tasa a mano en cada mensaje, enviar capturas desactualizadas y discutir montos en bolívares destruye tu margen de ganancia antes de que el dinero entre a tu cuenta.
+              </p>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-neutral-800/80">
+              <span className="text-[11px] text-neutral-400 block font-semibold uppercase">Impacto en caja:</span>
+              <span className="text-lg font-black text-amber-400 mt-0.5 block">
+                Pérdida continua por desajuste cambiario
+              </span>
+            </div>
+          </div>
+
+          {/* Tarjeta 3: Horas perdidas y desorden en mostrador */}
+          <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-7 flex flex-col justify-between hover:border-neutral-700 transition-all">
+            <div>
+              <span className="text-[11px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-neutral-800 text-neutral-300 border border-neutral-700 inline-block mb-4">
+                +4 horas diarias en chat
+              </span>
+              <h3 className="text-xl font-black text-white tracking-tight">
+                Desorden en mostrador y notas de voz
+              </h3>
+              <p className="mt-3 text-xs sm:text-sm text-neutral-400 leading-relaxed font-normal">
+                Escuchar audios de 2 minutos para anotar un pedido en una libreta de papel, llamar al repartidor y descifrar comprobantes borrosos te convierte en esclavo operativo de tu negocio.
+              </p>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-neutral-800/80">
+              <span className="text-[11px] text-neutral-400 block font-semibold uppercase">Tiempo desperdiciado:</span>
+              <span className="text-lg font-black text-neutral-200 mt-0.5 block">
+                Más de 120 horas al mes en chat manual
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          4 & 5. BENTO GRID OPERATIVO Y SECCIÓN DE PRICING CON TOGGLE
+      ══════════════════════════════════════════════════════════════════════════ */}
+      <PricingAndBento />
+
+      {/* ══════════════════════════════════════════════════════════════════════════
+          6. SECCIÓN FAQ Y FOOTER DE CONVERSIÓN
+      ══════════════════════════════════════════════════════════════════════════ */}
+      <FaqAndFooter />
     </div>
   );
 }
